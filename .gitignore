@@ -22,6 +22,7 @@ Plugins/*/Intermediate/
 *.ogg
 *.mp4
 *.avi
+*.sln
 
 # 이외에도 무시할 수 있는 리소스 파일들 추가
 *.fbx
@@ -53,7 +54,6 @@ Plugins/*/Intermediate/
 
 # 프로젝트 파일
 !*.uproject
-!*.sln
 
 # 빌드 설정 파일
 !*.Target.cs
