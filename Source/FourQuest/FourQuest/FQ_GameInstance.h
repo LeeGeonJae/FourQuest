@@ -15,7 +15,7 @@ class FOURQUEST_API UFQ_GameInstance : public UGameInstance
 	GENERATED_BODY()
 	
 public:
-
+	UFQ_GameInstance();
 
 private:
 
