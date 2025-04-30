@@ -4,16 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "FQGameCore\FQGameCore\Soul\FQSoulCharacterInterface.h"
 #include "FQSoulBase.generated.h"
 
 UCLASS()
-class FQSOUL_API AFQSoulBase : public ACharacter
+class FQSOUL_API AFQSoulBase : public ACharacter, public IFQSoulCharacterInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AFQSoulBase();
+
+	virtual FTransform GetTransform() const override;
 
 protected:
 	// Called when the game starts or when spawned
