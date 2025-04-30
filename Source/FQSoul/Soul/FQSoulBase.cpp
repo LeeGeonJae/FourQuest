@@ -9,10 +9,14 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "FQSoul\Data\FQSoulDataAsset.h"
 
 // Sets default values
 AFQSoulBase::AFQSoulBase()
 {
+	mDashDirection = FVector();
+	mbIsDashing = false;
+
 	// Pawn
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -26,7 +30,6 @@ AFQSoulBase::AFQSoulBase()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
@@ -46,19 +49,42 @@ AFQSoulBase::AFQSoulBase()
 	mFollowCamera->SetupAttachment(mCameraBoom, TEXT("SpringEndpoint"));
 	mFollowCamera->bUsePawnControlRotation = false;
 
+	// InputMappingContext
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Soul.IMC_Soul'"));
+	ensure(InputMappingContextRef.Object);
+	if (InputMappingContextRef.Object)
+	{
+		mDefaultMappingContext = InputMappingContextRef.Object;
+	}
 
 	// Input
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Props/Soul/Input/IA_QuaterMove.IA_QuaterMove'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulMove.IA_SoulMove'"));
+	ensure(InputActionMoveRef.Object);
 	if (nullptr != InputActionMoveRef.Object)
 	{
 		mMoveAction = InputActionMoveRef.Object;
 	}
 
-	// InputMappingContext
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Props/Soul/Input/IMC_Quater.IMC_Quater'"));
-	if (InputMappingContextRef.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionDashRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulDash.IA_SoulDash'"));
+	ensure(InputActionDashRef.Object);
+	if (nullptr != InputActionDashRef.Object)
 	{
-		mDefaultMappingContext = InputMappingContextRef.Object;
+		mDashAction = InputActionDashRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionPickRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulSelectArmour.IA_SoulSelectArmour'"));
+	ensure(InputActionPickRef.Object);
+	if (nullptr != InputActionPickRef.Object)
+	{
+		mPickAction = InputActionPickRef.Object;
+	}
+
+	// Data
+	static ConstructorHelpers::FObjectFinder<UFQSoulDataAsset> SoulDataAssetRef(TEXT("/Script/FQSoul.FQSoulDataAsset'/Game/Data/DA_SoulData.DA_SoulData'"));
+	ensure(SoulDataAssetRef.Object);
+	if (nullptr != SoulDataAssetRef.Object)
+	{
+		mSoulDataAsset = SoulDataAssetRef.Object;
 	}
 }
 
@@ -71,7 +97,28 @@ void AFQSoulBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mWalkSpeed;
+
 	SetCharacterControl();
+}
+
+void AFQSoulBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (mSoulDataAsset && mbIsDashing)
+	{
+		AddMovementInput(mDashDirection, mSoulDataAsset->mDashSpeed * DeltaTime);
+
+		UE_LOG(LogTemp, Log, TEXT("Current Speed : %f"), GetCharacterMovement()->GetCurrentAcceleration().Length());
+		mDashTimer -= DeltaTime;
+		if (mDashTimer <= 0.0f)
+		{
+			GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mWalkSpeed;
+			GetCharacterMovement()->MaxAcceleration = 2048.f;
+			mbIsDashing = false;
+		}
+	}
 }
 
 void AFQSoulBase::SetCharacterControl()
@@ -84,19 +131,21 @@ void AFQSoulBase::SetCharacterControl()
 	}
 }
 
-// Called to bind functionality to input
 void AFQSoulBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	UE_LOG(LogTemp, Log, TEXT("SetupPlayerInputComponent"));
-
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	EnhancedInputComponent->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQSoulBase::Move);
+	EnhancedInputComponent->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::ChangeArmour);
+	EnhancedInputComponent->BindAction(mDashAction, ETriggerEvent::Triggered, this, &AFQSoulBase::StartDash);
 }
 
 void AFQSoulBase::Move(const FInputActionValue& Value)
 {
+	if (mbIsDashing)
+		return;
+
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	float InputSizeSquared = MovementVector.SquaredLength();
@@ -119,3 +168,24 @@ void AFQSoulBase::Move(const FInputActionValue& Value)
 	AddMovementInput(MoveDirection, MovementVectorSize);
 }
 
+void AFQSoulBase::ChangeArmour()
+{
+
+}
+
+void AFQSoulBase::StartDash()
+{
+	if (mSoulDataAsset && !mbIsDashing)
+	{
+		mbIsDashing = true;
+		mDashTimer = mSoulDataAsset->mDashDuration;
+		GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mDashSpeed;
+		GetCharacterMovement()->MaxAcceleration = mSoulDataAsset->mDashSpeed * 2;
+
+		mDashDirection = GetLastMovementInputVector().GetSafeNormal();
+		if (mDashDirection.IsZero())
+		{
+			mDashDirection = GetActorForwardVector(); // 입력 없으면 정면
+		}
+	}
+}
