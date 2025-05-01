@@ -90,7 +90,7 @@ AFQSoulBase::AFQSoulBase()
 
 FTransform AFQSoulBase::GetTransform() const
 {
-	return GetActorTransform();
+	return GetTransform();
 }
 
 void AFQSoulBase::BeginPlay()
