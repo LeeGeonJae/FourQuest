@@ -29,8 +29,11 @@ private:
 	void SetCharacterControl();
 
 	void Move(const FInputActionValue& Value);
-	void ChangeArmour();
 	void StartDash();
+	void PressedPickButton();
+	void CancelChangeArmour();
+	void ChangeArmour(float DeltaTime);
+	class IFQArmourInterface* CheckNearArmour();
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
@@ -54,6 +57,9 @@ protected:
 	TObjectPtr<class UInputAction> mPickAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> mCancelAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> mDashAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input)
@@ -71,5 +77,8 @@ private:
 	float	mDashTimer;
 
 	// 갑옷 변수
+	bool mbIsPressedArmourChange;
+	float mArmourChangeTimer;
 	TMap<FString, class IFQArmourInterface*> mArmours;
+	class IFQArmourInterface* mCurrentArmour;
 };

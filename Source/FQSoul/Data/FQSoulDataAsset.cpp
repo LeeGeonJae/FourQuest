@@ -9,4 +9,6 @@ UFQSoulDataAsset::UFQSoulDataAsset()
 
 	mDashDuration = 0.2f;
 	mDashSpeed = 5000.f;
+
+	mArmourDelayTime = 2.f;
 }

@@ -15,8 +15,13 @@
 // Sets default values
 AFQSoulBase::AFQSoulBase()
 {
+	// Dash
 	mDashDirection = FVector();
 	mbIsDashing = false;
+
+	// Armour
+	mbIsPressedArmourChange = false;
+	mArmourChangeTimer = 0.f;
 
 	// Pawn
 	bUseControllerRotationPitch = false;
@@ -82,6 +87,13 @@ AFQSoulBase::AFQSoulBase()
 		mPickAction = InputActionPickRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCancelRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulCancelArmour.IA_SoulCancelArmour'"));
+	ensure(InputActionCancelRef.Object);
+	if (nullptr != InputActionCancelRef.Object)
+	{
+		mCancelAction = InputActionCancelRef.Object;
+	}
+
 	// Data
 	static ConstructorHelpers::FObjectFinder<UFQSoulDataAsset> SoulDataAssetRef(TEXT("/Script/FQSoul.FQSoulDataAsset'/Game/Data/DA_SoulData.DA_SoulData'"));
 	ensure(SoulDataAssetRef.Object);
@@ -122,6 +134,8 @@ void AFQSoulBase::Tick(float DeltaTime)
 			mbIsDashing = false;
 		}
 	}
+
+	ChangeArmour(DeltaTime);
 }
 
 void AFQSoulBase::SetCharacterControl()
@@ -140,7 +154,8 @@ void AFQSoulBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	EnhancedInputComponent->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQSoulBase::Move);
-	EnhancedInputComponent->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::ChangeArmour);
+	EnhancedInputComponent->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::PressedPickButton);
+	EnhancedInputComponent->BindAction(mCancelAction, ETriggerEvent::Triggered, this, &AFQSoulBase::CancelChangeArmour);
 	EnhancedInputComponent->BindAction(mDashAction, ETriggerEvent::Triggered, this, &AFQSoulBase::StartDash);
 }
 
@@ -169,11 +184,78 @@ void AFQSoulBase::Move(const FInputActionValue& Value)
 	AddMovementInput(MoveDirection, MovementVectorSize);
 }
 
-void AFQSoulBase::ChangeArmour()
+void AFQSoulBase::ChangeArmour(float DeltaTime)
 {
-	if (mArmours.Num() == 0)
+	// 예외처리
+	if (!mbIsPressedArmourChange || mArmours.Num() == 0 || mCurrentArmour == nullptr)
+	{
 		return;
+	}
 
+	// 현재 가장 가까운 아머가 버튼을 눌렀을 때, 가장 가까운 갑옷이 아닌 경우 리셋
+	if (mCurrentArmour != CheckNearArmour())
+	{
+		CancelChangeArmour();
+		return;
+	}
+
+	// 시간 체크
+	mArmourChangeTimer -= DeltaTime;
+	if (mArmourChangeTimer > 0.f)
+	{
+		UE_LOG(LogTemp, Log, TEXT("ChangedArmour Time : %f"), mArmourChangeTimer);
+		return;
+	}
+
+	// 갑옷 타입에 따른 구현
+	if (mCurrentArmour->GetArmourType() == EArmourType::Warrior)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : Warrior"));
+	}
+	else if (mCurrentArmour->GetArmourType() == EArmourType::Magic)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : Magic"));
+	}
+
+	mCurrentArmour->PickArmour();
+	CancelChangeArmour();
+	UE_LOG(LogTemp, Log, TEXT("Armours Container Size : %d"), mArmours.Num());
+}
+
+void AFQSoulBase::StartDash()
+{
+	if (mSoulDataAsset && !mbIsDashing)
+	{
+		mbIsDashing = true;
+		mDashTimer = mSoulDataAsset->mDashDuration;
+		GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mDashSpeed;
+		GetCharacterMovement()->MaxAcceleration = mSoulDataAsset->mDashSpeed * 2;
+
+		mDashDirection = GetLastMovementInputVector().GetSafeNormal();
+		if (mDashDirection.IsZero())
+		{
+			mDashDirection = GetActorForwardVector(); // 입력 없으면 정면
+		}
+	}
+}
+
+void AFQSoulBase::PressedPickButton()
+{
+	UE_LOG(LogTemp, Log, TEXT("[Function] PressedPickButton"));
+	mbIsPressedArmourChange = true;
+	mArmourChangeTimer = mSoulDataAsset->mArmourDelayTime;
+	mCurrentArmour = CheckNearArmour();
+}
+
+void AFQSoulBase::CancelChangeArmour()
+{
+	UE_LOG(LogTemp, Log, TEXT("[Function] CancelChangeArmour"));
+	mbIsPressedArmourChange = false;
+	mCurrentArmour = nullptr;
+}
+
+IFQArmourInterface* AFQSoulBase::CheckNearArmour()
+{
 	IFQArmourInterface* MinDistanceArmour = nullptr;
 	FVector SoulLocation = GetActorLocation();
 
@@ -198,34 +280,7 @@ void AFQSoulBase::ChangeArmour()
 		}
 	}
 
-	if (MinDistanceArmour->GetArmourType() == EArmourType::Warrior)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : Warrior"));
-	}
-	else if (MinDistanceArmour->GetArmourType() == EArmourType::Magic)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : Magic"));
-	}
-
-	MinDistanceArmour->PickArmour();
-	UE_LOG(LogTemp, Log, TEXT("Armours Container Size : %d"), mArmours.Num());
-}
-
-void AFQSoulBase::StartDash()
-{
-	if (mSoulDataAsset && !mbIsDashing)
-	{
-		mbIsDashing = true;
-		mDashTimer = mSoulDataAsset->mDashDuration;
-		GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mDashSpeed;
-		GetCharacterMovement()->MaxAcceleration = mSoulDataAsset->mDashSpeed * 2;
-
-		mDashDirection = GetLastMovementInputVector().GetSafeNormal();
-		if (mDashDirection.IsZero())
-		{
-			mDashDirection = GetActorForwardVector(); // 입력 없으면 정면
-		}
-	}
+	return MinDistanceArmour;
 }
 
 void AFQSoulBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
