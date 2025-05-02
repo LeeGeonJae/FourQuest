@@ -75,6 +75,7 @@ private:
 	bool mbIsDashing;
 	FVector mDashDirection;
 	float	mDashTimer;
+	float	mDashCoolTimer;
 
 	// 갑옷 변수
 	bool mbIsPressedArmourChange;

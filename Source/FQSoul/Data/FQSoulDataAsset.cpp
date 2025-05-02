@@ -7,6 +7,7 @@ UFQSoulDataAsset::UFQSoulDataAsset()
 {
 	mWalkSpeed = 500.f;
 
+	mDashCoolTime = 2.f;
 	mDashDuration = 0.2f;
 	mDashSpeed = 5000.f;
 

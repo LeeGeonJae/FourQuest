@@ -120,21 +120,24 @@ void AFQSoulBase::BeginPlay()
 void AFQSoulBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	mDashCoolTimer -= DeltaTime;
 
+	// 대쉬
 	if (mSoulDataAsset && mbIsDashing)
 	{
 		AddMovementInput(mDashDirection, mSoulDataAsset->mDashSpeed * DeltaTime);
 
-		UE_LOG(LogTemp, Log, TEXT("Current Speed : %f"), GetCharacterMovement()->GetCurrentAcceleration().Length());
 		mDashTimer -= DeltaTime;
 		if (mDashTimer <= 0.0f)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mWalkSpeed;
 			GetCharacterMovement()->MaxAcceleration = 2048.f;
+			mDashCoolTimer = mSoulDataAsset->mDashCoolTime;
 			mbIsDashing = false;
 		}
 	}
 
+	// 갑옷
 	ChangeArmour(DeltaTime);
 }
 
@@ -224,7 +227,7 @@ void AFQSoulBase::ChangeArmour(float DeltaTime)
 
 void AFQSoulBase::StartDash()
 {
-	if (mSoulDataAsset && !mbIsDashing)
+	if (mSoulDataAsset && !mbIsDashing && mDashCoolTimer <= 0)
 	{
 		mbIsDashing = true;
 		mDashTimer = mSoulDataAsset->mDashDuration;

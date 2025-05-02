@@ -24,6 +24,9 @@ public:
 	float	mDashDuration;
 
 	UPROPERTY(EditAnywhere, Category = Dash)
+	float	mDashCoolTime;
+
+	UPROPERTY(EditAnywhere, Category = Dash)
 	float	mDashSpeed;
 
 	UPROPERTY(EditAnywhere, Category = Armour)
