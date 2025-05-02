@@ -17,7 +17,9 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void PickArmour() override;
 	virtual EArmourType GetArmourType() const override;
+	virtual FTransform GetActorTransform() const override;
 
 protected:
 	// Called when the game starts or when spawned

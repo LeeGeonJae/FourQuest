@@ -38,11 +38,6 @@ void AFQArmourBase::Tick(float DeltaTime)
 	mMesh->AddRelativeRotation(FRotator(0.f, 1.f, 0.f));
 }
 
-EArmourType AFQArmourBase::GetArmourType() const
-{
-	return mArmourType;
-}
-
 // Called when the game starts or when spawned
 void AFQArmourBase::BeginPlay()
 {
@@ -57,3 +52,22 @@ void AFQArmourBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
 	{
 	}
 }
+
+
+
+#pragma region Interface
+void AFQArmourBase::PickArmour()
+{
+	Destroy();
+}
+
+EArmourType AFQArmourBase::GetArmourType() const
+{
+	return mArmourType;
+}
+
+FTransform AFQArmourBase::GetActorTransform() const
+{
+	return GetTransform();
+}
+#pragma endregion

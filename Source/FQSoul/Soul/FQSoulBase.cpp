@@ -25,7 +25,8 @@ AFQSoulBase::AFQSoulBase()
 
 	// Capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
-	//GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, );
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AFQSoulBase::OnOverlapBegin);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AFQSoulBase::OnOverlapEnd);
 	//GetCapsuleComponent()->SetCollisionProfileName();
 
 	// Movement
@@ -88,13 +89,11 @@ AFQSoulBase::AFQSoulBase()
 	{
 		mSoulDataAsset = SoulDataAssetRef.Object;
 	}
-
-	mCurrentTransform = FTransform(FVector(5.f, 1.f, 3.f));
 }
 
-FTransform AFQSoulBase::GetTransform() const
+FTransform AFQSoulBase::GetActorTransform() const
 {
-	return mCurrentTransform;
+	return GetTransform();
 }
 
 void AFQSoulBase::BeginPlay()
@@ -165,8 +164,6 @@ void AFQSoulBase::Move(const FInputActionValue& Value)
 		MovementVectorSize = FMath::Sqrt(MovementVectorSizeSquared);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[Input] X : %f, Y : %f"), MovementVector.X, MovementVector.Y);
-
 	FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.0f);
 	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
 	AddMovementInput(MoveDirection, MovementVectorSize);
@@ -174,7 +171,44 @@ void AFQSoulBase::Move(const FInputActionValue& Value)
 
 void AFQSoulBase::ChangeArmour()
 {
+	if (mArmours.Num() == 0)
+		return;
 
+	IFQArmourInterface* MinDistanceArmour = nullptr;
+	FVector SoulLocation = GetActorLocation();
+
+	for (const auto& Armour : mArmours)
+	{
+		if (MinDistanceArmour == nullptr)
+		{
+			MinDistanceArmour = Armour.Value;
+		}
+		else
+		{
+			FVector CurrentMinArmourLocation = MinDistanceArmour->GetActorTransform().GetLocation();
+			FVector TargetArmourLocation = Armour.Value->GetActorTransform().GetLocation();
+
+			float CurrentMinArmourDis = FVector::Dist(SoulLocation, CurrentMinArmourLocation);
+			float TargetArmourDis = FVector::Dist(SoulLocation, TargetArmourLocation);
+
+			if (TargetArmourDis < CurrentMinArmourDis)
+			{
+				MinDistanceArmour = MinDistanceArmour = Armour.Value;
+			}
+		}
+	}
+
+	if (MinDistanceArmour->GetArmourType() == EArmourType::Warrior)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : Warrior"));
+	}
+	else if (MinDistanceArmour->GetArmourType() == EArmourType::Magic)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : Magic"));
+	}
+
+	MinDistanceArmour->PickArmour();
+	UE_LOG(LogTemp, Log, TEXT("Armours Container Size : %d"), mArmours.Num());
 }
 
 void AFQSoulBase::StartDash()
@@ -191,5 +225,23 @@ void AFQSoulBase::StartDash()
 		{
 			mDashDirection = GetActorForwardVector(); // 입력 없으면 정면
 		}
+	}
+}
+
+void AFQSoulBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
+{
+	IFQArmourInterface* OverlappingArmour = Cast<IFQArmourInterface>(OtherActor);
+	if (OverlappingArmour)
+	{
+		mArmours.Add(OtherActor->GetName(), OverlappingArmour);
+	}
+}
+
+void AFQSoulBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	IFQArmourInterface* OverlappingArmour = Cast<IFQArmourInterface>(OtherActor);
+	if (OverlappingArmour)
+	{
+		mArmours.FindAndRemoveChecked(OtherActor->GetName());
 	}
 }

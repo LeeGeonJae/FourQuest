@@ -22,7 +22,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// IFQSoulCharacterInterface
-	virtual FTransform GetTransform() const override;
+	virtual FTransform GetActorTransform() const override;
 
 
 private:
@@ -31,6 +31,12 @@ private:
 	void Move(const FInputActionValue& Value);
 	void ChangeArmour();
 	void StartDash();
+
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
+
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
 	// Component
@@ -65,7 +71,5 @@ private:
 	float	mDashTimer;
 
 	// 갑옷 변수
-	TMap<FName, class IFQArmourInterface*> mArmours;
-
-	FTransform mCurrentTransform;
+	TMap<FString, class IFQArmourInterface*> mArmours;
 };
