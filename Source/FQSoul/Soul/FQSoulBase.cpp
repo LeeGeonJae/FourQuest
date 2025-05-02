@@ -10,6 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "FQSoul\Data\FQSoulDataAsset.h"
+#include "FQGameCore\Armour\FQArmourInterface.h"
 
 // Sets default values
 AFQSoulBase::AFQSoulBase()
@@ -24,6 +25,7 @@ AFQSoulBase::AFQSoulBase()
 
 	// Capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
+	//GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, );
 	//GetCapsuleComponent()->SetCollisionProfileName();
 
 	// Movement
@@ -86,11 +88,13 @@ AFQSoulBase::AFQSoulBase()
 	{
 		mSoulDataAsset = SoulDataAssetRef.Object;
 	}
+
+	mCurrentTransform = FTransform(FVector(5.f, 1.f, 3.f));
 }
 
 FTransform AFQSoulBase::GetTransform() const
 {
-	return GetTransform();
+	return mCurrentTransform;
 }
 
 void AFQSoulBase::BeginPlay()

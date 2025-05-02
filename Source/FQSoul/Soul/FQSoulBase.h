@@ -63,4 +63,9 @@ private:
 	bool mbIsDashing;
 	FVector mDashDirection;
 	float	mDashTimer;
+
+	// 갑옷 변수
+	TMap<FName, class IFQArmourInterface*> mArmours;
+
+	FTransform mCurrentTransform;
 };

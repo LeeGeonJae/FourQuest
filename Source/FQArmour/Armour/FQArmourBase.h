@@ -4,23 +4,38 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "FQGameCore\Armour/FQArmourInterface.h"
 #include "FQArmourBase.generated.h"
 
 UCLASS()
-class FQARMOUR_API AFQArmourBase : public AActor
+class FQARMOUR_API AFQArmourBase : public AActor, public IFQArmourInterface
 {
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AFQArmourBase();
+
+	virtual void Tick(float DeltaTime) override;
+
+	virtual EArmourType GetArmourType() const override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
 
+protected:
+	UPROPERTY(VisibleAnywhere, Category = Box)
+	TObjectPtr<class UBoxComponent> mTrigger;
+
+	UPROPERTY(VisibleAnywhere, Category = Box)
+	TObjectPtr<class UStaticMeshComponent> mMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = Effect)
+	TObjectPtr<class UParticleSystemComponent> mEffect;
+
+private:
+	EArmourType mArmourType;
 };
