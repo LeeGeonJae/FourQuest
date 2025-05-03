@@ -157,8 +157,8 @@ void AFQSoulBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	EnhancedInputComponent->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQSoulBase::Move);
-	EnhancedInputComponent->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::PressedPickButton);
-	EnhancedInputComponent->BindAction(mCancelAction, ETriggerEvent::Triggered, this, &AFQSoulBase::CancelChangeArmour);
+	EnhancedInputComponent->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::SelectInteraction);
+	EnhancedInputComponent->BindAction(mCancelAction, ETriggerEvent::Triggered, this, &AFQSoulBase::CancelInteraction);
 	EnhancedInputComponent->BindAction(mDashAction, ETriggerEvent::Triggered, this, &AFQSoulBase::StartDash);
 }
 
@@ -198,7 +198,7 @@ void AFQSoulBase::ChangeArmour(float DeltaTime)
 	// 현재 가장 가까운 아머가 버튼을 눌렀을 때, 가장 가까운 갑옷이 아닌 경우 리셋
 	if (mCurrentArmour != CheckNearArmour())
 	{
-		CancelChangeArmour();
+		CancelInteraction();
 		return;
 	}
 
@@ -221,7 +221,7 @@ void AFQSoulBase::ChangeArmour(float DeltaTime)
 	}
 
 	mCurrentArmour->PickArmour();
-	CancelChangeArmour();
+	CancelInteraction();
 	UE_LOG(LogTemp, Log, TEXT("Armours Container Size : %d"), mArmours.Num());
 }
 
@@ -242,17 +242,19 @@ void AFQSoulBase::StartDash()
 	}
 }
 
-void AFQSoulBase::PressedPickButton()
+void AFQSoulBase::SelectInteraction()
 {
+	// Armour
 	UE_LOG(LogTemp, Log, TEXT("[Function] PressedPickButton"));
 	mbIsPressedArmourChange = true;
 	mArmourChangeTimer = mSoulDataAsset->mArmourDelayTime;
 	mCurrentArmour = CheckNearArmour();
 }
 
-void AFQSoulBase::CancelChangeArmour()
+void AFQSoulBase::CancelInteraction()
 {
-	UE_LOG(LogTemp, Log, TEXT("[Function] CancelChangeArmour"));
+	// Armour
+	UE_LOG(LogTemp, Log, TEXT("[Function] CancelInteraction"));
 	mbIsPressedArmourChange = false;
 	mCurrentArmour = nullptr;
 }

@@ -30,9 +30,12 @@ private:
 
 	void Move(const FInputActionValue& Value);
 	void StartDash();
-	void PressedPickButton();
-	void CancelChangeArmour();
+	void SelectInteraction();
+	void CancelInteraction();
+
+	// Change Armour
 	void ChangeArmour(float DeltaTime);
+	void CancelChangeArmour();
 	class IFQArmourInterface* CheckNearArmour();
 
 	UFUNCTION()
