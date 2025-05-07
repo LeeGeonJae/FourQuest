@@ -8,6 +8,8 @@
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
 AFQPlayerBase::AFQPlayerBase()
@@ -27,7 +29,7 @@ AFQPlayerBase::AFQPlayerBase()
 	// 캐릭터 무브먼트 설정
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 
@@ -36,6 +38,24 @@ AFQPlayerBase::AFQPlayerBase()
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -80.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+
+	// Camera
+	mCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	mCameraBoom->SetupAttachment(RootComponent);
+	mCameraBoom->TargetArmLength = 400.0f;
+	mCameraBoom->bUsePawnControlRotation = true;
+
+	mCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	mCamera->SetupAttachment(mCameraBoom, USpringArmComponent::SocketName);
+	mCamera->bUsePawnControlRotation = false;
+
+	// Input
+	// Dash 기본 설정
+	mDashSpeed = 500.0f;
+	mDashDuration = 0.5f;
+	mDashCoolTime = 1.0f;
+	mbCanDash = false;
+	mbIsDashing = false;
 }
 
 FTransform AFQPlayerBase::GetTransform() const
@@ -51,13 +71,23 @@ void AFQPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	EnhancedInputComponent->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQPlayerBase::Move);
 	EnhancedInputComponent->BindAction(mDashAction, ETriggerEvent::Triggered, this, &AFQPlayerBase::Dash);
-	EnhancedInputComponent->BindAction(mInteractiveAction, ETriggerEvent::Triggered, this, &AFQPlayerBase::Interaction);
+}
+
+void AFQPlayerBase::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (mbIsDashing)
+	{
+		AddMovementInput(mDashDirection, mDashSpeed * DeltaSeconds);
+	}
 }
 
 void AFQPlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Input
 	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 	{
@@ -67,8 +97,12 @@ void AFQPlayerBase::BeginPlay()
 
 void AFQPlayerBase::Move(const FInputActionValue& Value)
 {
+	if (mbIsDashing)
+	{
+		return;
+	}
+
 	FVector2D MovementVector = Value.Get<FVector2D>();
-	UE_LOG(LogTemp, Warning, TEXT("MovementVector : %f, %f"), MovementVector.X, MovementVector.Y);
 	
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -80,10 +114,46 @@ void AFQPlayerBase::Move(const FInputActionValue& Value)
 	AddMovementInput(RightDirection, MovementVector.Y);
 }
 
-void AFQPlayerBase::Dash(const FInputActionValue& Value)
+void AFQPlayerBase::Dash()
 {
+	mbCanDash = true;
+
+	if (mbCanDash)
+	{
+		StartDash();
+	}
 }
 
-void AFQPlayerBase::Interaction(const FInputActionValue& Value)
+void AFQPlayerBase::StartDash()
 {
+	if (!mbIsDashing)
+	{
+		mbCanDash = false;
+		mbIsDashing = true;
+
+		mDashDirection = GetLastMovementInputVector().GetSafeNormal();
+		if (mDashDirection.IsZero())
+		{
+			mDashDirection = GetActorForwardVector(); 
+		}
+
+		GetCharacterMovement()->MaxWalkSpeed = mDashSpeed;
+		GetCharacterMovement()->MaxAcceleration = mDashSpeed * 2;
+
+		GetWorld()->GetTimerManager().SetTimer(mDashTimer, this, &AFQPlayerBase::EndDash, mDashDuration, false);
+		GetWorld()->GetTimerManager().SetTimer(mDashCoolTimer, this, &AFQPlayerBase::ResetDash, mDashCoolTime, false);
+	}
+}
+
+void AFQPlayerBase::EndDash()
+{
+	mbIsDashing = false;
+
+	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
+	GetCharacterMovement()->MaxAcceleration = 2048.0f;
+}
+
+void AFQPlayerBase::ResetDash()
+{
+	mbCanDash = true;
 }
