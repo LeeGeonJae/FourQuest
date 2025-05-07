@@ -34,8 +34,7 @@ private:
 	void CancelInteraction();
 
 	// Change Armour
-	void ChangeArmour(float DeltaTime);
-	void CancelChangeArmour();
+	void CheckArmour(float DeltaTime);
 	class IFQArmourInterface* CheckNearArmour();
 
 	UFUNCTION()

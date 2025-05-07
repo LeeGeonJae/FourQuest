@@ -1,40 +1,32 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
+﻿// Copyright (Your Project)
 
 #include "FQSoulBase.h"
 #include "Components/CapsuleComponent.h"
-#include "GameFramework\CharacterMovementComponent.h"
-#include "GameFramework\SpringArmComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "FQSoul\Data\FQSoulDataAsset.h"
-#include "FQGameCore\Armour\FQArmourInterface.h"
+#include "FQSoul/Data/FQSoulDataAsset.h"
+#include "FQGameCore/Armour/FQArmourInterface.h"
 
-// Sets default values
 AFQSoulBase::AFQSoulBase()
 {
-	// Dash
-	mDashDirection = FVector();
+	// Movement State
+	mDashDirection = FVector::ZeroVector;
 	mbIsDashing = false;
 
-	// Armour
+	// Armour State
 	mbIsPressedArmourChange = false;
 	mArmourChangeTimer = 0.f;
 
-	// Pawn
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
-	bUseControllerRotationRoll = false;
-
-	// Capsule
+	// Capsule Setup
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AFQSoulBase::OnOverlapBegin);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AFQSoulBase::OnOverlapEnd);
-	//GetCapsuleComponent()->SetCollisionProfileName();
 
-	// Movement
+	// Movement Setup
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
 	GetCharacterMovement()->AirControl = 0.35f;
@@ -42,7 +34,7 @@ AFQSoulBase::AFQSoulBase()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 
-	// CameraBoom
+	// Camera Setup
 	mCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	mCameraBoom->SetupAttachment(RootComponent);
 	mCameraBoom->TargetArmLength = 800.f;
@@ -52,81 +44,46 @@ AFQSoulBase::AFQSoulBase()
 	mCameraBoom->bInheritYaw = false;
 	mCameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
 
-	// FollowCamera
 	mFollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	mFollowCamera->SetupAttachment(mCameraBoom, TEXT("SpringEndpoint"));
 	mFollowCamera->bUsePawnControlRotation = false;
 
-	// InputMappingContext
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Soul.IMC_Soul'"));
-	ensure(InputMappingContextRef.Object);
-	if (InputMappingContextRef.Object)
-	{
-		mDefaultMappingContext = InputMappingContextRef.Object;
-	}
+	// Input Setup
+	ConstructorHelpers::FObjectFinder<UInputMappingContext> MappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Soul.IMC_Soul'"));
+	if (MappingContextRef.Succeeded()) mDefaultMappingContext = MappingContextRef.Object;
 
-	// Input
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulMove.IA_SoulMove'"));
-	ensure(InputActionMoveRef.Object);
-	if (nullptr != InputActionMoveRef.Object)
-	{
-		mMoveAction = InputActionMoveRef.Object;
-	}
+	ConstructorHelpers::FObjectFinder<UInputAction> MoveActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulMove.IA_SoulMove'"));
+	if (MoveActionRef.Succeeded()) mMoveAction = MoveActionRef.Object;
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionDashRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulDash.IA_SoulDash'"));
-	ensure(InputActionDashRef.Object);
-	if (nullptr != InputActionDashRef.Object)
-	{
-		mDashAction = InputActionDashRef.Object;
-	}
+	ConstructorHelpers::FObjectFinder<UInputAction> DashActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulDash.IA_SoulDash'"));
+	if (DashActionRef.Succeeded()) mDashAction = DashActionRef.Object;
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionPickRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulSelectArmour.IA_SoulSelectArmour'"));
-	ensure(InputActionPickRef.Object);
-	if (nullptr != InputActionPickRef.Object)
-	{
-		mPickAction = InputActionPickRef.Object;
-	}
+	ConstructorHelpers::FObjectFinder<UInputAction> PickActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulSelectArmour.IA_SoulSelectArmour'"));
+	if (PickActionRef.Succeeded()) mPickAction = PickActionRef.Object;
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCancelRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulCancelArmour.IA_SoulCancelArmour'"));
-	ensure(InputActionCancelRef.Object);
-	if (nullptr != InputActionCancelRef.Object)
-	{
-		mCancelAction = InputActionCancelRef.Object;
-	}
+	ConstructorHelpers::FObjectFinder<UInputAction> CancelActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulCancelArmour.IA_SoulCancelArmour'"));
+	if (CancelActionRef.Succeeded()) mCancelAction = CancelActionRef.Object;
 
-	// Data
-	static ConstructorHelpers::FObjectFinder<UFQSoulDataAsset> SoulDataAssetRef(TEXT("/Script/FQSoul.FQSoulDataAsset'/Game/Data/DA_SoulData.DA_SoulData'"));
-	ensure(SoulDataAssetRef.Object);
-	if (nullptr != SoulDataAssetRef.Object)
-	{
-		mSoulDataAsset = SoulDataAssetRef.Object;
-	}
-}
-
-FTransform AFQSoulBase::GetActorTransform() const
-{
-	return GetTransform();
+	ConstructorHelpers::FObjectFinder<UFQSoulDataAsset> DataAssetRef(TEXT("/Script/FQSoul.FQSoulDataAsset'/Game/Data/DA_SoulData.DA_SoulData'"));
+	if (DataAssetRef.Succeeded()) mSoulDataAsset = DataAssetRef.Object;
 }
 
 void AFQSoulBase::BeginPlay()
 {
 	Super::BeginPlay();
-
 	GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mWalkSpeed;
-
 	SetCharacterControl();
 }
 
 void AFQSoulBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	mDashCoolTimer -= DeltaTime;
 
-	// 대쉬
+	// Dash Logic
+	mDashCoolTimer -= DeltaTime;
 	if (mSoulDataAsset && mbIsDashing)
 	{
 		AddMovementInput(mDashDirection, mSoulDataAsset->mDashSpeed * DeltaTime);
-
 		mDashTimer -= DeltaTime;
 		if (mDashTimer <= 0.0f)
 		{
@@ -137,17 +94,18 @@ void AFQSoulBase::Tick(float DeltaTime)
 		}
 	}
 
-	// 갑옷
-	ChangeArmour(DeltaTime);
+	// Armour Logic
+	CheckArmour(DeltaTime);
 }
 
 void AFQSoulBase::SetCharacterControl()
 {
-	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
-		Subsystem->AddMappingContext(mDefaultMappingContext, 0);
-		//Subsystem->RemoveMappingContext(mDefaultMappingContext);
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(mDefaultMappingContext, 0);
+		}
 	}
 }
 
@@ -155,74 +113,57 @@ void AFQSoulBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-	EnhancedInputComponent->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQSoulBase::Move);
-	EnhancedInputComponent->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::SelectInteraction);
-	EnhancedInputComponent->BindAction(mCancelAction, ETriggerEvent::Triggered, this, &AFQSoulBase::CancelInteraction);
-	EnhancedInputComponent->BindAction(mDashAction, ETriggerEvent::Triggered, this, &AFQSoulBase::StartDash);
+	UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
+	Input->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQSoulBase::Move);
+	Input->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::SelectInteraction);
+	Input->BindAction(mCancelAction, ETriggerEvent::Triggered, this, &AFQSoulBase::CancelInteraction);
+	Input->BindAction(mDashAction, ETriggerEvent::Triggered, this, &AFQSoulBase::StartDash);
+}
+
+FTransform AFQSoulBase::GetActorTransform() const
+{
+	return GetTransform();
 }
 
 void AFQSoulBase::Move(const FInputActionValue& Value)
 {
-	if (mbIsDashing)
-		return;
+	if (mbIsDashing) return;
 
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	FVector2D InputVec = Value.Get<FVector2D>();
+	float SizeSq = InputVec.SquaredLength();
+	float MoveScale = SizeSq > 1.0f ? 1.0f : FMath::Sqrt(SizeSq);
 
-	float InputSizeSquared = MovementVector.SquaredLength();
-	float MovementVectorSize = 1.0f;
-	float MovementVectorSizeSquared = MovementVector.SquaredLength();
-	if (MovementVectorSizeSquared > 1.0f)
-	{
-		MovementVector.Normalize();
-		MovementVectorSizeSquared = 1.0f;
-	}
-	else
-	{
-		MovementVectorSize = FMath::Sqrt(MovementVectorSizeSquared);
-	}
+	if (SizeSq > 1.0f) InputVec.Normalize();
 
-	FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.0f);
-	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
-	AddMovementInput(MoveDirection, MovementVectorSize);
+	FVector MoveDir = FVector(InputVec.X, InputVec.Y, 0.f);
+	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDir).Rotator());
+	AddMovementInput(MoveDir, MoveScale);
 }
 
-void AFQSoulBase::ChangeArmour(float DeltaTime)
+void AFQSoulBase::CheckArmour(float DeltaTime)
 {
-	// 예외처리
-	if (!mbIsPressedArmourChange || mArmours.Num() == 0 || mCurrentArmour == nullptr)
+	IFQArmourInterface* Nearest = CheckNearArmour();
+	if (mCurrentArmour != Nearest)
 	{
-		return;
-	}
-
-	// 현재 가장 가까운 아머가 버튼을 눌렀을 때, 가장 가까운 갑옷이 아닌 경우 리셋
-	if (mCurrentArmour != CheckNearArmour())
-	{
+		if (mCurrentArmour) mCurrentArmour->SetNearestArmour(false);
+		if (Nearest) Nearest->SetNearestArmour(true);
+		mCurrentArmour = Nearest;
 		CancelInteraction();
 		return;
 	}
 
-	// 시간 체크
-	mArmourChangeTimer -= DeltaTime;
-	if (mArmourChangeTimer > 0.f)
-	{
-		UE_LOG(LogTemp, Log, TEXT("ChangedArmour Time : %f"), mArmourChangeTimer);
-		return;
-	}
+	if (!mbIsPressedArmourChange || mArmours.Num() == 0) return;
 
-	// 갑옷 타입에 따른 구현
-	if (mCurrentArmour->GetArmourType() == EArmourType::Warrior)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : Warrior"));
-	}
-	else if (mCurrentArmour->GetArmourType() == EArmourType::Magic)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : Magic"));
-	}
+	mArmourChangeTimer -= DeltaTime;
+	if (mArmourChangeTimer > 0.f) return;
+
+	if (!mCurrentArmour) return;
+
+	EArmourType Type = mCurrentArmour->GetArmourType();
+	UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : %s"), *UEnum::GetValueAsString(Type));
 
 	mCurrentArmour->PickArmour();
 	CancelInteraction();
-	UE_LOG(LogTemp, Log, TEXT("Armours Container Size : %d"), mArmours.Num());
 }
 
 void AFQSoulBase::StartDash()
@@ -234,74 +175,56 @@ void AFQSoulBase::StartDash()
 		GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mDashSpeed;
 		GetCharacterMovement()->MaxAcceleration = mSoulDataAsset->mDashSpeed * 2;
 
-		mDashDirection = GetLastMovementInputVector().GetSafeNormal();
-		if (mDashDirection.IsZero())
-		{
-			mDashDirection = GetActorForwardVector(); // 입력 없으면 정면
-		}
+		mDashDirection = GetLastMovementInputVector().IsZero() ? GetActorForwardVector() : GetLastMovementInputVector().GetSafeNormal();
 	}
 }
 
 void AFQSoulBase::SelectInteraction()
 {
-	// Armour
-	UE_LOG(LogTemp, Log, TEXT("[Function] PressedPickButton"));
 	mbIsPressedArmourChange = true;
 	mArmourChangeTimer = mSoulDataAsset->mArmourDelayTime;
-	mCurrentArmour = CheckNearArmour();
 }
 
 void AFQSoulBase::CancelInteraction()
 {
-	// Armour
-	UE_LOG(LogTemp, Log, TEXT("[Function] CancelInteraction"));
 	mbIsPressedArmourChange = false;
-	mCurrentArmour = nullptr;
 }
 
 IFQArmourInterface* AFQSoulBase::CheckNearArmour()
 {
-	IFQArmourInterface* MinDistanceArmour = nullptr;
-	FVector SoulLocation = GetActorLocation();
+	IFQArmourInterface* Closest = nullptr;
+	float MinDistSq = FLT_MAX;
+	FVector Origin = GetActorLocation();
 
-	for (const auto& Armour : mArmours)
+	for (const auto& Entry : mArmours)
 	{
-		if (MinDistanceArmour == nullptr)
-		{
-			MinDistanceArmour = Armour.Value;
-		}
-		else
-		{
-			FVector CurrentMinArmourLocation = MinDistanceArmour->GetActorTransform().GetLocation();
-			FVector TargetArmourLocation = Armour.Value->GetActorTransform().GetLocation();
+		IFQArmourInterface* Armour = Entry.Value;
+		if (!Armour) continue;
 
-			float CurrentMinArmourDis = FVector::Dist(SoulLocation, CurrentMinArmourLocation);
-			float TargetArmourDis = FVector::Dist(SoulLocation, TargetArmourLocation);
-
-			if (TargetArmourDis < CurrentMinArmourDis)
-			{
-				MinDistanceArmour = MinDistanceArmour = Armour.Value;
-			}
+		float DistSq = FVector::DistSquared(Origin, Armour->GetActorTransform().GetLocation());
+		if (DistSq < MinDistSq)
+		{
+			MinDistSq = DistSq;
+			Closest = Armour;
 		}
 	}
 
-	return MinDistanceArmour;
+	return Closest;
 }
 
 void AFQSoulBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	IFQArmourInterface* OverlappingArmour = Cast<IFQArmourInterface>(OtherActor);
-	if (OverlappingArmour)
+	if (IFQArmourInterface* Armour = Cast<IFQArmourInterface>(OtherActor))
 	{
-		mArmours.Add(OtherActor->GetName(), OverlappingArmour);
+		mArmours.Add(OtherActor->GetName(), Armour);
 	}
 }
 
 void AFQSoulBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	IFQArmourInterface* OverlappingArmour = Cast<IFQArmourInterface>(OtherActor);
-	if (OverlappingArmour)
+	if (IFQArmourInterface* Armour = Cast<IFQArmourInterface>(OtherActor))
 	{
-		mArmours.FindAndRemoveChecked(OtherActor->GetName());
+		Armour->SetNearestArmour(false);
+		mArmours.Remove(OtherActor->GetName());
 	}
 }

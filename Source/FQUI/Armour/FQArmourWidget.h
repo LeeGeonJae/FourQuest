@@ -3,15 +3,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "FQGameCore\Armour\CommonArmour.h"
+#include "FQUI\FQUserWidget.h"
 #include "FQArmourWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FQUI_API UFQArmourWidget : public UUserWidget
+class FQUI_API UFQArmourWidget : public UFQUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+    UFQArmourWidget();
+
+protected:
+    virtual void NativeConstruct() override;
+
+protected:
+    // 타입별 텍스처 (에디터에서 설정 가능)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armour")
+    UTexture2D* mKnightArmourTexture;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armour")
+    UTexture2D* mMagicArmourTexture;
 };

@@ -6,7 +6,7 @@ public class FQArmour : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "FQGameCore", "FQUI" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "FQGameCore", "FQUI", "UMG" });
 
         PrivateDependencyModuleNames.AddRange(new string[] { });
     }

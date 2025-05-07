@@ -27,4 +27,5 @@ public:
 
 	virtual EArmourType GetArmourType() const abstract;
 	virtual FTransform GetActorTransform() const abstract;
+	virtual void SetNearestArmour(bool IsTrue) abstract;
 };

@@ -5,12 +5,14 @@
 #include "Components/BoxComponent.h"
 #include "Engine/StaticMesh.h"
 #include "FQGameCore\Soul\FQSoulCharacterInterface.h"
+#include "Blueprint\UserWidget.h"
+#include "FQUI\FQWidgetComponent.h"
 
 // Sets default values
 AFQArmourBase::AFQArmourBase()
 {
 	PrimaryActorTick.bCanEverTick = true; // Tick 함수가 실행되기 위한 bool형 타입 변수
-	mArmourType = EArmourType::Warrior;
+	mArmourType = EArmourType::Knight;
 
 	mTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
 	mMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
@@ -20,7 +22,6 @@ AFQArmourBase::AFQArmourBase()
 
 	//mTrigger->SetCollisionProfileName(CPROFILE_ABTRIGGER);
 	mTrigger->SetBoxExtent(FVector(40.0f, 42.0f, 30.0f));
-	mTrigger->OnComponentBeginOverlap.AddDynamic(this, &AFQArmourBase::OnOverlapBegin);
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Props/Armour/Item_Amor.Item_Amor'"));
 	if (BoxMeshRef.Object)
@@ -30,6 +31,25 @@ AFQArmourBase::AFQArmourBase()
 	mMesh->SetRelativeLocation(FVector(0.0f, -3.5f, 0.0f));
 	mMesh->SetRelativeScale3D(FVector(100.f, 100.f, 100.f));
 	mMesh->SetCollisionProfileName(TEXT("NoCollision"));
+
+	// Widget Component
+	mArmourWidget = CreateDefaultSubobject<UFQWidgetComponent>(TEXT("Widget"));
+	mArmourWidget->SetupAttachment(mTrigger);
+	mArmourWidget->SetRelativeLocation(FVector(0.f, 0.f, 80.f));
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/Armour/WBP_ArmourType.WBP_ArmourType_C"));
+	if (ArmourWidgetRef.Class)
+	{
+		mArmourWidget->SetWidgetClass(ArmourWidgetRef.Class);
+		mArmourWidget->SetWidgetSpace(EWidgetSpace::Screen);
+		mArmourWidget->SetDrawSize(FVector2D(10.f, 10.f));
+		mArmourWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		mArmourWidget->SetVisibility(false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("[FQArmourBase] Not Find WBP_ArmourType"));
+	}
 }
 
 void AFQArmourBase::Tick(float DeltaTime)
@@ -42,15 +62,6 @@ void AFQArmourBase::Tick(float DeltaTime)
 void AFQArmourBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
-}
-
-void AFQArmourBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
-{
-	IFQSoulCharacterInterface* OverlappingPawn = Cast<IFQSoulCharacterInterface>(OtherActor);
-	if (OverlappingPawn)
-	{
-	}
 }
 
 
@@ -59,6 +70,18 @@ void AFQArmourBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
 void AFQArmourBase::PickArmour()
 {
 	Destroy();
+}
+
+void AFQArmourBase::SetNearestArmour(bool IsTrue)
+{
+	if (mArmourWidget)
+	{
+		mArmourWidget->SetVisibility(IsTrue);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Is Not Valid mArmourWidget"));
+	}
 }
 
 EArmourType AFQArmourBase::GetArmourType() const

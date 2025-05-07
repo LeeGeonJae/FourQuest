@@ -4,6 +4,6 @@
 UENUM()
 enum class EArmourType : uint8
 {
-	Warrior,
+	Knight,
 	Magic
 };
