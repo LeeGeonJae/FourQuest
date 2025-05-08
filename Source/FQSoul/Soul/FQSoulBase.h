@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "FQGameCore\Soul\FQSoulCharacterInterface.h"
 #include "InputActionValue.h"
+#include "FQGameCore\Soul/CommonSoul.h"
 #include "FQSoulBase.generated.h"
 
 UCLASS()
@@ -34,8 +35,7 @@ private:
 	void CancelInteraction();
 
 	// Change Armour
-	void ChangeArmour(float DeltaTime);
-	void CancelChangeArmour();
+	void CheckArmour(float DeltaTime);
 	class IFQArmourInterface* CheckNearArmour();
 
 	UFUNCTION()
@@ -72,17 +72,25 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data)
 	TObjectPtr<class UFQSoulDataAsset> mSoulDataAsset;
 
+	// UI
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UFQWidgetComponent> mArmourGaugeWidget;
+
 
 private:
+	ESoulType mSoulType;
+
 	// 대시 변수
-	bool mbIsDashing;
+	uint8 mbIsDashing : 1;
 	FVector mDashDirection;
 	float	mDashTimer;
 	float	mDashCoolTimer;
 
 	// 갑옷 변수
-	bool mbIsPressedArmourChange;
+	uint8 mbIsPressedArmourChange : 1;
 	float mArmourChangeTimer;
+	UPROPERTY()
 	TMap<FString, class IFQArmourInterface*> mArmours;
+	UPROPERTY()
 	class IFQArmourInterface* mCurrentArmour;
 };

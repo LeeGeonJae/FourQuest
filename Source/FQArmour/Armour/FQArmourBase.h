@@ -18,15 +18,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void PickArmour() override;
+	virtual void SetNearestArmour(bool IsTrue) override;
 	virtual EArmourType GetArmourType() const override;
 	virtual FTransform GetActorTransform() const override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Box)
@@ -38,6 +36,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Effect)
 	TObjectPtr<class UParticleSystemComponent> mEffect;
 
-private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Armour, Meta = (AllowPrivateAccess = "true"))
 	EArmourType mArmourType;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UFQWidgetComponent> mArmourWidget;
 };

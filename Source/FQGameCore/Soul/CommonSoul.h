@@ -1,8 +1,7 @@
-
 #pragma once
 
 UENUM()
-enum class EArmourType : uint8
+enum class ESoulType : uint8
 {
 	Knight,
 	Magic
