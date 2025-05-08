@@ -16,6 +16,9 @@
 
 AFQSoulBase::AFQSoulBase()
 {
+	// Soul
+	mSoulType = ESoulType::Knight;
+
 	// Movement State
 	mDashDirection = FVector::ZeroVector;
 	mbIsDashing = false;

@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "FQGameCore\Soul\FQSoulCharacterInterface.h"
 #include "InputActionValue.h"
+#include "FQGameCore\Soul/CommonSoul.h"
 #include "FQSoulBase.generated.h"
 
 UCLASS()
@@ -77,6 +78,8 @@ protected:
 
 
 private:
+	ESoulType mSoulType;
+
 	// 대시 변수
 	uint8 mbIsDashing : 1;
 	FVector mDashDirection;
@@ -86,6 +89,8 @@ private:
 	// 갑옷 변수
 	uint8 mbIsPressedArmourChange : 1;
 	float mArmourChangeTimer;
+	UPROPERTY()
 	TMap<FString, class IFQArmourInterface*> mArmours;
+	UPROPERTY()
 	class IFQArmourInterface* mCurrentArmour;
 };
