@@ -70,7 +70,7 @@ void AFQPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
 	EnhancedInputComponent->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQPlayerBase::Move);
-	EnhancedInputComponent->BindAction(mDashAction, ETriggerEvent::Triggered, this, &AFQPlayerBase::Dash);
+	EnhancedInputComponent->BindAction(mDashAction, ETriggerEvent::Started, this, &AFQPlayerBase::Dash);
 }
 
 void AFQPlayerBase::Tick(float DeltaSeconds)
