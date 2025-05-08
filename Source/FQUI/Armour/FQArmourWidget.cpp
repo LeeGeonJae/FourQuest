@@ -36,4 +36,5 @@ void UFQArmourWidget::NativeConstruct()
     }
 
     UImage* ArmourTypeImage = Cast<UImage>(GetWidgetFromName(TEXT("ArmourType")));
+    ArmourTypeImage->SetBrushFromTexture(SelectedTexture);
 }

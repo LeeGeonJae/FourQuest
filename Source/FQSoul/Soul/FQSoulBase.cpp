@@ -10,6 +10,9 @@
 #include "InputMappingContext.h"
 #include "FQSoul/Data/FQSoulDataAsset.h"
 #include "FQGameCore/Armour/FQArmourInterface.h"
+#include "Blueprint\UserWidget.h"
+#include "FQUI\FQWidgetComponent.h"
+#include "FQUI/Soul/FQSoulGaugeWidget.h"
 
 AFQSoulBase::AFQSoulBase()
 {
@@ -66,6 +69,25 @@ AFQSoulBase::AFQSoulBase()
 
 	ConstructorHelpers::FObjectFinder<UFQSoulDataAsset> DataAssetRef(TEXT("/Script/FQSoul.FQSoulDataAsset'/Game/Data/DA_SoulData.DA_SoulData'"));
 	if (DataAssetRef.Succeeded()) mSoulDataAsset = DataAssetRef.Object;
+
+	// Widget Component
+	mArmourGaugeWidget = CreateDefaultSubobject<UFQWidgetComponent>(TEXT("Widget"));
+	mArmourGaugeWidget->SetupAttachment(RootComponent);
+	mArmourGaugeWidget->SetRelativeLocation(FVector(30.f, 0.f, 80.f));
+	
+	static ConstructorHelpers::FClassFinder<UUserWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/Soul/WBP_SoulArmourGaugeWidget.WBP_SoulArmourGaugeWidget_C"));
+	if (ArmourWidgetRef.Class)
+	{
+		mArmourGaugeWidget->SetWidgetClass(ArmourWidgetRef.Class);
+		mArmourGaugeWidget->SetWidgetSpace(EWidgetSpace::Screen);
+		mArmourGaugeWidget->SetDrawSize(FVector2D(20.f, 20.f));
+		mArmourGaugeWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		mArmourGaugeWidget->SetVisibility(false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("[FQArmourBase] Not Find WBP_ArmourType"));
+	}
 }
 
 void AFQSoulBase::BeginPlay()
@@ -143,6 +165,7 @@ void AFQSoulBase::Move(const FInputActionValue& Value)
 void AFQSoulBase::CheckArmour(float DeltaTime)
 {
 	IFQArmourInterface* Nearest = CheckNearArmour();
+	// 가장 가까운 갑옷이 다르면 취소
 	if (mCurrentArmour != Nearest)
 	{
 		if (mCurrentArmour) mCurrentArmour->SetNearestArmour(false);
@@ -152,13 +175,32 @@ void AFQSoulBase::CheckArmour(float DeltaTime)
 		return;
 	}
 
-	if (!mbIsPressedArmourChange || mArmours.Num() == 0) return;
+	// 갑옷이 0개이거나 버튼을 안눌렀으면 중지
+	if (!mbIsPressedArmourChange || mArmours.Num() == 0 || !mCurrentArmour) return;
 
+	// 시간이 안되면 리턴 & UI 표시
 	mArmourChangeTimer -= DeltaTime;
-	if (mArmourChangeTimer > 0.f) return;
+	if (mArmourChangeTimer > 0.f)
+	{
+		if (mArmourGaugeWidget)
+		{
+			FVector WorldOffset = GetActorLocation() + FVector(0.f, 30.f, 80.f); // 앞쪽 + 위쪽
+			mArmourGaugeWidget->SetWorldLocation(WorldOffset);
+		}
 
-	if (!mCurrentArmour) return;
+		UFQSoulGaugeWidget* GaugeWidget = Cast<UFQSoulGaugeWidget>(mArmourGaugeWidget->GetWidget());
+		if (GaugeWidget)
+		{
+			GaugeWidget->SetChargeGaugeValueSet(mArmourChangeTimer / mSoulDataAsset->mArmourDelayTime);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("GaugeWidget is nullptr"));
+		}
+		return;
+	}
 
+	// 갑옷 타입 확인한 후 갑옷 입기
 	EArmourType Type = mCurrentArmour->GetArmourType();
 	UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : %s"), *UEnum::GetValueAsString(Type));
 
@@ -181,12 +223,17 @@ void AFQSoulBase::StartDash()
 
 void AFQSoulBase::SelectInteraction()
 {
+	if (mCurrentArmour)
+	{
+		mArmourGaugeWidget->SetVisibility(true);
+	}
 	mbIsPressedArmourChange = true;
 	mArmourChangeTimer = mSoulDataAsset->mArmourDelayTime;
 }
 
 void AFQSoulBase::CancelInteraction()
 {
+	mArmourGaugeWidget->SetVisibility(false);
 	mbIsPressedArmourChange = false;
 }
 
