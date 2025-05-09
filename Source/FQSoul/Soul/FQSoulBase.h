@@ -24,6 +24,7 @@ public:
 
 	// IFQSoulCharacterInterface
 	virtual FTransform GetActorTransform() const override;
+	virtual ESoulType GetSoulType() const override;
 
 
 private:
@@ -90,7 +91,7 @@ private:
 	uint8 mbIsPressedArmourChange : 1;
 	float mArmourChangeTimer;
 	UPROPERTY()
-	TMap<FString, class IFQArmourInterface*> mArmours;
+	TMap<FString, TObjectPtr<UObject>> mArmours;
 	UPROPERTY()
-	class IFQArmourInterface* mCurrentArmour;
+	TObjectPtr<UObject> mCurrentArmour;
 };

@@ -8,7 +8,7 @@ public class FourQuest : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "FQGameCore", "FQSoul", "FQPlayer" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "FQGameCore", "FQSoul", "FQPlayer" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

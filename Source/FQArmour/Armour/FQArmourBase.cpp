@@ -24,6 +24,7 @@ AFQArmourBase::AFQArmourBase()
 	mTrigger->SetBoxExtent(FVector(40.0f, 42.0f, 30.0f));
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Props/Armour/Item_Amor.Item_Amor'"));
+	check(BoxMeshRef.Object);
 	if (BoxMeshRef.Object)
 	{
 		mMesh->SetStaticMesh(BoxMeshRef.Object);
@@ -38,6 +39,7 @@ AFQArmourBase::AFQArmourBase()
 	mArmourWidget->SetRelativeLocation(FVector(0.f, 0.f, 80.f));
 
 	static ConstructorHelpers::FClassFinder<UUserWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/Armour/WBP_ArmourType.WBP_ArmourType_C"));
+	check(ArmourWidgetRef.Class);
 	if (ArmourWidgetRef.Class)
 	{
 		mArmourWidget->SetWidgetClass(ArmourWidgetRef.Class);
@@ -45,10 +47,6 @@ AFQArmourBase::AFQArmourBase()
 		mArmourWidget->SetDrawSize(FVector2D(10.f, 10.f));
 		mArmourWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		mArmourWidget->SetVisibility(false);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("[FQArmourBase] Not Find WBP_ArmourType"));
 	}
 }
 

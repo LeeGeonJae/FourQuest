@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "CommonSoul.h"
 #include "FQSoulCharacterInterface.generated.h"
 
 // This class does not need to be modified.
@@ -23,4 +24,5 @@ class FQGAMECORE_API IFQSoulCharacterInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	virtual FTransform GetActorTransform() const abstract;
+	virtual ESoulType GetSoulType() const abstract;
 };
