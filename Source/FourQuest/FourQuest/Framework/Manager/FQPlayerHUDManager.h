@@ -17,7 +17,7 @@ class FOURQUEST_API AFQPlayerHUDManager : public AActor
 public:
 	AFQPlayerHUDManager();
 
-	void AddPlayerController(APlayerController* NewPlayer);
+	void AddPlayerController(APlayerController* NewPlayer, UUserWidget* PlayerHUDWidget);
 
 protected:
 	virtual void BeginPlay() override;
@@ -28,5 +28,5 @@ private:
 	TObjectPtr<class UUserWidget> mHUDWidget;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
-	TMap<uint8, TObjectPtr<class UUserWidget>> mPlayerHUDs;
+	TArray<TObjectPtr<class UUserWidget>> mPlayerHUDs;
 };

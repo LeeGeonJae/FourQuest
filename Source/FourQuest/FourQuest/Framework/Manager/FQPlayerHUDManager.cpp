@@ -2,6 +2,7 @@
 
 #include "FQPlayerHUDManager.h"
 #include "Components/HorizontalBox.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "FourQuest\FourQuest\Framework\InGame\FQ_GameInstance_InGame.h"
 
 AFQPlayerHUDManager::AFQPlayerHUDManager()
@@ -18,33 +19,42 @@ AFQPlayerHUDManager::AFQPlayerHUDManager()
 	}
 }
 
-void AFQPlayerHUDManager::AddPlayerController(APlayerController* NewPlayer)
+void AFQPlayerHUDManager::AddPlayerController(APlayerController* NewPlayer, UUserWidget* PlayerHUDWidget)
 {
-	if (!mHUDWidget)
+	if (mHUDWidget == nullptr)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Is Not Valid HUDWidget"));
+		UE_LOG(LogTemp, Error, TEXT("Is Not Valid HUDWidget"));
 		return;
 	}
 
 	UHorizontalBox* HorizontalBox = Cast<UHorizontalBox>(mHUDWidget->GetWidgetFromName(TEXT("PlayerHUD")));
-	if (!mHUDWidget || !HorizontalBox) return;
+	if (mHUDWidget == nullptr || HorizontalBox == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Is Not Valid HUDWidget Or HorizontalBox"));
+		return;
+	}
 
 	if (UWorld* World = NewPlayer->GetWorld())
 	{
 		// 플레이어 전용 HUD 생성
-		ConstructorHelpers::FClassFinder<UUserWidget> PlayerHUDWidget(TEXT("/Game/Blueprints/HUD/WBP_PlayerWidget.WBP_PlayerWidget_C"));
-		UUserWidget* PlayerHUD = CreateWidget<UUserWidget>(World, PlayerHUDWidget.Class);
-		if (PlayerHUD)
+		if (PlayerHUDWidget)
 		{
 			// HorizontalBox에 추가
-			HorizontalBox->AddChildToHorizontalBox(PlayerHUD);
+			UHorizontalBoxSlot* NewSlot = HorizontalBox->AddChildToHorizontalBox(PlayerHUDWidget);
+			if (NewSlot)
+			{
+				// Fill 방식 설정 (Weight = 1)
+				NewSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
+
+				// 정렬 설정 (가로, 세로 모두 중앙 정렬)
+				NewSlot->SetHorizontalAlignment(HAlign_Center);
+				NewSlot->SetVerticalAlignment(VAlign_Center);
+			}
+
+			UE_LOG(LogTemp, Log, TEXT("HorizontalBox Add PlayerHUD"));
 		}
 
-		// 플레이어 번호에 따른 HUD 저장
-		ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(NewPlayer->Player);
-		int32 ControllerId = LocalPlayer->GetControllerId();
-
-		mPlayerHUDs.Add(ControllerId, PlayerHUD);
+		mPlayerHUDs.Add(PlayerHUDWidget);
 	}
 }
 

@@ -13,4 +13,15 @@ UCLASS()
 class FOURQUEST_API AFQPlayerController_InGame : public APlayerController
 {
 	GENERATED_BODY()	
+	
+public:
+	AFQPlayerController_InGame();
+
+	virtual void BeginPlay() override;
+
+private:
+	// UI
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UUserWidget> mPlayerHUDWidget;
+
 };

@@ -18,13 +18,16 @@ void AFQGameMode_InGame::BeginPlay()
 {
     Super::BeginPlay();
 
+    // 로컬 플레이어를 추가했을 시에 카메라 분할(x) 세팅  
     if (UGameViewportClient* ViewportClient = GetWorld()->GetGameViewport())
     {
         ViewportClient->SetForceDisableSplitscreen(true);
     }
 
+    // 화면 HUD Widget 세팅
 	mPlayerHUDManager = GetWorld()->SpawnActor<AFQPlayerHUDManager>(AFQPlayerHUDManager::StaticClass());
 
+    // 플레이어 컨트롤러 세팅
     if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
     {
         // F 키를 눌러서 다른 캐릭터 컨트롤러 생성 ( 임시 테스트용 )
