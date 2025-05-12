@@ -3,3 +3,12 @@
 
 #include "FQUserWidget.h"
 
+void UFQUserWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	if (mOwningActor == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("OwnerActor Is Not Vaild"));
+	}
+}

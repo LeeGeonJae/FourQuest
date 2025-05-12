@@ -23,7 +23,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 protected:
-	// 타입별 텍스처 (에디터에서 설정 가능)
+	// Widget 게이지
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gauge")
 	class URadialSlider* mArmourChargeGauge;
 };

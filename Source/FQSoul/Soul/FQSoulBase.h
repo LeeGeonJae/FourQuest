@@ -46,41 +46,35 @@ private:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
-	//// Component
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
-	//TObjectPtr<class USpringArmComponent> mCameraBoom;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
-	//TObjectPtr<class UCameraComponent> mFollowCamera;
-
 	// Input
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> mMoveAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> mPickAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> mCancelAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> mDashAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input)
 	TObjectPtr<class UInputMappingContext> mDefaultMappingContext;
 
 	// Data
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Data)
 	TObjectPtr<class UFQSoulDataAsset> mSoulDataAsset;
 
 	// UI
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UFQWidgetComponent> mArmourGaugeWidget;
 
-
-private:
+	// Soul
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Soul, Meta = (AllowPrivateAccess = "true"))
 	ESoulType mSoulType;
 
+private:
 	// 대시 변수
 	uint8 mbIsDashing : 1;
 	FVector mDashDirection;

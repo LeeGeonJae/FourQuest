@@ -9,6 +9,7 @@
 #include "Engine/LocalPlayer.h"
 #include "FourQuest\FourQuest\Actor\FQMainCenterCamera.h"
 #include "Engine/GameViewportClient.h"
+#include "FQSoul\Soul\FQSoulBase.h"
 
 AFQGameMode_InGame::AFQGameMode_InGame()
 {
@@ -67,6 +68,11 @@ void AFQGameMode_InGame::TryCreatePlayerControllerFromKey(const FKey& PressedKey
     if (GameInstance)
     {
         const int32 ControllerId = CreatedPlayerCount + 1;
+
+        if (mSoulPlayersType.Num() > 1)
+        {
+            DefaultPawnClass = mSoulPlayersType[1];
+        }
 
         // CreateLocalPlayer는 자동으로 PlayerController를 생성하고 해당 입력을 매핑함
         FString ErrorMessage;

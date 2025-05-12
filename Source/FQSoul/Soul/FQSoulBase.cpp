@@ -13,6 +13,7 @@
 #include "Blueprint\UserWidget.h"
 #include "FQUI\FQWidgetComponent.h"
 #include "FQUI/Soul/FQSoulGaugeWidget.h"
+#include "FQGameCore\Controller\FQPlayerControllerInterface.h"
 
 AFQSoulBase::AFQSoulBase()
 {
@@ -39,20 +40,6 @@ AFQSoulBase::AFQSoulBase()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-
-	//// Camera Setup
-	//mCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	//mCameraBoom->SetupAttachment(RootComponent);
-	//mCameraBoom->TargetArmLength = 800.f;
-	//mCameraBoom->bUsePawnControlRotation = true;
-	//mCameraBoom->bInheritPitch = false;
-	//mCameraBoom->bInheritRoll = false;
-	//mCameraBoom->bInheritYaw = false;
-	//mCameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
-
-	//mFollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	//mFollowCamera->SetupAttachment(mCameraBoom, TEXT("SpringEndpoint"));
-	//mFollowCamera->bUsePawnControlRotation = false;
 
 	// Input Setup
 	ConstructorHelpers::FObjectFinder<UInputMappingContext> MappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Soul.IMC_Soul'"));

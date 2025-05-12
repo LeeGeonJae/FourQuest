@@ -30,6 +30,10 @@ public:
     FORCEINLINE int32 GetPlayerCount() const { return CreatedPlayerCount; }
 
 private:
+    // Soul
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Soul, Meta = (AllowPrivateAccess = "true"))
+    TArray<TSubclassOf<class AFQSoulBase>> mSoulPlayersType;
+
 	TObjectPtr<class AFQPlayerHUDManager> mPlayerHUDManager;
 
     // 이미 생성된 Player 수

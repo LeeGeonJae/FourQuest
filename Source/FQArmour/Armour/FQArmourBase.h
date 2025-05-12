@@ -36,7 +36,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Effect)
 	TObjectPtr<class UParticleSystemComponent> mEffect;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Armour, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Armour, Meta = (AllowPrivateAccess = "true"))
 	EArmourType mArmourType;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))

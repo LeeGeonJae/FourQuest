@@ -23,9 +23,12 @@ class FQGAMECORE_API IFQArmourInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	UFUNCTION()
 	virtual void PickArmour() abstract;
-
+	UFUNCTION()
 	virtual EArmourType GetArmourType() const abstract;
+	UFUNCTION()
 	virtual FTransform GetActorTransform() const abstract;
+	UFUNCTION()
 	virtual void SetNearestArmour(bool IsTrue) abstract;
 };
