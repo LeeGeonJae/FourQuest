@@ -13,4 +13,8 @@ void UFQWidgetComponent::InitWidget()
 	{
 		FQUserWidget->SetOwningActor(GetOwner());
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UFQWidgetComponent %d] UFQUserWidget Is Not Vaild!!"), __LINE__);
+	}
 }

@@ -8,16 +8,19 @@
 
 UFQArmourWidget::UFQArmourWidget()
 {
-
-
-
 }
 
 void UFQArmourWidget::NativeConstruct()
 {
     Super::NativeConstruct();
-    IFQArmourInterface* OwnerArmour = Cast<IFQArmourInterface>(mOwningActor);
 
+    if (mKnightArmourTexture == nullptr || mMagicArmourTexture == nullptr)
+    {
+        UE_LOG(LogTemp, Error, TEXT("KnightArmour Or MagicArmour Texture Is Null!!"));
+        return;
+    }
+
+    IFQArmourInterface* OwnerArmour = Cast<IFQArmourInterface>(mOwningActor);
     if (!OwnerArmour)
     {
         return;
@@ -36,5 +39,12 @@ void UFQArmourWidget::NativeConstruct()
     }
 
     UImage* ArmourTypeImage = Cast<UImage>(GetWidgetFromName(TEXT("ArmourType")));
-    ArmourTypeImage->SetBrushFromTexture(SelectedTexture);
+    if (ArmourTypeImage)
+    {
+        ArmourTypeImage->SetBrushFromTexture(SelectedTexture);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("ArmourTypeImage Is Not Find \'ArmourType\' Widget Component!!"));
+    }
 }

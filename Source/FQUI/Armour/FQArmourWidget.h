@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FQGameCore\Armour\CommonArmour.h"
+#include "FQGameCore\Common.h"
 #include "FQUI\FQUserWidget.h"
 #include "FQArmourWidget.generated.h"
 
