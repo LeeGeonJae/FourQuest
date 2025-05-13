@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "FQGameCore\Soul\CommonSoul.h"
+#include "FQGameCore\Common.h"
 #include "FQPlayerControllerInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
@@ -21,8 +21,6 @@ class FQGAMECORE_API IFQPlayerControllerInterface
 	GENERATED_BODY()
 
 public:
-	UFUNCTION()
 	virtual void SetSoulType(ESoulType InSoulType) abstract;
-	UFUNCTION()
-	virtual ESoulType GetSoulType() abstract;
+	virtual ESoulType GetSoulType() const abstract;
 };

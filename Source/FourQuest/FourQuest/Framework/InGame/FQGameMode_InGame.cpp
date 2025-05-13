@@ -10,9 +10,11 @@
 #include "FourQuest\FourQuest\Actor\FQMainCenterCamera.h"
 #include "Engine/GameViewportClient.h"
 #include "FQSoul\Soul\FQSoulBase.h"
+#include "FQPlayerState_InGame.h"
 
 AFQGameMode_InGame::AFQGameMode_InGame()
 {
+    mCurrentSoulType = ESoulType::Magic;
 }
 
 void AFQGameMode_InGame::BeginPlay()
@@ -23,6 +25,10 @@ void AFQGameMode_InGame::BeginPlay()
     if (UGameViewportClient* ViewportClient = GetWorld()->GetGameViewport())
     {
         ViewportClient->SetForceDisableSplitscreen(true);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("[FQGameMode_InGame %d] Faild Create Player : Current Player Count >= Max Player Count!!"), __LINE__);
     }
 
     // 화면 HUD Widget 세팅
@@ -58,20 +64,20 @@ void AFQGameMode_InGame::OnAnyKeyPressed(FKey Key)
 // 로컬 플레이어 생성 ( 임시 테스트용 함수 )
 void AFQGameMode_InGame::TryCreatePlayerControllerFromKey(const FKey& PressedKey)
 {
-    if (CreatedPlayerCount >= MaxLocalPlayers)
+    if (mCreatedPlayerCount >= mMaxLocalPlayers)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Max player count reached."));
+        UE_LOG(LogTemp, Warning, TEXT("[FQGameMode_InGame %d] Faild Create Player : Current Player Count >= Max Player Count!!"), __LINE__);
         return;
     }
 
     UGameInstance* GameInstance = GetGameInstance();
     if (GameInstance)
     {
-        const int32 ControllerId = CreatedPlayerCount + 1;
+        const int32 ControllerId = mCreatedPlayerCount + 1;
 
-        if (mSoulPlayersType.Num() > 1)
+        if (mSoulPlayersType.Num() > (uint8)mCurrentSoulType)
         {
-            DefaultPawnClass = mSoulPlayersType[1];
+            DefaultPawnClass = mSoulPlayersType[(uint8)mCurrentSoulType];
         }
 
         // CreateLocalPlayer는 자동으로 PlayerController를 생성하고 해당 입력을 매핑함
@@ -79,19 +85,40 @@ void AFQGameMode_InGame::TryCreatePlayerControllerFromKey(const FKey& PressedKey
         ULocalPlayer* NewPlayer = GameInstance->CreateLocalPlayer(ControllerId, ErrorMessage, true);
         if (NewPlayer)
         {
-            CreatedPlayerCount++;
+            mCreatedPlayerCount++;
             UE_LOG(LogTemp, Log, TEXT("Added Player %d"), ControllerId);
 
             // 카메라 세팅 ( 임시 테스트용 )
             AActor* FindActor = UGameplayStatics::GetActorOfClass(GetWorld(), AFQMainCenterCamera::StaticClass());
-            if (AFQMainCenterCamera* CameraActor = Cast<AFQMainCenterCamera>(FindActor))
+            AFQMainCenterCamera* CameraActor = Cast<AFQMainCenterCamera>(FindActor);
+            if (CameraActor)
             {
                 NewPlayer->GetPlayerController(GetWorld())->SetViewTargetWithBlend(CameraActor);
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("[FQGameMode_InGame %d] Not Find CameraActor"), __LINE__);
+            }
+
+            // 플레이어 스테이트 클래스에 소울 타입 지정
+            AFQPlayerState_InGame* FQPlayerState = NewPlayer->GetPlayerController(GetWorld())->GetPlayerState<AFQPlayerState_InGame>();
+            if (FQPlayerState)
+            {
+                FQPlayerState->SetSoulType(mCurrentSoulType);
+
+                if (mCurrentSoulType == ESoulType::Knight)
+                {
+                    UE_LOG(LogTemp, Log, TEXT("[FQGameMode_InGame %d] Create Player Soul Type Is Knight"), __LINE__);
+                }
+                else if (mCurrentSoulType == ESoulType::Magic)
+                {
+                    UE_LOG(LogTemp, Log, TEXT("[FQGameMode_InGame %d] Create Player Soul Type Is Magic"), __LINE__);
+                }
             }
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("Failed to create player for ControllerId %d"), ControllerId);
+            UE_LOG(LogTemp, Error, TEXT("[FQGameMode_InGame %d] Failed Create player for ControllerId %d"), __LINE__, ControllerId);
         }
     }
 }

@@ -8,52 +8,68 @@
 #include "FQGameCore\Soul\FQSoulCharacterInterface.h"
 #include "FQSoul\Soul\FQSoulBase.h"
 #include "FQUI/Player/FQPlayerHUDWidget.h"
+#include "FQPlayerState_InGame.h"
 
 AFQPlayerController_InGame::AFQPlayerController_InGame()
 {
 	ConstructorHelpers::FClassFinder<UUserWidget> PlayerHUDWidget(TEXT("/Game/Blueprints/HUD/WBP_PlayerWidget.WBP_PlayerWidget_C"));
 	mPlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDWidget.Class);
-	mSoulType = ESoulType::Knight;
 }
 
 void AFQPlayerController_InGame::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AFQSoulBase* SoulCharacterInterface = Cast<AFQSoulBase>(GetPawn());
-	if (SoulCharacterInterface)
+	AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
+	if (FQPlayerState == nullptr)
 	{
-		mSoulType = SoulCharacterInterface->GetSoulType();
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Is Not Vaild FQPlayerState_InGame"), __LINE__);
+		return;
 	}
 
-	Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget)->SetOwningActor(this);
+	FQPlayerState->mSoulChangeDelegate.AddLambda([&](ESoulType NewSoulType)
+		{
+			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
+			FQPlayerHUDWidget->UpdateSoulIcon(NewSoulType);
+		});
+
+	UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
+	if (FQPlayerHUDWidget)
+	{
+		FQPlayerHUDWidget->SetOwningActor(this);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Is Not Vaild UFQPlayerHUDWidget"), __LINE__);
+	}
+
 	AFQGameMode_InGame* FQGameMode = Cast<AFQGameMode_InGame>(GetWorld()->GetAuthGameMode());
 	if (FQGameMode)
 	{
 		FQGameMode->GetPlayerHUDManager()->AddPlayerController(this, mPlayerHUDWidget);
 	}
-}
-
-void AFQPlayerController_InGame::OnPossess(APawn* aPawn)
-{
-	Super::OnPossess(aPawn);
-
-	// 자신이 가진 캐릭터의 소울 타입을 가져와서 세팅
-	IFQSoulCharacterInterface* SoulCharacterInterface = Cast<IFQSoulCharacterInterface>(aPawn);
-	if (SoulCharacterInterface == nullptr)
+	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Not Find SoulCharacterInterface!!"));
-		return;
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Is Not Vaild AFQGameMode_InGame"), __LINE__);
 	}
-	mSoulType = SoulCharacterInterface->GetSoulType();
 }
 
 void AFQPlayerController_InGame::SetSoulType(ESoulType InSoulType)
 {
-	mSoulType = InSoulType;
+	AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
+	if (FQPlayerState)
+	{
+		FQPlayerState->SetSoulType(InSoulType);
+	}
 }
 
-ESoulType AFQPlayerController_InGame::GetSoulType()
+ESoulType AFQPlayerController_InGame::GetSoulType() const
 {
-	return mSoulType;
+	AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
+	if (FQPlayerState)
+	{
+		ESoulType SoulType = FQPlayerState->GetSoulType();
+		return SoulType;
+	}
+	return ESoulType::End;
 }

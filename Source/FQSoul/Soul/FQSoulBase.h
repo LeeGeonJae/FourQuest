@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "FQGameCore\Soul\FQSoulCharacterInterface.h"
 #include "InputActionValue.h"
-#include "FQGameCore\Soul/CommonSoul.h"
+#include "FQGameCore\Common.h"
 #include "FQSoulBase.generated.h"
 
 UCLASS()
@@ -24,7 +24,6 @@ public:
 
 	// IFQSoulCharacterInterface
 	virtual FTransform GetActorTransform() const override;
-	virtual ESoulType GetSoulType() const override;
 
 
 private:
@@ -69,10 +68,6 @@ protected:
 	// UI
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UFQWidgetComponent> mArmourGaugeWidget;
-
-	// Soul
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Soul, Meta = (AllowPrivateAccess = "true"))
-	ESoulType mSoulType;
 
 private:
 	// 대시 변수

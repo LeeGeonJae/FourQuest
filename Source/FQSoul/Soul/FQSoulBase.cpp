@@ -17,9 +17,6 @@
 
 AFQSoulBase::AFQSoulBase()
 {
-	// Soul
-	mSoulType = ESoulType::Knight;
-
 	// Movement State
 	mDashDirection = FVector::ZeroVector;
 	mbIsDashing = false;
@@ -272,9 +269,4 @@ void AFQSoulBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor*
 FTransform AFQSoulBase::GetActorTransform() const
 {
 	return GetTransform();
-}
-
-ESoulType AFQSoulBase::GetSoulType() const
-{
-	return mSoulType;
 }

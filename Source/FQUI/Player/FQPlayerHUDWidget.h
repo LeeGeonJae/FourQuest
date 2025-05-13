@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "FQUI/FQUserWidget.h"
+#include "FQGameCore\Common.h"
 #include "FQPlayerHUDWidget.generated.h"
 
 /**
@@ -16,6 +17,8 @@ class FQUI_API UFQPlayerHUDWidget : public UFQUserWidget
 	
 public:
 	UFQPlayerHUDWidget();
+
+    void UpdateSoulIcon(ESoulType InSoulType);
 
 protected:
     virtual void NativeConstruct() override;

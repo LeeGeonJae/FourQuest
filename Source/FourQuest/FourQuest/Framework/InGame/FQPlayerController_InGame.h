@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "FQGameCore\Controller\FQPlayerControllerInterface.h"
-#include "FQGameCore\Soul\CommonSoul.h"
+#include "FQGameCore\Common.h"
 #include "FQPlayerController_InGame.generated.h"
 
 /**
@@ -19,17 +19,16 @@ class FOURQUEST_API AFQPlayerController_InGame : public APlayerController, publi
 public:
 	AFQPlayerController_InGame();
 
-	virtual void BeginPlay() override;
-	virtual void OnPossess(APawn* aPawn) override;
-
-	// Interface
+	// Interface Class Funtion
 	virtual void SetSoulType(ESoulType InSoulType) override;
-	virtual ESoulType GetSoulType() override;
+	virtual ESoulType GetSoulType() const override;
+
+protected:
+	// Parent Class Funtion
+	virtual void BeginPlay() override;
 
 private:
-	// UI
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	// GameMode의 Horizontal Box에 추가할 Player HUD Widget
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UUserWidget> mPlayerHUDWidget;
-
-	ESoulType mSoulType;
 };

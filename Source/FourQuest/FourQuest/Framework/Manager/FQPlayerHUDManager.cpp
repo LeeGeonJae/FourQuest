@@ -8,13 +8,14 @@
 AFQPlayerHUDManager::AFQPlayerHUDManager()
 {
 	ConstructorHelpers::FClassFinder<UUserWidget> PlayerHUDWidget(TEXT("/Game/Blueprints/HUD/WBP_PlayerHUDWidget.WBP_PlayerHUDWidget_C"));
-	if (PlayerHUDWidget.Class) // UPROPERTY로 노출된 UUserWidget* 클래스를 지정
+	// UPROPERTY로 노출된 UUserWidget* 클래스를 지정
+	if (PlayerHUDWidget.Class)
 	{
 		mHUDWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDWidget.Class);
 		if (mHUDWidget)
 		{
 			mHUDWidget->AddToViewport(); // 화면에 위젯 추가
-			UE_LOG(LogTemp, Log, TEXT("Create HUD Widget And AddViewport"));
+			UE_LOG(LogTemp, Log, TEXT("[AFQPlayerHUDManager %d] Create HUD Widget And AddViewport"), __LINE__);
 		}
 	}
 }
@@ -23,14 +24,14 @@ void AFQPlayerHUDManager::AddPlayerController(APlayerController* NewPlayer, UUse
 {
 	if (mHUDWidget == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Is Not Valid HUDWidget"));
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerHUDManager %d] Is Not Valid HUDWidget!!"), __LINE__);
 		return;
 	}
 
 	UHorizontalBox* HorizontalBox = Cast<UHorizontalBox>(mHUDWidget->GetWidgetFromName(TEXT("PlayerHUD")));
 	if (mHUDWidget == nullptr || HorizontalBox == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Is Not Valid HUDWidget Or HorizontalBox"));
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerHUDManager %d] Is Not Valid HUDWidget Or HorizontalBox!!"), __LINE__);
 		return;
 	}
 
@@ -50,11 +51,15 @@ void AFQPlayerHUDManager::AddPlayerController(APlayerController* NewPlayer, UUse
 				NewSlot->SetHorizontalAlignment(HAlign_Center);
 				NewSlot->SetVerticalAlignment(VAlign_Center);
 			}
-
-			UE_LOG(LogTemp, Log, TEXT("HorizontalBox Add PlayerHUD"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerHUDManager %d] Is Not Valid PlayerHUDWidget!!"), __LINE__);
+			return;
 		}
 
 		mPlayerHUDs.Add(PlayerHUDWidget);
+		UE_LOG(LogTemp, Log, TEXT("[AFQPlayerHUDManager %d] HorizontalBox Add PlayerHUD"), __LINE__);
 	}
 }
 

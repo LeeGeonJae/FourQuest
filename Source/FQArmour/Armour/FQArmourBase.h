@@ -33,9 +33,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UStaticMeshComponent> mMesh;
 
-	UPROPERTY(VisibleAnywhere, Category = Effect)
-	TObjectPtr<class UParticleSystemComponent> mEffect;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Armour, Meta = (AllowPrivateAccess = "true"))
 	EArmourType mArmourType;
 

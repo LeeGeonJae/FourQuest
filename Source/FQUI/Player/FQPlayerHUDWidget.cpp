@@ -7,49 +7,54 @@
 #include "FQGameCore\Controller\FQPlayerControllerInterface.h"
 
 UFQPlayerHUDWidget::UFQPlayerHUDWidget()
+    : mKnightSoulTexture(nullptr)
+    , mMagicSoulTexture(nullptr)
 {
 }
 
 void UFQPlayerHUDWidget::NativeConstruct()
 {
     Super::NativeConstruct();
-    UE_LOG(LogTemp, Log, TEXT("Changed ArmourType Iamage"));
-
     if (mKnightSoulTexture == nullptr || mMagicSoulTexture == nullptr)
     {
-        UE_LOG(LogTemp, Error, TEXT("KnightArmour Or MagicArmour Texture Is Null!!"));
+        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] KnightArmour Or MagicArmour Texture Is Null!!"), __LINE__);
         return;
     }
 
-    UTexture2D* SelectedTexture = nullptr;
     IFQPlayerControllerInterface* OwnerPlayerController = Cast<IFQPlayerControllerInterface>(mOwningActor);
     if (OwnerPlayerController == nullptr)
     {
-        UE_LOG(LogTemp, Error, TEXT("Is not Casting IFQPlayerControllerInterface"));
+        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] Is not Casting IFQPlayerControllerInterface!!"), __LINE__);
         return;
     }
 
     ESoulType OwnerArmourType = OwnerPlayerController->GetSoulType();
-    switch (OwnerArmourType)
+    UpdateSoulIcon(OwnerArmourType);
+}
+
+void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
+{
+    UTexture2D* SelectedTexture = nullptr;
+    switch (InSoulType)
     {
-        case ESoulType::Knight:
+    case ESoulType::Knight:
         SelectedTexture = mKnightSoulTexture;
-        UE_LOG(LogTemp, Log, TEXT("PlayerController SoulType Is Knight"));
+        UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHUDWidget %d] PlayerHUDWidget Update KnightSoulType Icon"), __LINE__);
         break;
-		case ESoulType::Magic:
+    case ESoulType::Magic:
         SelectedTexture = mMagicSoulTexture;
-        UE_LOG(LogTemp, Log, TEXT("PlayerController SoulType Is Magic"));
+        UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHUDWidget %d] PlayerHUDWidget Update MagicSoulType Icon"), __LINE__);
         break;
     }
 
     UImage* SoulTypeImage = Cast<UImage>(GetWidgetFromName(TEXT("SoulType")));
     if (SoulTypeImage && SelectedTexture != nullptr)
     {
-        UE_LOG(LogTemp, Log, TEXT("Changed ArmourType Iamage"));
+        UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHUDWidget %d] Changed ArmourType Iamage"), __LINE__);
         SoulTypeImage->SetBrushFromTexture(SelectedTexture);
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("PlayerHUD have not \'SoulType\' Widget Component!!"));
+        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] PlayerHUD have not \'SoulType\' Widget Component!!"), __LINE__);
     }
 }
