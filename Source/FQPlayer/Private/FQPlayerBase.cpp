@@ -77,9 +77,23 @@ void AFQPlayerBase::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (mbIsDashing)
+	if (mbIsDashing && mDashCurve)
 	{
-		AddMovementInput(mDashDirection, mDashSpeed * DeltaSeconds);
+		mDashElapsedTime += DeltaSeconds;
+		float NormalizedTime = FMath::Clamp(mDashElapsedTime / mDashDuration, 0.0f, 1.0f);
+		
+		mDashDirection = GetLastMovementInputVector().GetSafeNormal();
+		if (mDashDirection.IsZero())
+		{
+			mDashDirection = GetActorForwardVector();
+		}
+
+		AddMovementInput(mDashDirection, mDashCurve->GetFloatValue(NormalizedTime));
+
+		if (mDashElapsedTime >= mDashDuration)
+		{
+			EndDash();
+		}
 	}
 }
 
@@ -97,12 +111,9 @@ void AFQPlayerBase::BeginPlay()
 
 void AFQPlayerBase::Move(const FInputActionValue& Value)
 {
-	if (mbIsDashing)
-	{
-		return;
-	}
-
 	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	//UE_LOG(LogTemp, Log, TEXT("Movement : %f, %f"), MovementVector.X, MovementVector.Y);
 	
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -130,17 +141,11 @@ void AFQPlayerBase::StartDash()
 	{
 		mbCanDash = false;
 		mbIsDashing = true;
-
-		mDashDirection = GetLastMovementInputVector().GetSafeNormal();
-		if (mDashDirection.IsZero())
-		{
-			mDashDirection = GetActorForwardVector(); 
-		}
+		mDashElapsedTime = 0.0f;
 
 		GetCharacterMovement()->MaxWalkSpeed = mDashSpeed;
-		GetCharacterMovement()->MaxAcceleration = mDashSpeed * 2;
+		GetCharacterMovement()->MaxAcceleration = 200000.0f;
 
-		GetWorld()->GetTimerManager().SetTimer(mDashTimer, this, &AFQPlayerBase::EndDash, mDashDuration, false);
 		GetWorld()->GetTimerManager().SetTimer(mDashCoolTimer, this, &AFQPlayerBase::ResetDash, mDashCoolTime, false);
 	}
 }

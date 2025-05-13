@@ -46,12 +46,14 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Dash();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "대쉬 속도"))
 	float mDashSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	float mDashDuration;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	float mDashCoolTime;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UCurveFloat> mDashCurve;
 
 	// Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", Meta = (AllowPrivateAccess = "true"))
@@ -68,10 +70,11 @@ private:
 	// 대시를 하는 중인지 확인하는 플래그
 	uint8 mbIsDashing : 1;
 
-	FTimerHandle mDashTimer;
 	FTimerHandle mDashCoolTimer;
 
 	void StartDash();
 	void EndDash();
 	void ResetDash();
+
+	float mDashElapsedTime;
 };
