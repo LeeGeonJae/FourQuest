@@ -17,9 +17,11 @@ class FOURQUEST_API AFQPlayerHUDManager : public AActor
 public:
 	AFQPlayerHUDManager();
 
+	// Common Funtion
 	void AddPlayerController(APlayerController* NewPlayer, UUserWidget* PlayerHUDWidget);
 
 protected:
+	// Parent Class Function
 	virtual void BeginPlay() override;
 
 private:

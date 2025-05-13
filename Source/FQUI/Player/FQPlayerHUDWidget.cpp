@@ -27,9 +27,6 @@ void UFQPlayerHUDWidget::NativeConstruct()
         UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] Is not Casting IFQPlayerControllerInterface!!"), __LINE__);
         return;
     }
-
-    ESoulType OwnerArmourType = OwnerPlayerController->GetSoulType();
-    UpdateSoulIcon(OwnerArmourType);
 }
 
 void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
@@ -44,6 +41,9 @@ void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
     case ESoulType::Magic:
         SelectedTexture = mMagicSoulTexture;
         UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHUDWidget %d] PlayerHUDWidget Update MagicSoulType Icon"), __LINE__);
+        break;
+    default:
+        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] SoulType Is End"), __LINE__);
         break;
     }
 

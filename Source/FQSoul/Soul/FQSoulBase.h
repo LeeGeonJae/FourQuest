@@ -17,27 +17,30 @@ class FQSOUL_API AFQSoulBase : public ACharacter, public IFQSoulCharacterInterfa
 public:
 	AFQSoulBase();
 
-	// Character
+	// Interface Class Function
+	virtual FTransform GetActorTransform() const override;
+
+protected:
+	// Parent Class Function
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// IFQSoulCharacterInterface
-	virtual FTransform GetActorTransform() const override;
-
-
 private:
+	// Common Function
 	void SetCharacterControl();
 
+	// Input Funtion
 	void Move(const FInputActionValue& Value);
 	void StartDash();
 	void SelectInteraction();
 	void CancelInteraction();
 
-	// Change Armour
+	// Change Armour Function
 	void CheckArmour(float DeltaTime);
 	class IFQArmourInterface* CheckNearArmour();
 
+	// Collision
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
 
@@ -79,8 +82,10 @@ private:
 	// 갑옷 변수
 	uint8 mbIsPressedArmourChange : 1;
 	float mArmourChangeTimer;
+
 	UPROPERTY()
 	TMap<FString, TObjectPtr<UObject>> mArmours;
+
 	UPROPERTY()
 	TObjectPtr<UObject> mCurrentArmour;
 };

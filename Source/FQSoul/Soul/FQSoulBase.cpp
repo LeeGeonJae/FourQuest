@@ -68,7 +68,7 @@ AFQSoulBase::AFQSoulBase()
 	mArmourGaugeWidget->SetupAttachment(RootComponent);
 	mArmourGaugeWidget->SetRelativeLocation(FVector(30.f, 0.f, 80.f));
 	
-	static ConstructorHelpers::FClassFinder<UUserWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/Soul/WBP_SoulArmourGaugeWidget.WBP_SoulArmourGaugeWidget_C"));
+	static ConstructorHelpers::FClassFinder<UFQSoulGaugeWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/Soul/WBP_SoulArmourGaugeWidget.WBP_SoulArmourGaugeWidget_C"));
 	check(ArmourWidgetRef.Class);
 	if (ArmourWidgetRef.Class)
 	{
@@ -77,6 +77,10 @@ AFQSoulBase::AFQSoulBase()
 		mArmourGaugeWidget->SetDrawSize(FVector2D(20.f, 20.f));
 		mArmourGaugeWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		mArmourGaugeWidget->SetVisibility(false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d] Is Not Vaild FQSoulGaugeWidget!!"), __LINE__);
 	}
 }
 
@@ -151,6 +155,7 @@ void AFQSoulBase::CheckArmour(float DeltaTime)
 {
 	IFQArmourInterface* Nearest = CheckNearArmour();
 	IFQArmourInterface* CurrentArmourInterface = Cast<IFQArmourInterface>(mCurrentArmour);
+
 	// 가장 가까운 갑옷이 다르면 취소
 	if (CurrentArmourInterface != Nearest)
 	{
@@ -181,7 +186,7 @@ void AFQSoulBase::CheckArmour(float DeltaTime)
 		}
 		else
 		{
-			UE_LOG(LogTemp, Log, TEXT("GaugeWidget is nullptr"));
+			UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d]GaugeWidget is nullptr!!"), __LINE__);
 		}
 		return;
 	}

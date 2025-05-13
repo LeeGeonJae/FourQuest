@@ -15,15 +15,15 @@ class FQARMOUR_API AFQArmourBase : public AActor, public IFQArmourInterface
 public:	
 	AFQArmourBase();
 
-	virtual void Tick(float DeltaTime) override;
-
+	// Interface Function
 	virtual void PickArmour() override;
 	virtual void SetNearestArmour(bool IsTrue) override;
 	virtual EArmourType GetArmourType() const override;
 	virtual FTransform GetActorTransform() const override;
 
 protected:
-	// Called when the game starts or when spawned
+	// Parent Class Funtion
+	virtual void Tick(float DeltaTime) override;
 	virtual void BeginPlay() override;
 
 protected:
