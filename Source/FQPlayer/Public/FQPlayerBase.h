@@ -46,12 +46,18 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Dash();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "기본 속도"))
+	float mDefaultSpeed;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "대쉬 속도"))
 	float mDashSpeed;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	float mDashDuration;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	float mDashCoolTime;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCurveFloat> mDashCurve;
 
@@ -61,6 +67,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCameraComponent> mCamera;
+
+	// Effect
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effect", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UNiagaraComponent> mEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UNiagaraSystem> mEffectSystem;
 
 private:
 	FVector mDashDirection;
@@ -77,4 +90,7 @@ private:
 	void ResetDash();
 
 	float mDashElapsedTime;
+
+	void SetInputMappingContext();
+	void SetMovement();
 };

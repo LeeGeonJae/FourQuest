@@ -10,6 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 AFQPlayerBase::AFQPlayerBase()
@@ -25,13 +26,14 @@ AFQPlayerBase::AFQPlayerBase()
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 	
-	// Movement
-	// 캐릭터 무브먼트 설정
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
-	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
+	// Input
+	mDefaultSpeed = 200.0f;
+	// Dash 
+	mDashSpeed = 500.0f;
+	mDashDuration = 0.5f;
+	mDashCoolTime = 1.0f;
+	mbCanDash = false;
+	mbIsDashing = false;
 
 	// Mesh
 	// 캐릭터 메쉬 설정
@@ -49,13 +51,10 @@ AFQPlayerBase::AFQPlayerBase()
 	mCamera->SetupAttachment(mCameraBoom, USpringArmComponent::SocketName);
 	mCamera->bUsePawnControlRotation = false;
 
-	// Input
-	// Dash 기본 설정
-	mDashSpeed = 500.0f;
-	mDashDuration = 0.5f;
-	mDashCoolTime = 1.0f;
-	mbCanDash = false;
-	mbIsDashing = false;
+	// Effect
+	mEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SoulEffect"));
+	mEffect->SetupAttachment(RootComponent);
+	mEffect->SetAutoActivate(false);
 }
 
 FTransform AFQPlayerBase::GetTransform() const
@@ -101,11 +100,17 @@ void AFQPlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Input
-	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	// Input Mapping Context 적용
+	SetInputMappingContext();
+
+	// Character Movement 기본 설정 적용
+	SetMovement();
+
+	// Effect
+	if (mEffectSystem)
 	{
-		Subsystem->AddMappingContext(mDefaultMappingContext, 0);
+		mEffect->SetAsset(mEffectSystem);
+		mEffect->Activate();
 	}
 }
 
@@ -154,11 +159,31 @@ void AFQPlayerBase::EndDash()
 {
 	mbIsDashing = false;
 
-	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
+	GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
 	GetCharacterMovement()->MaxAcceleration = 2048.0f;
 }
 
 void AFQPlayerBase::ResetDash()
 {
 	mbCanDash = true;
+}
+
+void AFQPlayerBase::SetInputMappingContext()
+{
+	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(mDefaultMappingContext, 0);
+	}
+}
+
+void AFQPlayerBase::SetMovement()
+{
+	// Movement
+	// 캐릭터 무브먼트 설정
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
+	GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
+	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 }
