@@ -8,24 +8,24 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework\SpringArmComponent.h"
 #include "Components\BoxComponent.h"
+#include "FQCameraDataAsset.h"
 
 
 AFQMainCenterCamera::AFQMainCenterCamera()
 {
-    // 카메라 줌인 줌아웃
-    mCurrentCameraZoom = 2000.f;
-    mCameraZoomMin = FVector(1920.f, 1080.f, 2000.f);
-    mCameraZoomMax = FVector(3840.f, 2160.f, 3500.f);
+    mCurrentCameraZoomValue = 2000.f;
 
-    // 카메라 줌인 줌아웃 판정 범위
-    mBaseRange = FVector2D(800.f, 1500.f);
-    mRangeMaxScale = 1.25f;
-    mRangeMinScale = 0.75f;
+    // 에셋 데이터
+    ConstructorHelpers::FObjectFinder<UFQCameraDataAsset> DataAssetRef(TEXT("/Script/FourQuest.FQCameraDataAsset'/Game/Data/DA_CameraData.DA_CameraData'"));
+    if (DataAssetRef.Succeeded()) 
+    {
+        mCameraDataAsset = DataAssetRef.Object;
+    }
 
     // 카메라 붐 컴포넌트
     mCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     mCameraBoom->SetupAttachment(RootComponent);
-    mCameraBoom->TargetArmLength = mCurrentCameraZoom;
+    mCameraBoom->TargetArmLength = mCurrentCameraZoomValue;
     mCameraBoom->bUsePawnControlRotation = true;
     
     // 카메라 컴포넌트
@@ -36,19 +36,35 @@ AFQMainCenterCamera::AFQMainCenterCamera()
     // 틱 함수 On
     PrimaryActorTick.bCanEverTick = true;
 
-    // 카메라 이동 블렌더 값
-    mCameraBlendValue = 0.5f;
-
     SetActorLocation(FVector(GetActorLocation().X, GetActorLocation().Y, 0.f));
     mCurrentCameraLocation = GetActorLocation();
+}
+
+void AFQMainCenterCamera::BeginPlay()
+{
+    Super::BeginPlay();
+
+    mCurrentCameraZoomValue = mCameraDataAsset->mCameraZoomMin;
+    mCameraBoom->TargetArmLength = mCurrentCameraZoomValue;
+
+    mFollowCamera->bDrawFrustumAllowed = true;
+    mFollowCamera->OverrideFrustumColor(FColor::Green);
 }
 
 void AFQMainCenterCamera::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    CameraMoveControl(DeltaTime);
-    CameraZoomControl(DeltaTime);
+    if (mCameraDataAsset)
+    {
+        CameraMoveControl(DeltaTime);           // 카메라 이동
+        CameraZoomControl(DeltaTime);           // 카메라 줌 컨트롤
+        CameraWallCollisionUpdate(DeltaTime);   // 카메라 벽 (시야 범위의 경계선 콜리전 설치)
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("[AFQMainCenterCamera %d] Is Not Find UFQCameraDataAsset"), __LINE__);
+    }
 }
 
 void AFQMainCenterCamera::CameraMoveControl(float DeltaTime)
@@ -59,6 +75,7 @@ void AFQMainCenterCamera::CameraMoveControl(float DeltaTime)
         return;
     }
 
+    // 플레이어 컨트롤러 확인
     TArray<APlayerController*> PlayerControllers;
     for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
     {
@@ -70,21 +87,22 @@ void AFQMainCenterCamera::CameraMoveControl(float DeltaTime)
         return;
     }
 
+    // 플레이어들의 위치 확인
     FVector Sum = FVector::ZeroVector;
-    int32 Count = 0;
     for (APlayerController* PC : PlayerControllers)
     {
         if (PC && PC->GetPawn())
         {
             Sum += PC->GetPawn()->GetActorLocation();
-            Count++;
         }
     }
 
+    // 카메라 위치 조정 (블렌더 처리)
+    int32 Count = PlayerControllers.Num();
     FVector CenterLocation = Count > 0 ? (Sum / Count) : FVector::ZeroVector;
 
     FVector TargetLocation = FVector(CenterLocation.X, CenterLocation.Y, mCurrentCameraLocation.Z); // Z는 유지
-    FVector NewLocation = FMath::VInterpTo(mCurrentCameraLocation, TargetLocation, DeltaTime, mCameraBlendValue);
+    FVector NewLocation = FMath::VInterpTo(mCurrentCameraLocation, TargetLocation, DeltaTime, mCameraDataAsset->mCameraBlendValue);
     SetActorLocation(FVector(NewLocation.X, NewLocation.Y, mCurrentCameraLocation.Z));
     mCurrentCameraLocation = NewLocation;
 }
@@ -105,24 +123,25 @@ void AFQMainCenterCamera::CameraZoomControl(float DeltaTime)
 
     // 판정 범위 계산
     FVector2D CurrentRange;
-    if (mCurrentCameraZoom > mCameraZoomMin.Z)
+    if (mCurrentCameraZoomValue > mCameraDataAsset->mCameraZoomMin)
     {
-        float ZoomAlpha = (mCurrentCameraZoom - mCameraZoomMin.Z) / (mCameraZoomMax.Z - mCameraZoomMin.Z);
+        float ZoomAlpha = (mCurrentCameraZoomValue - mCameraDataAsset->mCameraZoomMin) / (mCameraDataAsset->mCameraZoomMax - mCameraDataAsset->mCameraZoomMin);
         ZoomAlpha = FMath::Clamp(ZoomAlpha, 0.0f, 1.0f);
 
-        float RangeScale = FMath::Lerp(mRangeMinScale, mRangeMaxScale, ZoomAlpha);
-
-        CurrentRange = mBaseRange * RangeScale;
+        float RangeScale = FMath::Lerp(mCameraDataAsset->mCheckRangeMinScale, mCameraDataAsset->mCheckRangeMaxScale, ZoomAlpha);
+        CurrentRange = mCameraDataAsset->mBaseCheckRange * RangeScale;
     }
     else
     {
-        CurrentRange = mBaseRange * mRangeMinScale;
+        CurrentRange = mCameraDataAsset->mBaseCheckRange * mCameraDataAsset->mCheckRangeMinScale;
     }
     
     // 디버그 체크
     DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), FVector(CurrentRange.X, CurrentRange.Y, 0.f), FColor::Yellow);
-    DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), FVector(CurrentRange.X * mRangeMinScale, CurrentRange.Y * mRangeMinScale, 0.f), FColor::Green);
-    DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), FVector(CurrentRange.X * mRangeMaxScale, CurrentRange.Y * mRangeMaxScale, 0.f), FColor::Red);
+    DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), 
+        FVector(CurrentRange.X * mCameraDataAsset->mCheckRangeMinScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMinScale, 0.f), FColor::Green);
+    DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), 
+        FVector(CurrentRange.X * mCameraDataAsset->mCheckRangeMaxScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMaxScale, 0.f), FColor::Red);
 
     // 플레이어와 카메라 간격 계산
     float PlayerDistanceX = 0.0f;
@@ -138,21 +157,72 @@ void AFQMainCenterCamera::CameraZoomControl(float DeltaTime)
     }
 
     // 줌 인, 줌 아웃
-    if (PlayerDistanceX >= (CurrentRange.X * mRangeMaxScale) || PlayerDistanceY >= (CurrentRange.Y * mRangeMaxScale))
+    if (PlayerDistanceX >= (CurrentRange.X * mCameraDataAsset->mCheckRangeMaxScale) || PlayerDistanceY >= (CurrentRange.Y * mCameraDataAsset->mCheckRangeMaxScale))
     {
-        mCurrentCameraZoom = FMath::FInterpTo(mCurrentCameraZoom, mCameraZoomMax.Z, DeltaTime, 0.1f);
-        mCameraBoom->TargetArmLength = mCurrentCameraZoom;
+        mCurrentCameraZoomValue = FMath::FInterpTo(mCurrentCameraZoomValue, mCameraDataAsset->mCameraZoomMax, DeltaTime, mCameraDataAsset->CameraZoomSpeed);
+        mCameraBoom->TargetArmLength = mCurrentCameraZoomValue;
 
-        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] CameraZoomValue : %f"), __LINE__, mCurrentCameraZoom);
-        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] PlayerDistance : (%f, %f), CameraZoomDistance : (%f, %f)"), __LINE__, PlayerDistanceX, PlayerDistanceY, CurrentRange.X * mRangeMaxScale, CurrentRange.Y * mRangeMaxScale);
+        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] CameraZoomValue : %f"), __LINE__, mCurrentCameraZoomValue);
+        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] PlayerDistance : (%f, %f), CameraZoomDistance : (%f, %f)"), __LINE__, PlayerDistanceX, PlayerDistanceY, CurrentRange.X * mCameraDataAsset->mCheckRangeMaxScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMaxScale);
     }
-    else if (PlayerDistanceX <= (CurrentRange.X * mRangeMinScale) || PlayerDistanceY <= (CurrentRange.Y * mRangeMinScale))
+    else if (PlayerDistanceX <= (CurrentRange.X * mCameraDataAsset->mCheckRangeMinScale) || PlayerDistanceY <= (CurrentRange.Y * mCameraDataAsset->mCheckRangeMinScale))
     {
-        mCurrentCameraZoom = FMath::FInterpTo(mCurrentCameraZoom, mCameraZoomMin.Z, DeltaTime, 0.1f);
-        mCameraBoom->TargetArmLength = mCurrentCameraZoom;
+        mCurrentCameraZoomValue = FMath::FInterpTo(mCurrentCameraZoomValue, mCameraDataAsset->mCameraZoomMin, DeltaTime, mCameraDataAsset->CameraZoomSpeed);
+        mCameraBoom->TargetArmLength = mCurrentCameraZoomValue;
 
-        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] CameraZoomValue : %f"), __LINE__, mCurrentCameraZoom);
-        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] PlayerDistance : (%f, %f), CameraZoomDistance : (%f, %f)"), __LINE__, PlayerDistanceX, PlayerDistanceY, CurrentRange.X * mRangeMinScale, CurrentRange.Y * mRangeMinScale);
+        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] CameraZoomValue : %f"), __LINE__, mCurrentCameraZoomValue);
+        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] PlayerDistance : (%f, %f), CameraZoomDistance : (%f, %f)"), __LINE__, PlayerDistanceX, PlayerDistanceY, CurrentRange.X * mCameraDataAsset->mCheckRangeMinScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMinScale);
     }
+}
+
+void AFQMainCenterCamera::CameraWallCollisionUpdate(float DeltaTime)
+{
+    RaycastFrustumEdges();
+}
+
+void AFQMainCenterCamera::RaycastFrustumEdges()
+{
+    // 카메라 뷰 정보 가져오기
+    FMinimalViewInfo CameraView;
+    mFollowCamera->GetCameraView(0.f, CameraView);
+
+    // 카메라 위치 & 회전
+    FVector CameraLocation = mFollowCamera->GetComponentLocation();
+    FRotator CameraRotation = mFollowCamera->GetComponentRotation();
+
+    // FOV 및 종횡비
+    float HalfFOV = FMath::DegreesToRadians(CameraView.FOV) * 0.5f;
+    float AspectRatio = CameraView.AspectRatio;
+
+    // 방향 벡터 계산
+    FVector CameraForward = CameraRotation.Vector();
+    FVector CameraRight = FRotationMatrix(CameraRotation).GetUnitAxis(EAxis::Y);
+    FVector CameraUp = FRotationMatrix(CameraRotation).GetUnitAxis(EAxis::Z);
+
+    FVector TraceTopDirection = (CameraForward + FMath::Tan(HalfFOV) * CameraUp).GetSafeNormal();
+    FVector TraceBottomDirection = (CameraForward - FMath::Tan(HalfFOV) * CameraUp).GetSafeNormal();
+    FVector TraceRigetDirection = (CameraForward + FMath::Tan(HalfFOV) * AspectRatio * CameraRight).GetSafeNormal();
+    FVector TraceLeftDirection = (CameraForward - FMath::Tan(HalfFOV) * AspectRatio * CameraRight).GetSafeNormal();
+
+    // 디버그 및 트레이스
+    float TraceLength = 10000.0f;
+
+    auto ShootRay = [&](FVector Direction, FColor DebugColor)
+        {
+            FVector End = CameraLocation + Direction * TraceLength;
+            DrawDebugLine(GetWorld(), CameraLocation, End, DebugColor, false, 2.0f, 0, 2.0f);
+
+            FHitResult HitResult;
+            GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, End, ECC_Visibility);
+            if (HitResult.bBlockingHit)
+            {
+                DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 25.0f, 12, DebugColor, false, 2.0f);
+            }
+        };
+
+    ShootRay(TraceTopDirection, FColor::Red);
+    ShootRay(TraceBottomDirection, FColor::Green);
+    ShootRay(TraceRigetDirection, FColor::Blue);
+    ShootRay(TraceLeftDirection, FColor::Yellow);
 }
 
