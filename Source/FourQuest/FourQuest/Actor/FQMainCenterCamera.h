@@ -17,5 +17,31 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	FVector GetCenterLocationOfPlayers() const;
+	void CameraMoveControl(float DeltaTime);
+	void CameraZoomControl(float DeltaTime);
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USpringArmComponent> mCameraBoom;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UCameraComponent> mFollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
+	TMap<FName, TObjectPtr<class UBoxComponent>> mBoxComponents;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraBlend, Meta = (AllowPrivateAccess = "true"))
+	float mCameraBlendValue;
+	FVector mCurrentCameraLocation;
+
+	float mCurrentCameraZoom;
+	FVector mCameraZoomMin;
+	FVector mCameraZoomMax;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraRange, Meta = (AllowPrivateAccess = "true"))
+	FVector2D mBaseRange;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraRange, Meta = (AllowPrivateAccess = "true"))
+	float mRangeMinScale;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraRange, Meta = (AllowPrivateAccess = "true"))
+	float mRangeMaxScale;
 };
