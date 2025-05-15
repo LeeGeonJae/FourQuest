@@ -22,11 +22,15 @@ AFQMainCenterCamera::AFQMainCenterCamera()
         mCameraDataAsset = DataAssetRef.Object;
     }
 
+    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+
     // 카메라 붐 컴포넌트
     mCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     mCameraBoom->SetupAttachment(RootComponent);
     mCameraBoom->TargetArmLength = mCurrentCameraZoomValue;
     mCameraBoom->bUsePawnControlRotation = true;
+    mCameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
+    mCameraBoom->bDoCollisionTest = false;
     
     // 카메라 컴포넌트
     mFollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -38,6 +42,33 @@ AFQMainCenterCamera::AFQMainCenterCamera()
 
     SetActorLocation(FVector(GetActorLocation().X, GetActorLocation().Y, 0.f));
     mCurrentCameraLocation = GetActorLocation();
+
+    // 박스 컴포넌트
+    mTopBoxComponents = CreateDefaultSubobject<UBoxComponent>(TEXT("TopBoxComponents"));
+    mTopBoxComponents->SetupAttachment(RootComponent);
+    mTopBoxComponents->SetBoxExtent(FVector(300, 4000, 500));
+    mTopBoxComponents->SetRelativeLocation(FVector(2000, 0, 0));
+    mTopBoxComponents->SetCollisionProfileName(TEXT("CameraOutSizeCollision"));
+
+    mBottomBoxComponents = CreateDefaultSubobject<UBoxComponent>(TEXT("BottomBoxComponents"));
+    mBottomBoxComponents->SetupAttachment(RootComponent);
+    mBottomBoxComponents->SetBoxExtent(FVector(50, 4000, 500));
+    mBottomBoxComponents->SetRelativeLocation(FVector(-2000, 0, 0));
+    mBottomBoxComponents->SetCollisionProfileName(TEXT("CameraOutSizeCollision"));
+    
+    mLeftBoxComponents = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftBoxComponents"));
+    mLeftBoxComponents->SetupAttachment(RootComponent);
+    mLeftBoxComponents->SetBoxExtent(FVector(4000, 50, 500));
+    mLeftBoxComponents->SetRelativeLocation(FVector(0, -2000, 0));
+    mLeftBoxComponents->SetRelativeRotation(FRotator(0, -25, 0));
+    mLeftBoxComponents->SetCollisionProfileName(TEXT("CameraOutSizeCollision"));
+
+    mRightBoxComponents = CreateDefaultSubobject<UBoxComponent>(TEXT("RightBoxComponents"));
+    mRightBoxComponents->SetupAttachment(RootComponent);
+    mRightBoxComponents->SetBoxExtent(FVector(4000, 50, 500));
+    mRightBoxComponents->SetRelativeLocation(FVector(0, 2000, 0));
+    mRightBoxComponents->SetRelativeRotation(FRotator(0, 25, 0));
+    mRightBoxComponents->SetCollisionProfileName(TEXT("CameraOutSizeCollision"));
 }
 
 void AFQMainCenterCamera::BeginPlay()
@@ -182,47 +213,67 @@ void AFQMainCenterCamera::CameraWallCollisionUpdate(float DeltaTime)
 
 void AFQMainCenterCamera::RaycastFrustumEdges()
 {
-    // 카메라 뷰 정보 가져오기
-    FMinimalViewInfo CameraView;
-    mFollowCamera->GetCameraView(0.f, CameraView);
+    APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+    if (!PC || !mFollowCamera) return;
 
-    // 카메라 위치 & 회전
-    FVector CameraLocation = mFollowCamera->GetComponentLocation();
-    FRotator CameraRotation = mFollowCamera->GetComponentRotation();
+    // 1. Viewport 크기 가져오기
+    int32 ViewportX, ViewportY;
+    PC->GetViewportSize(ViewportX, ViewportY);
 
-    // FOV 및 종횡비
-    float HalfFOV = FMath::DegreesToRadians(CameraView.FOV) * 0.5f;
-    float AspectRatio = CameraView.AspectRatio;
+    // 2. 화면 중심 기준 Top/Bottom/Left/Right 좌표 계산
+    const float CenterX = ViewportX * 0.5f;
+    const float CenterY = ViewportY * 0.5f;
 
-    // 방향 벡터 계산
-    FVector CameraForward = CameraRotation.Vector();
-    FVector CameraRight = FRotationMatrix(CameraRotation).GetUnitAxis(EAxis::Y);
-    FVector CameraUp = FRotationMatrix(CameraRotation).GetUnitAxis(EAxis::Z);
+    TMap<EFrustumDirection, FVector2D> ScreenPoints;
+    ScreenPoints.Add(EFrustumDirection::Top, FVector2D(CenterX, 0.f));
+    ScreenPoints.Add(EFrustumDirection::Bottom, FVector2D(CenterX, ViewportY - 1.f));
+    ScreenPoints.Add(EFrustumDirection::Left, FVector2D(0.f, CenterY));
+    ScreenPoints.Add(EFrustumDirection::Right, FVector2D(ViewportX - 1.f, CenterY));
 
-    FVector TraceTopDirection = (CameraForward + FMath::Tan(HalfFOV) * CameraUp).GetSafeNormal();
-    FVector TraceBottomDirection = (CameraForward - FMath::Tan(HalfFOV) * CameraUp).GetSafeNormal();
-    FVector TraceRigetDirection = (CameraForward + FMath::Tan(HalfFOV) * AspectRatio * CameraRight).GetSafeNormal();
-    FVector TraceLeftDirection = (CameraForward - FMath::Tan(HalfFOV) * AspectRatio * CameraRight).GetSafeNormal();
+    // 3. 레이 쏠 기준점
+    FVector RayStartPoint = FMath::Lerp(GetActorLocation(), mFollowCamera->GetComponentLocation(), 1.f);
+    const float TraceLength = 10000.f;
 
-    // 디버그 및 트레이스
-    float TraceLength = 10000.0f;
+    // 4. 컴포넌트 대응
+    TMap<EFrustumDirection, UBoxComponent*> TargetBoxMap;
+    TargetBoxMap.Add(EFrustumDirection::Top, mTopBoxComponents);
+    TargetBoxMap.Add(EFrustumDirection::Bottom, mBottomBoxComponents);
+    TargetBoxMap.Add(EFrustumDirection::Left, mLeftBoxComponents);
+    TargetBoxMap.Add(EFrustumDirection::Right, mRightBoxComponents);
 
-    auto ShootRay = [&](FVector Direction, FColor DebugColor)
+    // 5. 레이 쏘기 함수
+    for (const TPair<EFrustumDirection, FVector2D>& Pair : ScreenPoints)
+    {
+        EFrustumDirection DirectionType = Pair.Key;
+        FVector2D ScreenPos = Pair.Value;
+
+        FVector WorldOrigin, WorldDirection;
+        if (PC->DeprojectScreenPositionToWorld(ScreenPos.X, ScreenPos.Y, WorldOrigin, WorldDirection))
         {
-            FVector End = CameraLocation + Direction * TraceLength;
-            DrawDebugLine(GetWorld(), CameraLocation, End, DebugColor, false, 2.0f, 0, 2.0f);
+            FVector TraceEnd = RayStartPoint + WorldDirection * TraceLength;
 
             FHitResult HitResult;
-            GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, End, ECC_Visibility);
-            if (HitResult.bBlockingHit)
+            FCollisionQueryParams Params;
+            Params.AddIgnoredActor(this);
+
+            if (GetWorld()->LineTraceSingleByChannel(HitResult, RayStartPoint, TraceEnd, ECC_Visibility, Params))
             {
-                DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 25.0f, 12, DebugColor, false, 2.0f);
+                UBoxComponent* TargetBox = TargetBoxMap[DirectionType];
+                if (TargetBox)
+                {
+                    TargetBox->SetWorldLocation(HitResult.ImpactPoint);
+                    DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 12.f, 25.f, FColor::White);
+                }
             }
-        };
 
-    ShootRay(TraceTopDirection, FColor::Red);
-    ShootRay(TraceBottomDirection, FColor::Green);
-    ShootRay(TraceRigetDirection, FColor::Blue);
-    ShootRay(TraceLeftDirection, FColor::Yellow);
+            // 디버그 라인
+            DrawDebugLine(GetWorld(), RayStartPoint, TraceEnd, FColor::White);
+        }
+    }
+
+    // 6. 디버그 박스 시각화
+    DrawDebugBox(GetWorld(), mTopBoxComponents->GetComponentLocation(), mTopBoxComponents->GetScaledBoxExtent(), mTopBoxComponents->GetComponentQuat(), FColor::Red);
+    DrawDebugBox(GetWorld(), mBottomBoxComponents->GetComponentLocation(), mBottomBoxComponents->GetScaledBoxExtent(), mBottomBoxComponents->GetComponentQuat(), FColor::Green);
+    DrawDebugBox(GetWorld(), mRightBoxComponents->GetComponentLocation(), mRightBoxComponents->GetScaledBoxExtent(), mRightBoxComponents->GetComponentQuat(), FColor::Blue);
+    DrawDebugBox(GetWorld(), mLeftBoxComponents->GetComponentLocation(), mLeftBoxComponents->GetScaledBoxExtent(), mLeftBoxComponents->GetComponentQuat(), FColor::Yellow);
 }
-

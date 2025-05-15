@@ -39,6 +39,10 @@ private:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQHUDWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class AFQPlayerHUDManager> mPlayerHUDManager;
 
+    // 씬 카메라
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQHUDWidget, Meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class AFQMainCenterCamera> mMainCamera;
+
     // 로컬 플레이어 생성 ( 임시 )
     int32 mCreatedPlayerCount = 0;      // 이미 생성된 Player 수
     int32 mMaxLocalPlayers = 4;         // 최대 로컬 플레이어 수 (원하는 수만큼 설정 가능)

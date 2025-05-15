@@ -31,6 +31,12 @@ void AFQGameMode_InGame::BeginPlay()
         UE_LOG(LogTemp, Error, TEXT("[FQGameMode_InGame %d] Faild Create Player : Current Player Count >= Max Player Count!!"), __LINE__);
     }
 
+    mMainCamera = GetWorld()->SpawnActor<AFQMainCenterCamera>(AFQMainCenterCamera::StaticClass());
+    if (mMainCamera == nullptr)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[AFQGameMode_InGame %d] Faild Create MainCamera"), __LINE__);
+    }
+
     // 화면 HUD Widget 세팅
 	mPlayerHUDManager = GetWorld()->SpawnActor<AFQPlayerHUDManager>(AFQPlayerHUDManager::StaticClass());
 
@@ -48,10 +54,13 @@ void AFQGameMode_InGame::BeginPlay()
         PC->InputComponent->BindKey(EKeys::F, IE_Pressed, this, &AFQGameMode_InGame::OnAnyKeyPressed);
 
         // 메인 카메라 세팅 ( 임시 테스트용 )
-        AActor* FindActor = UGameplayStatics::GetActorOfClass(GetWorld(), AFQMainCenterCamera::StaticClass());
-        if (AFQMainCenterCamera* CameraActor = Cast<AFQMainCenterCamera>(FindActor))
+        if (mMainCamera)
         {
-            PC->SetViewTargetWithBlend(CameraActor);
+            PC->SetViewTargetWithBlend(mMainCamera);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("[AFQGameMode_InGame %d] MainCamera Is nullptr"), __LINE__);
         }
     }
 }
@@ -89,11 +98,9 @@ void AFQGameMode_InGame::TryCreatePlayerControllerFromKey(const FKey& PressedKey
             UE_LOG(LogTemp, Log, TEXT("Added Player %d"), ControllerId);
 
             // 카메라 세팅 ( 임시 테스트용 )
-            AActor* FindActor = UGameplayStatics::GetActorOfClass(GetWorld(), AFQMainCenterCamera::StaticClass());
-            AFQMainCenterCamera* CameraActor = Cast<AFQMainCenterCamera>(FindActor);
-            if (CameraActor)
+            if (mMainCamera)
             {
-                NewPlayer->GetPlayerController(GetWorld())->SetViewTargetWithBlend(CameraActor);
+                NewPlayer->GetPlayerController(GetWorld())->SetViewTargetWithBlend(mMainCamera);
             }
             else
             {
