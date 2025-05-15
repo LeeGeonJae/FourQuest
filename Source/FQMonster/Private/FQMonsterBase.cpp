@@ -24,15 +24,17 @@ void AFQMonsterBase::BeginPlay()
 	{
 		mCurrentHP = mMonsterDataAsset->mMaxHP;
 	}
-	if (GroupID==TEXT("None"))
+	
+	for (TActorIterator<AFQMonsterManager> It(GetWorld()); It; ++It)
 	{
-		for (TActorIterator<AFQMonsterManager> It(GetWorld()); It; ++It)
-		{
-			Manager = *It;
+		Manager = *It;
+		if(GroupID==TEXT("None"))
 			It->RegisterGroup(TEXT("Default"), this);
-			break;
-		}
+		else
+			It->RegisterGroup(GroupID, this);
+		break;
 	}
+	
 }
 
 // Called every frame

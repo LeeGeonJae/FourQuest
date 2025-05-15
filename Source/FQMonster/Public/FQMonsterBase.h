@@ -39,7 +39,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	UFQMonsterDataAsset* mMonsterDataAsset;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MonsterGroup")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "MonsterGroup")
 	FName GroupID=TEXT("None");
 
 	FVector SpawnedLocation;
