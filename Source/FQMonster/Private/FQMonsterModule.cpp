@@ -1,7 +1,7 @@
 #include "FQMonsterModule.h"
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_MODULE(FDefaultGameModuleImpl, FQMonster);
+IMPLEMENT_MODULE(FFQMonster, FQMonster);
 
 void FFQMonster::StartupModule()
 {
