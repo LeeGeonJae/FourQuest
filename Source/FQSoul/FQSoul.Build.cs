@@ -6,7 +6,7 @@ public class FQSoul : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "FQGameCore", "EnhancedInput" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "FQGameCore", "EnhancedInput", "FQUI", "UMG", "Niagara" });
 
         PrivateDependencyModuleNames.AddRange(new string[] { });
     }

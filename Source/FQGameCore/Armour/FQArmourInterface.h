@@ -5,18 +5,21 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "FQGameCore/Common.h"
-#include "FQSoulCharacterInterface.generated.h"
+#include "FQArmourInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
-class UFQSoulCharacterInterface : public UInterface
+class UFQArmourInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class FQGAMECORE_API IFQSoulCharacterInterface
+class FQGAMECORE_API IFQArmourInterface
 {
 	GENERATED_BODY()
 
 public:
+	virtual void PickArmour() abstract;
+	virtual EArmourType GetArmourType() const abstract;
+	virtual void SetNearestArmour(bool IsTrue) abstract;
 	virtual FTransform GetActorTransform() const abstract;
 };
