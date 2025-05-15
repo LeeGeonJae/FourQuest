@@ -9,7 +9,15 @@
 UFQPlayerHUDWidget::UFQPlayerHUDWidget()
     : mKnightSoulTexture(nullptr)
     , mMagicSoulTexture(nullptr)
+    , mElapsedTime(0.f)
+    , mbIsSoulBurning(true)
+    , mCurrentFrameIndex()
+    , mSoulType(ESoulType::Knight)
 {
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Blue/"), TEXT("BlueSoul"), 40, mBlueSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Yellow/"), TEXT("YellowSoul"), 40, mYellowSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Green/"), TEXT("GreenSoul"), 40, mGreenSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Red/"), TEXT("RedSoul"), 40, mRedSoulBurningAnimations);
 }
 
 void UFQPlayerHUDWidget::NativeConstruct()
@@ -29,8 +37,78 @@ void UFQPlayerHUDWidget::NativeConstruct()
     }
 }
 
+void UFQPlayerHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+    Super::NativeTick(MyGeometry, InDeltaTime);
+
+	PlaySoulBurningAnimation(InDeltaTime);
+}
+
+void UFQPlayerHUDWidget::PlaySoulBurningAnimation(float DeltaTime)
+{
+    if (mbIsSoulBurning)
+    {
+        mElapsedTime += DeltaTime;
+        if (mElapsedTime < 0.03f)
+        {
+            return;
+        }
+
+        // 애니메이션 플레이
+		mElapsedTime = 0.f;
+		if (mSoulType == ESoulType::Knight)
+		{
+            if (mYellowSoulBurningAnimations.Num() <= 0)
+            {
+                UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mYellowSoulBurningAnimations Is Empty!!"), __LINE__);
+                return;
+            }
+
+			mCurrentFrameIndex = (mCurrentFrameIndex + 1) % mYellowSoulBurningAnimations.Num();
+            if (mSoulBurning)
+            {
+                mSoulBurning->SetBrushFromTexture(mYellowSoulBurningAnimations[mCurrentFrameIndex]);
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mSoulBurning Is Nullptr!!"), __LINE__);
+            }
+		}
+		else if (mSoulType == ESoulType::Magic)
+		{
+            if (mBlueSoulBurningAnimations.Num() <= 0)
+            {
+                UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mBlueSoulBurningAnimations Is Empty!!"), __LINE__);
+                return;
+            }
+
+			mCurrentFrameIndex = (mCurrentFrameIndex + 1) % mBlueSoulBurningAnimations.Num();
+            if (mBlueSoulBurningAnimations.Num() > 0 && mSoulBurning)
+            {
+                mSoulBurning->SetBrushFromTexture(mBlueSoulBurningAnimations[mCurrentFrameIndex]);
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mSoulBurning Is Nullptr!!"), __LINE__);
+            }
+		}
+    }
+    else
+    {
+        mCurrentFrameIndex = 0;
+        mElapsedTime = 0.f;
+
+        if (mSoulBurning)
+        {
+            mSoulBurning->SetVisibility(ESlateVisibility::Hidden);
+        }
+    }
+}
+
+
 void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
 {
+    mSoulType = InSoulType;
     UTexture2D* SelectedTexture = nullptr;
     switch (InSoulType)
     {
@@ -56,5 +134,25 @@ void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
     else
     {
         UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] PlayerHUD have not \'SoulType\' Widget Component!!"), __LINE__);
+    }
+}
+
+void UFQPlayerHUDWidget::LoadingSoulBurningTexture(FString Path, FString FileName, uint32 TextureSize, TArray<TObjectPtr<UTexture2D>>& SoulTextureContainer)
+{
+    for (uint32 i = 0; i < TextureSize; i++)
+    {
+        FString Number = FString::FromInt(i);
+        FString AddFileName = FileName + Number;
+        FString AssetPath = Path + AddFileName + TEXT(".") + AddFileName + TEXT("\'");
+
+        UTexture2D* Texture = LoadObject<UTexture2D>(nullptr, *AssetPath);
+        if (Texture)
+        {
+            SoulTextureContainer.Emplace(Texture);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] Failed Find Texture Path : %s"), __LINE__, *AssetPath);
+        }
     }
 }

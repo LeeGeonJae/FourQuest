@@ -193,16 +193,16 @@ void AFQMainCenterCamera::CameraZoomControl(float DeltaTime)
         mCurrentCameraZoomValue = FMath::FInterpTo(mCurrentCameraZoomValue, mCameraDataAsset->mCameraZoomMax, DeltaTime, mCameraDataAsset->CameraZoomSpeed);
         mCameraBoom->TargetArmLength = mCurrentCameraZoomValue;
 
-        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] CameraZoomValue : %f"), __LINE__, mCurrentCameraZoomValue);
-        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] PlayerDistance : (%f, %f), CameraZoomDistance : (%f, %f)"), __LINE__, PlayerDistanceX, PlayerDistanceY, CurrentRange.X * mCameraDataAsset->mCheckRangeMaxScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMaxScale);
+        //UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] CameraZoomValue : %f"), __LINE__, mCurrentCameraZoomValue);
+        //UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] PlayerDistance : (%f, %f), CameraZoomDistance : (%f, %f)"), __LINE__, PlayerDistanceX, PlayerDistanceY, CurrentRange.X * mCameraDataAsset->mCheckRangeMaxScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMaxScale);
     }
     else if (PlayerDistanceX <= (CurrentRange.X * mCameraDataAsset->mCheckRangeMinScale) || PlayerDistanceY <= (CurrentRange.Y * mCameraDataAsset->mCheckRangeMinScale))
     {
         mCurrentCameraZoomValue = FMath::FInterpTo(mCurrentCameraZoomValue, mCameraDataAsset->mCameraZoomMin, DeltaTime, mCameraDataAsset->CameraZoomSpeed);
         mCameraBoom->TargetArmLength = mCurrentCameraZoomValue;
 
-        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] CameraZoomValue : %f"), __LINE__, mCurrentCameraZoomValue);
-        UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] PlayerDistance : (%f, %f), CameraZoomDistance : (%f, %f)"), __LINE__, PlayerDistanceX, PlayerDistanceY, CurrentRange.X * mCameraDataAsset->mCheckRangeMinScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMinScale);
+        //UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] CameraZoomValue : %f"), __LINE__, mCurrentCameraZoomValue);
+        //UE_LOG(LogTemp, Log, TEXT("[AFQMainCenterCamera %d] PlayerDistance : (%f, %f), CameraZoomDistance : (%f, %f)"), __LINE__, PlayerDistanceX, PlayerDistanceY, CurrentRange.X * mCameraDataAsset->mCheckRangeMinScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMinScale);
     }
 }
 
