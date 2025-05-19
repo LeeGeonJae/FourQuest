@@ -34,4 +34,5 @@ protected:
 private:
 	float mElapsedTime;
 	uint8 mCurrentFrameIndex;
+	uint8 mCurrentSelectIndex;
 };

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "FQGameCore\Controller\FQPlayerControllerInterface.h"
+#include "FQGameCore\Player\FQPlayerControllerInterface.h"
 #include "FQGameCore\Common.h"
 #include "FQPlayerController_InGame.generated.h"
 
@@ -20,15 +20,27 @@ public:
 	AFQPlayerController_InGame();
 
 	// Interface Class Funtion
-	virtual void SetSoulType(ESoulType InSoulType) override;
-	virtual ESoulType GetSoulType() const override;
+	virtual void ChangeToArmour(EArmourType InArmourType) override;
+	virtual void ChangeToSoul() override;
 
 protected:
 	// Parent Class Funtion
 	virtual void BeginPlay() override;
 
 private:
+	void CreatePlayerCharacterByClass(TSubclassOf<class AFQPlayerBase> CharacterClass, const FTransform& SpawnTransform);
+	void CreateSoulCharacterByClass(TSubclassOf<class AFQSoulBase> CharacterClass, const FTransform& SpawnTransform);
+
+private:
 	// GameMode의 Horizontal Box에 추가할 Player HUD Widget
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UUserWidget> mPlayerHUDWidget;
+
+	UPROPERTY(EditAnywhere, Category = Character)
+	TMap<EArmourType, TSubclassOf<class AFQPlayerBase>> mPlayerArmourCharacterClasses;
+
+	UPROPERTY(EditAnywhere, Category = Character)
+	TMap<ESoulType, TSubclassOf<class AFQSoulBase>> mPlayerSoulCharacterClasses;
+
 };
+

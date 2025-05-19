@@ -3,8 +3,10 @@
 
 #include "FQPlayerHUDWidget.h"
 #include "Components\Image.h"
+#include "Components/HorizontalBox.h"
 #include "Blueprint/UserWidget.h"
-#include "FQGameCore\Controller\FQPlayerControllerInterface.h"
+#include "FQGameCore\Player\FQPlayerControllerInterface.h"
+
 
 UFQPlayerHUDWidget::UFQPlayerHUDWidget()
     : mKnightSoulTexture(nullptr)
@@ -35,6 +37,8 @@ void UFQPlayerHUDWidget::NativeConstruct()
         UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] Is not Casting IFQPlayerControllerInterface!!"), __LINE__);
         return;
     }
+
+    UpdateArmourSkill(EArmourType::End);
 }
 
 void UFQPlayerHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -134,6 +138,35 @@ void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
     else
     {
         UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] PlayerHUD have not \'SoulType\' Widget Component!!"), __LINE__);
+    }
+}
+
+void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
+{
+    if (InArmourType == EArmourType::End)
+    {
+        mSkillBox->SetVisibility(ESlateVisibility::Hidden);
+        mArmourType->SetVisibility(ESlateVisibility::Hidden);
+    }
+    else
+    {
+        mSkillBox->SetVisibility(ESlateVisibility::Visible);
+        mArmourType->SetVisibility(ESlateVisibility::Visible);
+        
+        UTexture2D* ArmourType = mArmourTypeMap[InArmourType];
+        UTexture2D* SkillX = mXSkillMap[InArmourType];
+        UTexture2D* SkillA = mASkillMap[InArmourType];
+        UTexture2D* SkillR = mRSkillMap[InArmourType];
+        if (SkillX == nullptr || SkillA == nullptr || SkillR == nullptr || ArmourType == nullptr)
+        {
+            UE_LOG(LogTemp, Error, TEXT("[UpdateArmourSkill %d] Skill Texture Is Null!!"), __LINE__);
+            return;
+        }
+
+        mArmourType->SetBrushFromTexture(ArmourType);
+        mSkill_X->SetBrushFromTexture(SkillX);
+        mSkill_A->SetBrushFromTexture(SkillA);
+        mSkill_R->SetBrushFromTexture(SkillR);
     }
 }
 

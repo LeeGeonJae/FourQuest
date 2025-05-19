@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
-#include "FQGameCore\Common.h"
+#include "FQGameCore\Player\FQPlayerStateInterface.h"
 #include "FQPlayerState_InGame.generated.h"
 
 UCLASS()
-class FOURQUEST_API AFQPlayerState_InGame : public APlayerState
+class FOURQUEST_API AFQPlayerState_InGame : public APlayerState, public IFQPlayerStateInterface
 {
 	GENERATED_BODY()
 	
@@ -17,14 +17,21 @@ public:
 
 public:
     // Delegate
-    FQSoulTypeChange mSoulChangeDelegate;
+    FQSoulTypeChangeDelegate mSoulChangeDelegate;
+    FQArmourTypeChangeDelegate mArmourChangeDelegate;
 
     // GetSet Funtion
-    FORCEINLINE ESoulType GetSoulType() const { return mSoulType; }
-    FORCEINLINE void SetSoulType(ESoulType NewType) { mSoulType = NewType; mSoulChangeDelegate.Broadcast(NewType); }
+    virtual ESoulType GetSoulType() const override { return mSoulType; }
+    virtual void SetSoulType(ESoulType NewType) override { mSoulType = NewType; mSoulChangeDelegate.Broadcast(NewType); }
+    virtual EArmourType GetArmourType() const override { return mArmourType; }
+    virtual void SetArmourType(EArmourType NewType) override { mArmourType = NewType; mArmourChangeDelegate.Broadcast(NewType); }
 
 protected:
     // Soul
     UPROPERTY(BlueprintReadOnly, Category = FQSoul)
     ESoulType mSoulType;
+
+    // Armour
+    UPROPERTY(BlueprintReadOnly, Category = FQArmour)
+    EArmourType mArmourType;
 };

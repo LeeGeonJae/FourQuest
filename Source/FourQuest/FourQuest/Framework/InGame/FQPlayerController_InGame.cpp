@@ -9,6 +9,8 @@
 #include "FQSoul\Soul\FQSoulBase.h"
 #include "FQUI/Player/FQPlayerHUDWidget.h"
 #include "FQPlayerState_InGame.h"
+#include "FQPlayer\Public\FQPlayerBase.h"
+#include "FourQuest\FourQuest\Actor\FQMainCenterCamera.h"
 
 AFQPlayerController_InGame::AFQPlayerController_InGame()
 {
@@ -20,6 +22,7 @@ void AFQPlayerController_InGame::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 플레이어 스테이트 클래스 확인
 	AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
 	if (FQPlayerState == nullptr)
 	{
@@ -27,12 +30,19 @@ void AFQPlayerController_InGame::BeginPlay()
 		return;
 	}
 
+	// HUD Widget 함수 Binding
 	FQPlayerState->mSoulChangeDelegate.AddLambda([&](ESoulType NewSoulType)
 		{
 			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
 			FQPlayerHUDWidget->UpdateSoulIcon(NewSoulType);
 		});
+	FQPlayerState->mArmourChangeDelegate.AddLambda([&](EArmourType NewArmourType)
+		{
+			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
+			FQPlayerHUDWidget->UpdateArmourSkill(NewArmourType);
+		});
 
+	// UFQPlayerHUDWidget에 소유 오브젝트 등록
 	UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
 	if (FQPlayerHUDWidget)
 	{
@@ -43,6 +53,7 @@ void AFQPlayerController_InGame::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Is Not Vaild UFQPlayerHUDWidget"), __LINE__);
 	}
 
+	// 게임 모드에 플레이어 컨트롤러 등록
 	AFQGameMode_InGame* FQGameMode = Cast<AFQGameMode_InGame>(GetWorld()->GetAuthGameMode());
 	if (FQGameMode)
 	{
@@ -54,22 +65,118 @@ void AFQPlayerController_InGame::BeginPlay()
 	}
 }
 
-void AFQPlayerController_InGame::SetSoulType(ESoulType InSoulType)
+
+
+void AFQPlayerController_InGame::ChangeToArmour(EArmourType InArmourType)
 {
-	AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
-	if (FQPlayerState)
+	APawn* PlayerCharacter = GetPawn();
+	FTransform SpawnTransform = FTransform(PlayerCharacter->GetActorTransform().GetLocation());
+	if (PlayerCharacter)
 	{
-		FQPlayerState->SetSoulType(InSoulType);
+		PlayerCharacter->Destroy();
+	}
+
+	// 사용할 블루프린트 클래스 로딩
+	TSubclassOf<AFQPlayerBase> CharacterBPClass = mPlayerArmourCharacterClasses[InArmourType];
+	if (CharacterBPClass)
+	{
+		CreatePlayerCharacterByClass(CharacterBPClass, SpawnTransform);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Failed to load character blueprint class"), __LINE__);
+	}
+
+	// 플레이어 스테이트 세팅
+	AFQPlayerState_InGame* MyPlayerState = GetPlayerState<AFQPlayerState_InGame>();
+	if (MyPlayerState)
+	{
+		MyPlayerState->SetArmourType(InArmourType);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] AFQPlayerState_InGame Is Not Vaild!!"), __LINE__);
 	}
 }
 
-ESoulType AFQPlayerController_InGame::GetSoulType() const
+void AFQPlayerController_InGame::ChangeToSoul()
 {
-	AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
-	if (FQPlayerState)
+	APawn* PlayerCharacter = GetPawn();
+	FTransform SpawnTransform = FTransform(PlayerCharacter->GetActorTransform().GetLocation());
+	if (PlayerCharacter)
 	{
-		ESoulType SoulType = FQPlayerState->GetSoulType();
-		return SoulType;
+		PlayerCharacter->Destroy();
 	}
-	return ESoulType::End;
+
+	// 플레이어 스테이트 세팅
+	AFQPlayerState_InGame* MyPlayerState = GetPlayerState<AFQPlayerState_InGame>();
+	if (MyPlayerState == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] AFQPlayerState_InGame Is Not Vaild!!"), __LINE__);
+		return;
+	}
+
+	MyPlayerState->SetArmourType(EArmourType::End);
+	ESoulType PlayerSoulType = MyPlayerState->GetSoulType();
+
+	// 사용할 블루프린트 클래스 로딩
+	TSubclassOf<AFQSoulBase> CharacterBPClass = mPlayerSoulCharacterClasses[PlayerSoulType];
+	if (CharacterBPClass)
+	{
+		CreateSoulCharacterByClass(CharacterBPClass, SpawnTransform);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Failed to load character blueprint class"), __LINE__);
+	}
+}
+
+
+
+void AFQPlayerController_InGame::CreatePlayerCharacterByClass(TSubclassOf<AFQPlayerBase> CharacterClass, const FTransform& SpawnTransform)
+{
+	if (!CharacterClass) return;
+
+	// 캐릭터 생성
+	AFQPlayerBase* NewCharacter = GetWorld()->SpawnActorDeferred<AFQPlayerBase>(CharacterClass, SpawnTransform);
+	if (NewCharacter)
+	{
+		Possess(NewCharacter);							// 플레이어 캐릭터 등록
+		NewCharacter->FinishSpawning(SpawnTransform);	// 캐릭터 초기화 끝 BeginPlay 함수 실행
+
+		// 카메라 등록
+		AFQGameMode_InGame* InGameMode = Cast<AFQGameMode_InGame>(GetWorld()->GetAuthGameMode());
+		if (InGameMode)
+		{
+			SetViewTargetWithBlend(InGameMode->GetMainCamera());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame &d] AFQGameMode_InGame Is Not Vailed!!"), __LINE__);
+		}
+	}
+}
+
+void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AFQSoulBase> CharacterClass, const FTransform& SpawnTransform)
+{
+	if (!CharacterClass) return;
+
+	// 캐릭터 생성
+	AFQSoulBase* NewCharacter = GetWorld()->SpawnActorDeferred<AFQSoulBase>(CharacterClass, SpawnTransform);
+	if (NewCharacter)
+	{
+		Possess(NewCharacter);							// 플레이어 캐릭터 등록
+		NewCharacter->FinishSpawning(SpawnTransform);	// 캐릭터 초기화 끝 BeginPlay 함수 실행
+
+		// 카메라 등록
+		AFQGameMode_InGame* InGameMode = Cast<AFQGameMode_InGame>(GetWorld()->GetAuthGameMode());
+		if (InGameMode)
+		{
+			SetViewTargetWithBlend(InGameMode->GetMainCamera());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame &d] AFQGameMode_InGame Is Not Vailed!!"), __LINE__);
+		}
+	}
 }

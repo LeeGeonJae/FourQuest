@@ -5,6 +5,12 @@
 #include "Components\Image.h"
 
 UFQTitleWidget::UFQTitleWidget()
+    : mElapsedTime(0.f)
+    , mCurrentFrameIndex(0)
+    , mCurrentSelectIndex(0)
+    , mSoulAnimations{}
+    , mSelectButton()
+    , mCurrentSelect()
 {
 }
 

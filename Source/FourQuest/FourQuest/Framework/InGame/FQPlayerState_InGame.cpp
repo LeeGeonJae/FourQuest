@@ -7,5 +7,6 @@
 
 AFQPlayerState_InGame::AFQPlayerState_InGame() 
 	: mSoulType(ESoulType::End)
+	, mArmourType(EArmourType::End)
 {
 }

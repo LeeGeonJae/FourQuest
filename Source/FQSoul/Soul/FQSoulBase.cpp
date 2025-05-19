@@ -13,7 +13,7 @@
 #include "Blueprint\UserWidget.h"
 #include "FQUI\FQWidgetComponent.h"
 #include "FQUI/Soul/FQSoulGaugeWidget.h"
-#include "FQGameCore\Controller\FQPlayerControllerInterface.h"
+#include "FQGameCore\Player\FQPlayerControllerInterface.h"
 
 AFQSoulBase::AFQSoulBase()
 {
@@ -195,8 +195,13 @@ void AFQSoulBase::CheckArmour(float DeltaTime)
 	EArmourType Type = CurrentArmourInterface->GetArmourType();
 	UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : %s"), *UEnum::GetValueAsString(Type));
 
+	IFQPlayerControllerInterface* PlayerController = Cast<IFQPlayerControllerInterface>(GetController());
+	if (PlayerController)
+	{
+		PlayerController->ChangeToArmour(Type);
+	}
+
 	CurrentArmourInterface->PickArmour();
-	CancelInteraction();
 }
 
 void AFQSoulBase::StartDash()

@@ -21,6 +21,7 @@ public:
     // GetSet Funtion
     FORCEINLINE class AFQPlayerHUDManager* GetPlayerHUDManager() const { return mPlayerHUDManager; }
     FORCEINLINE int32 GetPlayerCount() const { return mCreatedPlayerCount; }
+    FORCEINLINE class AFQMainCenterCamera* GetMainCamera() const { return mMainCamera; }
 
 protected:
     // Parent Class Funtion

@@ -4,22 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "FQGameMode_Title.generated.h"
+#include "FQGameMode_SoulSelect.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FOURQUEST_API AFQGameMode_Title : public AGameModeBase
+class FOURQUEST_API AFQGameMode_SoulSelect : public AGameModeBase
 {
 	GENERATED_BODY()
 	
 public:
-	AFQGameMode_Title();
+	AFQGameMode_SoulSelect();
 
 protected:
 	virtual void BeginPlay() override;
-
-private:
-
 };

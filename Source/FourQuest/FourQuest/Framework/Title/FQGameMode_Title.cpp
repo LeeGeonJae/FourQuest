@@ -6,3 +6,7 @@
 AFQGameMode_Title::AFQGameMode_Title()
 {
 }
+
+void AFQGameMode_Title::BeginPlay()
+{
+}
