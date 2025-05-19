@@ -35,3 +35,24 @@ void UFQPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	mNormalizedSpeed = mGroundSpeed / mMovement->GetMaxSpeed();
 	mbIsIdle = mGroundSpeed < mMovingThreshould;
 }
+
+void UFQPlayerAnimInstance::SetHitReacting(bool HitReacting)
+{
+	if (!mOwner)
+	{
+		return;
+	}
+
+	mbHitReacting = HitReacting;
+	mOwner->SetHitReacting(mbHitReacting);	
+}
+
+void UFQPlayerAnimInstance::ProcessNextSection(const FName& SectionName)
+{
+	if (!mOwner)
+	{
+		return;
+	}
+
+	mOwner->ProcessNextSection(SectionName);
+}

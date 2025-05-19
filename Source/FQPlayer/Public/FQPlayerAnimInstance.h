@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+
+#include "FQPlayer/Public/FQPlayerActionState.h"
+
 #include "FQPlayerAnimInstance.generated.h"
 
 /**
@@ -41,4 +44,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
 	float mMovingThreshould;
+
+	// Knight
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+	uint8 mbHitReacting : 1;
+
+	UFUNCTION(BlueprintCallable)
+	void SetHitReacting(bool HitReacting);
+
+	UFUNCTION(BlueprintCallable)
+	void ProcessNextSection(const FName& SectionName);
 };
