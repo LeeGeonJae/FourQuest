@@ -66,13 +66,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCurveFloat> mDashCurve;
 
-	// Camera
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class USpringArmComponent> mCameraBoom;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UCameraComponent> mCamera;
-
 	// Effect
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UNiagaraComponent> mEffect;

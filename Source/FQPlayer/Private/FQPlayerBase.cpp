@@ -42,16 +42,6 @@ AFQPlayerBase::AFQPlayerBase()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
 
-	// Camera
-	mCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	mCameraBoom->SetupAttachment(RootComponent);
-	mCameraBoom->TargetArmLength = 400.0f;
-	mCameraBoom->bUsePawnControlRotation = true;
-
-	mCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	mCamera->SetupAttachment(mCameraBoom, USpringArmComponent::SocketName);
-	mCamera->bUsePawnControlRotation = false;
-
 	// Effect
 	mEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SoulEffect"));
 	mEffect->SetupAttachment(RootComponent);
