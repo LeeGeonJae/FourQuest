@@ -16,7 +16,7 @@ void UFQArmourWidget::NativeConstruct()
 
     if (mKnightArmourTexture == nullptr || mMagicArmourTexture == nullptr)
     {
-        UE_LOG(LogTemp, Error, TEXT("KnightArmour Or MagicArmour Texture Is Null!!"));
+        UE_LOG(LogTemp, Error, TEXT("[UFQArmourWidget %d] KnightArmour Or MagicArmour Texture Is Null!!"), __LINE__);
         return;
     }
 
@@ -36,6 +36,9 @@ void UFQArmourWidget::NativeConstruct()
     case EArmourType::Magic:
         SelectedTexture = mMagicArmourTexture;
         break;
+    default:
+        UE_LOG(LogTemp, Error, TEXT("[UFQArmourWidget %d] Enum SoulType Is Null!!"), __LINE__);
+        break;
     }
 
     UImage* ArmourTypeImage = Cast<UImage>(GetWidgetFromName(TEXT("ArmourType")));
@@ -45,6 +48,6 @@ void UFQArmourWidget::NativeConstruct()
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("ArmourTypeImage Is Not Find \'ArmourType\' Widget Component!!"));
+        UE_LOG(LogTemp, Error, TEXT("[UFQArmourWidget %d] ArmourTypeImage Is Not Find \'ArmourType\' Widget Component!!"), __LINE__);
     }
 }

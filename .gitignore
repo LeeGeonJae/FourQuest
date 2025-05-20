@@ -7,6 +7,7 @@ Intermediate/
 Saved/
 Plugins/*/Binaries/
 Plugins/*/Intermediate/
+.svn/
 
 # 무시할 파일 확장자
 *.uasset

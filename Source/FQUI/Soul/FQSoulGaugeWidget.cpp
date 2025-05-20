@@ -19,5 +19,4 @@ void UFQSoulGaugeWidget::SetChargeGaugeValueSet(float InValue)
 void UFQSoulGaugeWidget::NativeConstruct()
 {
 	mArmourChargeGauge = Cast<URadialSlider>(GetWidgetFromName(TEXT("ChargeGauge")));
-
 }
