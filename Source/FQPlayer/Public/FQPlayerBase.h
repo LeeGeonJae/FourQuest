@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputActionValue.h"
 
 #include "FQGameCore/Player/FQPlayerCharacterInterface.h"
-#include "InputActionValue.h"
+#include "FQPlayer/Public/FQPlayerActionState.h"
 
 #include "FQPlayerBase.generated.h"
 
@@ -18,6 +19,7 @@ class FQPLAYER_API AFQPlayerBase : public ACharacter, public IFQPlayerCharacterI
 public:
 	// Sets default values for this character's properties
 	AFQPlayerBase();
+	virtual void Tick(float DeltaSeconds) override;
 
 	// FQPlayerCharacterInterface
 	virtual FTransform GetTransform() const override;
@@ -25,7 +27,10 @@ public:
 	// Input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void Tick(float DeltaSeconds) override;
+	// Knight
+	void SetHitReacting(bool HitReacting);
+
+	void ProcessNextSection(const FName& SectionName);
 
 protected:
 	virtual void BeginPlay() override;
@@ -41,26 +46,60 @@ protected:
 	TObjectPtr<class UInputAction> mDashAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> mInteractiveAction;
+	TObjectPtr<class UInputAction> mSwordAttackAction;
 
 	void Move(const FInputActionValue& Value);
 	void Dash();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "기본 속도"))
+	float mDefaultSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "대쉬 속도"))
 	float mDashSpeed;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	float mDashDuration;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	float mDashCoolTime;
 
-	// Camera
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class USpringArmComponent> mCameraBoom;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UCurveFloat> mDashCurve;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UCameraComponent> mCamera;
+	// Effect
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UNiagaraComponent> mEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UNiagaraSystem> mEffectSystem;
+
+	// Knight
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Knight, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UAnimMontage> mSwordAttackAnim;
+
+	void StartSwordAttack();
+	void EndSwordAttack();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Knight, Meta = (AllowPrivateAccess = "true"))
+	EKnightSwordAttackState mSwordAttackState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Knight, Meta = (AllowPrivateAccess = "true"))
+	EKnightSwordAttackComboState mSwordAttackComboState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Knight, Meta = (AllowPrivateAccess = "true"))
+	EHitState mHitState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Knight, Meta = (AllowPrivateAccess = "true"))
+	float mSwordAttackCoolTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Knight, Meta = (AllowPrivateAccess = "true"))
+	float mSwordAttackWaitTime1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Knight, Meta = (AllowPrivateAccess = "true"))
+	float mSwordAttackWaitTime2;
 
 private:
+	// Dash
 	FVector mDashDirection;
 
 	// 대시할 수 있는 상태인지 확인하는 플래그
@@ -68,10 +107,27 @@ private:
 	// 대시를 하는 중인지 확인하는 플래그
 	uint8 mbIsDashing : 1;
 
-	FTimerHandle mDashTimer;
 	FTimerHandle mDashCoolTimer;
 
 	void StartDash();
 	void EndDash();
 	void ResetDash();
+
+	float mDashElapsedTime;
+
+	// Setting
+	void SetInputMappingContext();
+	void SetMovement();
+
+	// Knight
+	FTimerHandle mKnightComboTimer;
+	FTimerHandle mKnightCoolTimer;
+
+	void ResetCombo();
+	void ResetCoolDown();
+	void ProcessSwordAttack();
+	void PressedSwordAttack();
+
+	// X 버튼을 길게 누르고 있는 상태인지 확인하는 플래그
+	uint8 mbIsPressedX : 1;
 };
