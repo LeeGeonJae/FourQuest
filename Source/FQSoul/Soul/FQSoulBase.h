@@ -35,6 +35,7 @@ private:
 	void StartDash();
 	void SelectInteraction();
 	void CancelInteraction();
+	void AddSoulGauge();		// Test Function
 
 	// Change Armour Function
 	void CheckArmour(float DeltaTime);

@@ -112,6 +112,8 @@ void AFQGameMode_InGame::TryCreatePlayerControllerFromKey(const FKey& PressedKey
             if (FQPlayerState)
             {
                 FQPlayerState->SetSoulType(mCurrentSoulType);
+                FQPlayerState->SetArmourType(EArmourType::End);
+                FQPlayerState->SetSoulGauge(0);
 
                 if (mCurrentSoulType == ESoulType::Knight)
                 {

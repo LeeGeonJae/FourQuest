@@ -14,6 +14,8 @@
 #include "FQUI\FQWidgetComponent.h"
 #include "FQUI/Soul/FQSoulGaugeWidget.h"
 #include "FQGameCore\Player\FQPlayerControllerInterface.h"
+#include "FQGameCore\Player\FQPlayerStateInterface.h"
+#include "GameFramework/PlayerState.h"
 
 AFQSoulBase::AFQSoulBase()
 {
@@ -132,6 +134,7 @@ void AFQSoulBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	Input->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQSoulBase::Move);
 	Input->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::SelectInteraction);
+	Input->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::AddSoulGauge);
 	Input->BindAction(mCancelAction, ETriggerEvent::Triggered, this, &AFQSoulBase::CancelInteraction);
 	Input->BindAction(mDashAction, ETriggerEvent::Triggered, this, &AFQSoulBase::StartDash);
 }
@@ -231,6 +234,15 @@ void AFQSoulBase::CancelInteraction()
 {
 	mArmourGaugeWidget->SetVisibility(false);
 	mbIsPressedArmourChange = false;
+}
+
+void AFQSoulBase::AddSoulGauge()
+{
+	IFQPlayerStateInterface* PlayerStateInterface = Cast<IFQPlayerStateInterface>(GetPlayerState());
+	if (PlayerStateInterface)
+	{
+		PlayerStateInterface->AddSoulGauge(5);
+	}
 }
 
 IFQArmourInterface* AFQSoulBase::CheckNearArmour()

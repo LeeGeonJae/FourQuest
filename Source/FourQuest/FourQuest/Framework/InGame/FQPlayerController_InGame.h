@@ -41,6 +41,5 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Character)
 	TMap<ESoulType, TSubclassOf<class AFQSoulBase>> mPlayerSoulCharacterClasses;
-
 };
 

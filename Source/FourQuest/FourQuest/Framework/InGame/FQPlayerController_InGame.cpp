@@ -41,6 +41,11 @@ void AFQPlayerController_InGame::BeginPlay()
 			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
 			FQPlayerHUDWidget->UpdateArmourSkill(NewArmourType);
 		});
+	FQPlayerState->mSoulGaugeDelegate.AddLambda([&](float CurrentSoulGauge)
+		{
+			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
+			FQPlayerHUDWidget->UpdateSoulGauge(CurrentSoulGauge);
+		});
 
 	// UFQPlayerHUDWidget에 소유 오브젝트 등록
 	UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);

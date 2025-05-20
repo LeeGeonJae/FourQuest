@@ -4,8 +4,10 @@
 #include "FQPlayerHUDWidget.h"
 #include "Components\Image.h"
 #include "Components/HorizontalBox.h"
+#include "Components/RadialSlider.h"
 #include "Blueprint/UserWidget.h"
 #include "FQGameCore\Player\FQPlayerControllerInterface.h"
+
 
 
 UFQPlayerHUDWidget::UFQPlayerHUDWidget()
@@ -50,7 +52,7 @@ void UFQPlayerHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 
 void UFQPlayerHUDWidget::PlaySoulBurningAnimation(float DeltaTime)
 {
-    if (mbIsSoulBurning)
+    if (mSoulBurning && mSoulBurning->GetVisibility() == ESlateVisibility::Visible)
     {
         mElapsedTime += DeltaTime;
         if (mElapsedTime < 0.03f)
@@ -62,50 +64,12 @@ void UFQPlayerHUDWidget::PlaySoulBurningAnimation(float DeltaTime)
 		mElapsedTime = 0.f;
 		if (mSoulType == ESoulType::Knight)
 		{
-            if (mYellowSoulBurningAnimations.Num() <= 0)
-            {
-                UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mYellowSoulBurningAnimations Is Empty!!"), __LINE__);
-                return;
-            }
-
-			mCurrentFrameIndex = (mCurrentFrameIndex + 1) % mYellowSoulBurningAnimations.Num();
-            if (mSoulBurning)
-            {
-                mSoulBurning->SetBrushFromTexture(mYellowSoulBurningAnimations[mCurrentFrameIndex]);
-            }
-            else
-            {
-                UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mSoulBurning Is Nullptr!!"), __LINE__);
-            }
+            UpdateSoulBurningAnimation(mYellowSoulBurningAnimations);
 		}
 		else if (mSoulType == ESoulType::Magic)
 		{
-            if (mBlueSoulBurningAnimations.Num() <= 0)
-            {
-                UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mBlueSoulBurningAnimations Is Empty!!"), __LINE__);
-                return;
-            }
-
-			mCurrentFrameIndex = (mCurrentFrameIndex + 1) % mBlueSoulBurningAnimations.Num();
-            if (mBlueSoulBurningAnimations.Num() > 0 && mSoulBurning)
-            {
-                mSoulBurning->SetBrushFromTexture(mBlueSoulBurningAnimations[mCurrentFrameIndex]);
-            }
-            else
-            {
-                UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mSoulBurning Is Nullptr!!"), __LINE__);
-            }
+            UpdateSoulBurningAnimation(mBlueSoulBurningAnimations);
 		}
-    }
-    else
-    {
-        mCurrentFrameIndex = 0;
-        mElapsedTime = 0.f;
-
-        if (mSoulBurning)
-        {
-            mSoulBurning->SetVisibility(ESlateVisibility::Hidden);
-        }
     }
 }
 
@@ -118,11 +82,9 @@ void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
     {
     case ESoulType::Knight:
         SelectedTexture = mKnightSoulTexture;
-        UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHUDWidget %d] PlayerHUDWidget Update KnightSoulType Icon"), __LINE__);
         break;
     case ESoulType::Magic:
         SelectedTexture = mMagicSoulTexture;
-        UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHUDWidget %d] PlayerHUDWidget Update MagicSoulType Icon"), __LINE__);
         break;
     default:
         UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] SoulType Is End"), __LINE__);
@@ -132,7 +94,6 @@ void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
     UImage* SoulTypeImage = Cast<UImage>(GetWidgetFromName(TEXT("SoulType")));
     if (SoulTypeImage && SelectedTexture != nullptr)
     {
-        UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHUDWidget %d] Changed ArmourType Iamage"), __LINE__);
         SoulTypeImage->SetBrushFromTexture(SelectedTexture);
     }
     else
@@ -159,7 +120,7 @@ void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
         UTexture2D* SkillR = mRSkillMap[InArmourType];
         if (SkillX == nullptr || SkillA == nullptr || SkillR == nullptr || ArmourType == nullptr)
         {
-            UE_LOG(LogTemp, Error, TEXT("[UpdateArmourSkill %d] Skill Texture Is Null!!"), __LINE__);
+            UE_LOG(LogTemp, Error, TEXT("[UpdateArmourSkill %d] Skill Or ArmourType Texture Is Null!!"), __LINE__);
             return;
         }
 
@@ -169,6 +130,32 @@ void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
         mSkill_R->SetBrushFromTexture(SkillR);
     }
 }
+
+void UFQPlayerHUDWidget::UpdateSoulGauge(float GaugeValue)
+{
+    UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHUDWidget %d] GaugeValue : %f"), __LINE__, GaugeValue);
+    mSoulGauge->SetValue(GaugeValue);
+
+    if (GaugeValue >= 1.f)
+    {
+        if (mSoulBurning)
+        {
+            mSoulBurning->SetVisibility(ESlateVisibility::Visible);
+        }
+    }
+    else
+    {
+        mCurrentFrameIndex = 0;
+        mElapsedTime = 0.f;
+
+        if (mSoulBurning)
+        {
+            mSoulBurning->SetVisibility(ESlateVisibility::Hidden);
+        }
+    }
+}
+
+
 
 void UFQPlayerHUDWidget::LoadingSoulBurningTexture(FString Path, FString FileName, uint32 TextureSize, TArray<TObjectPtr<UTexture2D>>& SoulTextureContainer)
 {
@@ -187,5 +174,24 @@ void UFQPlayerHUDWidget::LoadingSoulBurningTexture(FString Path, FString FileNam
         {
             UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] Failed Find Texture Path : %s"), __LINE__, *AssetPath);
         }
+    }
+}
+
+void UFQPlayerHUDWidget::UpdateSoulBurningAnimation(TArray<UTexture2D*> SoulAnimationKey)
+{
+    if (SoulAnimationKey.Num() <= 0)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] SoulAnimationKey Is Empty!!"), __LINE__);
+        return;
+    }
+
+    mCurrentFrameIndex = (mCurrentFrameIndex + 1) % SoulAnimationKey.Num();
+    if (mSoulBurning)
+    {
+        mSoulBurning->SetBrushFromTexture(SoulAnimationKey[mCurrentFrameIndex]);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mSoulBurning Is Nullptr!!"), __LINE__);
     }
 }

@@ -20,6 +20,7 @@ public:
 
     void UpdateSoulIcon(ESoulType InSoulType);
     void UpdateArmourSkill(EArmourType InArmourType);
+    void UpdateSoulGauge(float GaugeValue);
 
 protected:
     virtual void NativeConstruct() override;
@@ -28,6 +29,7 @@ protected:
 private:
     void PlaySoulBurningAnimation(float DeltaTime);
     void LoadingSoulBurningTexture(FString Path, FString FileName, uint32 TextureSize, TArray<TObjectPtr<UTexture2D>>& SoulTextureContainer);
+    void UpdateSoulBurningAnimation(TArray<UTexture2D*> SoulAnimationKey);
 
 protected:
     // 영혼 타입별 이미지 (에디터에서 설정 가능)
@@ -69,9 +71,11 @@ private:
     uint8 mCurrentFrameIndex;
     ESoulType mSoulType;
 
-    // SoulBurning Effect
+    // SoulBurning
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<class UImage> mSoulBurning;
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<class URadialSlider> mSoulGauge;
 
     // Armour Skill
     UPROPERTY(meta = (BindWidget))
