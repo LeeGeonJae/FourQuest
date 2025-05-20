@@ -33,6 +33,7 @@ AFQMonsterAIController::AFQMonsterAIController()
 void AFQMonsterAIController::SetTargetActor(AActor* Actor)
 {
     GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
+    GetBlackboardComponent()->SetValueAsEnum(TEXT("CurrentState"), (uint8)EMonsterState::Chase);
 }
 
 void AFQMonsterAIController::BeginPlay()
