@@ -22,7 +22,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQAnimation)
 	TArray<TObjectPtr<UTexture2D>> mSoulAnimations;
 
 	UPROPERTY(meta = (BindWidget))

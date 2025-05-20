@@ -1,21 +1,23 @@
 ﻿// Copyright (Your Project)
 
 #include "FQSoulBase.h"
+
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PlayerState.h"
 #include "Camera/CameraComponent.h"
+#include "Blueprint\UserWidget.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "FQSoul/Data/FQSoulDataAsset.h"
+
+#include "FQSoulDataAsset.h"
 #include "FQGameCore/Armour/FQArmourInterface.h"
-#include "Blueprint\UserWidget.h"
-#include "FQUI\FQWidgetComponent.h"
-#include "FQUI/Soul/FQSoulGaugeWidget.h"
 #include "FQGameCore\Player\FQPlayerControllerInterface.h"
 #include "FQGameCore\Player\FQPlayerStateInterface.h"
-#include "GameFramework/PlayerState.h"
+#include "FQUI\FQWidgetComponent.h"
+#include "FQUI/Soul/FQSoulGaugeWidget.h"
 
 AFQSoulBase::AFQSoulBase()
 {

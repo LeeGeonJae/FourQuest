@@ -33,36 +33,36 @@ private:
 
 protected:
     // 영혼 타입별 이미지 (에디터에서 설정 가능)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Soul")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
     TObjectPtr<UTexture2D> mKnightSoulTexture;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Soul")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
     TObjectPtr<UTexture2D> mMagicSoulTexture;
     
     // Soul Burning Animation
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Soul")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
     TArray<TObjectPtr<UTexture2D>> mBlueSoulBurningAnimations;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Soul")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
     TArray<TObjectPtr<UTexture2D>> mYellowSoulBurningAnimations;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Soul")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
     TArray<TObjectPtr<UTexture2D>> mRedSoulBurningAnimations;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Soul")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
     TArray<TObjectPtr<UTexture2D>> mGreenSoulBurningAnimations;
 
     // Armour Skill 이미지
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armour")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
     TMap<EArmourType, TObjectPtr<UTexture2D>> mArmourTypeMap;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armour")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
     TMap<EArmourType, TObjectPtr<UTexture2D>> mXSkillMap;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armour")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
     TMap<EArmourType, TObjectPtr<UTexture2D>> mASkillMap;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armour")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
     TMap<EArmourType, TObjectPtr<UTexture2D>> mRSkillMap;
 
 private:

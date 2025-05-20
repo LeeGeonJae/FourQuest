@@ -2,12 +2,13 @@
 
 
 #include "FQPlayerHUDWidget.h"
+
 #include "Components\Image.h"
 #include "Components/HorizontalBox.h"
 #include "Components/RadialSlider.h"
 #include "Blueprint/UserWidget.h"
-#include "FQGameCore\Player\FQPlayerControllerInterface.h"
 
+#include "FQGameCore\Player\FQPlayerControllerInterface.h"
 
 
 UFQPlayerHUDWidget::UFQPlayerHUDWidget()

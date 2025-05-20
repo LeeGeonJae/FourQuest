@@ -2,8 +2,10 @@
 
 
 #include "FQArmourWidget.h"
+
 #include "Components\Image.h"
 #include "Blueprint/UserWidget.h"
+
 #include "FQGameCore\Armour\FQArmourInterface.h"
 
 UFQArmourWidget::UFQArmourWidget()

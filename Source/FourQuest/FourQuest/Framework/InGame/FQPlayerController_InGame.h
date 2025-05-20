@@ -22,6 +22,7 @@ public:
 	// Interface Class Funtion
 	virtual void ChangeToArmour(EArmourType InArmourType) override;
 	virtual void ChangeToSoul() override;
+	virtual void SetupInputComponent() override;
 
 protected:
 	// Parent Class Funtion
@@ -33,13 +34,13 @@ private:
 
 private:
 	// GameMode의 Horizontal Box에 추가할 Player HUD Widget
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UUserWidget> mPlayerHUDWidget;
 
-	UPROPERTY(EditAnywhere, Category = Character)
+	UPROPERTY(EditAnywhere, Category = FQCharacter, Meta = (AllowPrivateAccess = "true"))
 	TMap<EArmourType, TSubclassOf<class AFQPlayerBase>> mPlayerArmourCharacterClasses;
 
-	UPROPERTY(EditAnywhere, Category = Character)
+	UPROPERTY(EditAnywhere, Category = FQCharacter, Meta = (AllowPrivateAccess = "true"))
 	TMap<ESoulType, TSubclassOf<class AFQSoulBase>> mPlayerSoulCharacterClasses;
 };
 

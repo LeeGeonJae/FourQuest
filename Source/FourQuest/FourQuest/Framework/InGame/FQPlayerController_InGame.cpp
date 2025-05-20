@@ -2,20 +2,29 @@
 
 
 #include "FQPlayerController_InGame.h"
+
 #include "Blueprint/UserWidget.h"
-#include "FQGameMode_InGame.h"
-#include "FourQuest\FourQuest\Framework\Manager\FQPlayerHUDManager.h"
+
 #include "FQGameCore\Soul\FQSoulCharacterInterface.h"
-#include "FQSoul\Soul\FQSoulBase.h"
-#include "FQUI/Player/FQPlayerHUDWidget.h"
+#include "FQGameMode_InGame.h"
 #include "FQPlayerState_InGame.h"
-#include "FQPlayer\Public\FQPlayerBase.h"
+#include "FourQuest\FourQuest\Framework\Manager\FQPlayerHUDManager.h"
 #include "FourQuest\FourQuest\Actor\FQMainCenterCamera.h"
+#include "FQSoul\public\FQSoulBase.h"
+#include "FQPlayer\Public\FQPlayerBase.h"
+#include "FQUI/Player/FQPlayerHUDWidget.h"
 
 AFQPlayerController_InGame::AFQPlayerController_InGame()
 {
 	ConstructorHelpers::FClassFinder<UUserWidget> PlayerHUDWidget(TEXT("/Game/Blueprints/HUD/WBP_PlayerWidget.WBP_PlayerWidget_C"));
-	mPlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDWidget.Class);
+	if (PlayerHUDWidget.Class)
+	{
+		mPlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDWidget.Class);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Faild Load Path : /Game/Blueprints/HUD/WBP_PlayerWidget.WBP_PlayerWidget"), __LINE__);
+	}
 }
 
 void AFQPlayerController_InGame::BeginPlay()
@@ -112,6 +121,11 @@ void AFQPlayerController_InGame::ChangeToSoul()
 	{
 		PlayerCharacter->Destroy();
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Character Is nullptr"), __LINE__);
+		return;
+	}
 
 	// 플레이어 스테이트 세팅
 	AFQPlayerState_InGame* MyPlayerState = GetPlayerState<AFQPlayerState_InGame>();
@@ -134,6 +148,11 @@ void AFQPlayerController_InGame::ChangeToSoul()
 	{
 		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Failed to load character blueprint class"), __LINE__);
 	}
+}
+
+void AFQPlayerController_InGame::SetupInputComponent()
+{
+
 }
 
 

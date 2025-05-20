@@ -1,16 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FQGameMode_InGame.h"
-#include "FQ_GameInstance_InGame.h"
-#include "FourQuest\FourQuest\Framework\Manager/FQPlayerHUDManager.h"
-#include "GameFramework/PlayerController.h"
-#include "Kismet/GameplayStatics.h"
-#include "GameFramework/PlayerInput.h"
-#include "Engine/LocalPlayer.h"
-#include "FourQuest\FourQuest\Actor\FQMainCenterCamera.h"
+
 #include "Engine/GameViewportClient.h"
-#include "FQSoul\Soul\FQSoulBase.h"
+#include "Engine/LocalPlayer.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerInput.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "FQ_GameInstance_InGame.h"
 #include "FQPlayerState_InGame.h"
+#include "FourQuest\FourQuest\Framework\Manager/FQPlayerHUDManager.h"
+#include "FourQuest\FourQuest\Actor\FQMainCenterCamera.h"
+#include "FQSoul/public/FQSoulBase.h"
 
 AFQGameMode_InGame::AFQGameMode_InGame()
 {

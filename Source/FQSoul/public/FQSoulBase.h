@@ -50,27 +50,27 @@ private:
 
 protected:
 	// Input
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> mMoveAction;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> mPickAction;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> mCancelAction;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> mDashAction;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FQInput)
 	TObjectPtr<class UInputMappingContext> mDefaultMappingContext;
 
 	// Data
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Data)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FQData)
 	TObjectPtr<class UFQSoulDataAsset> mSoulDataAsset;
 
 	// UI
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UFQWidgetComponent> mArmourGaugeWidget;
 
 private:

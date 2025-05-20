@@ -24,6 +24,6 @@ protected:
 
 protected:
 	// Widget 게이지
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gauge")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQGauge)
 	class URadialSlider* mArmourChargeGauge;
 };

@@ -2,7 +2,9 @@
 
 
 #include "FQTitleWidget.h"
+
 #include "Components\Image.h"
+
 
 UFQTitleWidget::UFQTitleWidget()
     : mElapsedTime(0.f)

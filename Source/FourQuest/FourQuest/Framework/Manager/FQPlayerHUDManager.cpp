@@ -1,8 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FQPlayerHUDManager.h"
+
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
+
 #include "FourQuest\FourQuest\Framework\InGame\FQ_GameInstance_InGame.h"
 
 AFQPlayerHUDManager::AFQPlayerHUDManager()

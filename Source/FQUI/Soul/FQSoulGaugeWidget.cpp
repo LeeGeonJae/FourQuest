@@ -2,6 +2,7 @@
 
 
 #include "FQSoulGaugeWidget.h"
+
 #include "Components\RadialSlider.h"
 
 UFQSoulGaugeWidget::UFQSoulGaugeWidget()
