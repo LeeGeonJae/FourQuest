@@ -3,7 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "GameFramework/PlayerController.h"
+#include "Engine\TimerHandle.h"
+#include "InputActionValue.h"
+
 #include "FQGameCore\Player\FQPlayerControllerInterface.h"
 #include "FQGameCore\Common.h"
 #include "FQPlayerController_InGame.generated.h"
@@ -32,7 +36,27 @@ private:
 	void CreatePlayerCharacterByClass(TSubclassOf<class AFQPlayerBase> CharacterClass, const FTransform& SpawnTransform);
 	void CreateSoulCharacterByClass(TSubclassOf<class AFQSoulBase> CharacterClass, const FTransform& SpawnTransform);
 
+	// UI Widget Input
+	void HandlePickButton();
+	void HandleCancelButton();
+	void HandleMoveTriggered(const FInputActionValue& Value);
+	void HandleMoveCompleted(const FInputActionValue& Value);
+	void DoMove();
+
 private:
+	// Input
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> mMoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> mPickAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> mCancelAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputMappingContext> mDefaultMappingContext;
+
 	// GameMode의 Horizontal Box에 추가할 Player HUD Widget
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UUserWidget> mPlayerHUDWidget;
@@ -42,5 +66,10 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = FQCharacter, Meta = (AllowPrivateAccess = "true"))
 	TMap<ESoulType, TSubclassOf<class AFQSoulBase>> mPlayerSoulCharacterClasses;
+
+private:
+	uint8 mbIsMoveKeyHeld : 1;
+	FVector2D mMoveDirection;
+	FTimerHandle mRepeatMoveTimerHandle;
 };
 

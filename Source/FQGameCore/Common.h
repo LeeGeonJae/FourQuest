@@ -3,7 +3,7 @@
 UENUM()
 enum class EArmourType : uint8
 {
-	Knight,
+	Knight = 0,
 	Magic,
 	End
 };
@@ -11,8 +11,21 @@ enum class EArmourType : uint8
 UENUM()
 enum class ESoulType : uint8
 {
-	Knight,
+	Knight = 0,
 	Magic,
+	End
+};
+
+UENUM()
+enum class EWidgetInputType : uint8
+{
+	None = 0,
+	Left,
+	Right,
+	Up,
+	Down,
+	Select,
+	Cancel,
 	End
 };
 

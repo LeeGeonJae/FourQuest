@@ -4,8 +4,14 @@
 #include "FQPlayerController_InGame.h"
 
 #include "Blueprint/UserWidget.h"
+#include "GameFramework/GameModeBase.h"
+#include "GameFramework/Actor.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+#include "InputAction.h"
 
 #include "FQGameCore\Soul\FQSoulCharacterInterface.h"
+#include "FQGameCore\GameMode\FQGameModeInterface.h"
 #include "FQGameMode_InGame.h"
 #include "FQPlayerState_InGame.h"
 #include "FourQuest\FourQuest\Framework\Manager\FQPlayerHUDManager.h"
@@ -30,6 +36,12 @@ AFQPlayerController_InGame::AFQPlayerController_InGame()
 void AFQPlayerController_InGame::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Local Player Subsystem에 MappingContext 추가
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(mDefaultMappingContext, 0);
+	}
 
 	// 플레이어 스테이트 클래스 확인
 	AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
@@ -152,7 +164,20 @@ void AFQPlayerController_InGame::ChangeToSoul()
 
 void AFQPlayerController_InGame::SetupInputComponent()
 {
+	Super::SetupInputComponent();
 
+	// EnhancedInputComponent 사용
+	UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent);
+	if (EnhancedInput == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] InputComponent Is nullptr"), __LINE__);
+		return;
+	}
+
+	EnhancedInput->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQPlayerController_InGame::HandlePickButton);
+	EnhancedInput->BindAction(mCancelAction, ETriggerEvent::Triggered, this, &AFQPlayerController_InGame::HandleCancelButton);
+	EnhancedInput->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQPlayerController_InGame::HandleMoveTriggered);
+	EnhancedInput->BindAction(mMoveAction, ETriggerEvent::Completed, this, &AFQPlayerController_InGame::HandleMoveCompleted);
 }
 
 
@@ -202,5 +227,81 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 		{
 			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame &d] AFQGameMode_InGame Is Not Vailed!!"), __LINE__);
 		}
+	}
+}
+
+void AFQPlayerController_InGame::HandlePickButton()
+{
+	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
+	if (MyGameMode)
+	{
+		MyGameMode->SelectInteraction();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] MyGameModeInterface Is nullptr"), __LINE__);
+	}
+}
+
+void AFQPlayerController_InGame::HandleCancelButton()
+{
+	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
+	if (MyGameMode)
+	{
+		MyGameMode->CancelInteraction();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] MyGameModeInterface Is nullptr"), __LINE__);
+	}
+}
+
+void AFQPlayerController_InGame::HandleMoveTriggered(const FInputActionValue& Value)
+{
+	// 방향 업데이트
+	mMoveDirection = Value.Get<FVector2D>();
+
+	if (mbIsMoveKeyHeld)
+	{
+		return;
+	}
+	if (FMath::Abs(mMoveDirection.X) >= 0.8f || FMath::Abs(mMoveDirection.Y) >= 0.8f)
+	{
+		mbIsMoveKeyHeld = true;
+		DoMove();
+	}
+
+	// 반복 타이머 설정 (무조건 실행)
+	GetWorldTimerManager().SetTimer(
+		mRepeatMoveTimerHandle,
+		this,
+		&AFQPlayerController_InGame::DoMove,
+		0.2f,
+		true,
+		1.0f
+	);
+}
+
+void AFQPlayerController_InGame::HandleMoveCompleted(const FInputActionValue& Value)
+{
+	mbIsMoveKeyHeld = false;
+	GetWorldTimerManager().ClearTimer(mRepeatMoveTimerHandle);
+}
+
+void AFQPlayerController_InGame::DoMove()
+{
+	if (FMath::Abs(mMoveDirection.X) < 0.8f && FMath::Abs(mMoveDirection.Y) < 0.8f)
+	{
+		return;
+	}
+
+	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
+	if (MyGameMode)
+	{
+		MyGameMode->MoveButton(mMoveDirection);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] MyGameModeInterface Is nullptr"), __LINE__);
 	}
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "FQUI/FQUserWidget.h"
+#include "FQGameCore\Common.h"
 #include "FQTitleWidget.generated.h"
 
 /**
@@ -17,9 +18,19 @@ class FQUI_API UFQTitleWidget : public UFQUserWidget
 public:
 	UFQTitleWidget();
 
+	// Input Function
+	void WidgetInput(EWidgetInputType InputType);
+
 protected:
+	// Parent Function
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+private:
+	// Common Function
+	void MoveIndex(EWidgetInputType InputType);
+	void SelectButton();
+	void CancelButton();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQAnimation)
@@ -34,5 +45,7 @@ protected:
 private:
 	float mElapsedTime;
 	uint8 mCurrentFrameIndex;
+
 	uint8 mCurrentSelectIndex;
+	uint8 mMaxSelectIndex;
 };

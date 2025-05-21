@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "FQUI/FQUserWidget.h"
+#include "FQGameCore\Common.h"
 #include "FQSoulSelectWidget.generated.h"
 
 /**
@@ -17,6 +18,19 @@ class FQUI_API UFQSoulSelectWidget : public UFQUserWidget
 public:
 	UFQSoulSelectWidget();
 
+	// Input Function
+	void WidgetInput(EWidgetInputType InputType);
+
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+private:
+	// Common Function
+	void MoveIndex(EWidgetInputType InputType);
+	void SelectButton();
+	void CancelButton();
+
+private:
+
 };
