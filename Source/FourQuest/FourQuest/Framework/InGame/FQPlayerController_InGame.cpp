@@ -19,6 +19,7 @@
 #include "FQSoul\public\FQSoulBase.h"
 #include "FQPlayer\Public\FQPlayerBase.h"
 #include "FQUI/Player/FQPlayerHUDWidget.h"
+#include "FQGameCore\Player\FQPlayerInputDataAsset.h"
 
 AFQPlayerController_InGame::AFQPlayerController_InGame()
 {
@@ -33,16 +34,8 @@ AFQPlayerController_InGame::AFQPlayerController_InGame()
 	}
 }
 
-void AFQPlayerController_InGame::BeginPlay()
+void AFQPlayerController_InGame::UpdateHUDSetting()
 {
-	Super::BeginPlay();
-
-	// Local Player Subsystem에 MappingContext 추가
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-	{
-		Subsystem->AddMappingContext(mDefaultMappingContext, 0);
-	}
-
 	// 플레이어 스테이트 클래스 확인
 	AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
 	if (FQPlayerState == nullptr)
@@ -84,10 +77,31 @@ void AFQPlayerController_InGame::BeginPlay()
 	if (FQGameMode)
 	{
 		FQGameMode->GetPlayerHUDManager()->AddPlayerController(this, mPlayerHUDWidget);
+
+		AFQMainCenterCamera* Camera = FQGameMode->GetMainCamera();
+		if (Camera)
+		{
+			SetViewTargetWithBlend(Camera);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Not Find CameraActor!!"), __LINE__);
+		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Is Not Vaild AFQGameMode_InGame"), __LINE__);
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Is Not Vaild AFQGameMode_InGame!!"), __LINE__);
+	}
+}
+
+void AFQPlayerController_InGame::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Local Player Subsystem에 MappingContext 추가
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(mPlayerInputDataAsset->mDefaultMappingContext, 0);
 	}
 }
 
@@ -174,10 +188,17 @@ void AFQPlayerController_InGame::SetupInputComponent()
 		return;
 	}
 
-	EnhancedInput->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQPlayerController_InGame::HandlePickButton);
-	EnhancedInput->BindAction(mCancelAction, ETriggerEvent::Triggered, this, &AFQPlayerController_InGame::HandleCancelButton);
-	EnhancedInput->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQPlayerController_InGame::HandleMoveTriggered);
-	EnhancedInput->BindAction(mMoveAction, ETriggerEvent::Completed, this, &AFQPlayerController_InGame::HandleMoveCompleted);
+	if (mPlayerInputDataAsset)
+	{
+		EnhancedInput->BindAction(mPlayerInputDataAsset->mAButtonAction, ETriggerEvent::Started, this, &AFQPlayerController_InGame::HandlePickButton);
+		EnhancedInput->BindAction(mPlayerInputDataAsset->mBButtonAction, ETriggerEvent::Started, this, &AFQPlayerController_InGame::HandleCancelButton);
+		EnhancedInput->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Triggered, this, &AFQPlayerController_InGame::HandleMoveTriggered);
+		EnhancedInput->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Completed, this, &AFQPlayerController_InGame::HandleMoveCompleted);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] mPlayerInputDataAsset Is Not Vaild!!"), __LINE__);
+	}
 }
 
 
@@ -214,8 +235,8 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 	AFQSoulBase* NewCharacter = GetWorld()->SpawnActorDeferred<AFQSoulBase>(CharacterClass, SpawnTransform);
 	if (NewCharacter)
 	{
-		Possess(NewCharacter);							// 플레이어 캐릭터 등록
 		NewCharacter->FinishSpawning(SpawnTransform);	// 캐릭터 초기화 끝 BeginPlay 함수 실행
+		Possess(NewCharacter);							// 플레이어 캐릭터 등록
 
 		// 카메라 등록
 		AFQGameMode_InGame* InGameMode = Cast<AFQGameMode_InGame>(GetWorld()->GetAuthGameMode());
@@ -237,10 +258,6 @@ void AFQPlayerController_InGame::HandlePickButton()
 	{
 		MyGameMode->SelectInteraction();
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] MyGameModeInterface Is nullptr"), __LINE__);
-	}
 }
 
 void AFQPlayerController_InGame::HandleCancelButton()
@@ -249,10 +266,6 @@ void AFQPlayerController_InGame::HandleCancelButton()
 	if (MyGameMode)
 	{
 		MyGameMode->CancelInteraction();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] MyGameModeInterface Is nullptr"), __LINE__);
 	}
 }
 
@@ -299,9 +312,5 @@ void AFQPlayerController_InGame::DoMove()
 	if (MyGameMode)
 	{
 		MyGameMode->MoveButton(mMoveDirection);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] MyGameModeInterface Is nullptr"), __LINE__);
 	}
 }

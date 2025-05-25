@@ -20,7 +20,6 @@ public:
     
     // GetSet Funtion
     FORCEINLINE class AFQPlayerHUDManager* GetPlayerHUDManager() const { return mPlayerHUDManager; }
-    FORCEINLINE int32 GetPlayerCount() const { return mCreatedPlayerCount; }
     FORCEINLINE class AFQMainCenterCamera* GetMainCamera() const { return mMainCamera; }
 
 protected:
@@ -28,8 +27,8 @@ protected:
     virtual void BeginPlay() override;
 
     // Common Funtion
-    void OnAnyKeyPressed(FKey Key);                                 // Gamepad 입력을 감지하고 PlayerController를 생성 ( 임시 )
-    void TryCreatePlayerControllerFromKey(const FKey& PressedKey);  // 입력을 분석하여 Gamepad Source를 식별 ( 임시 )
+    void SettingCamera(); // 카메라 및 HUD Widget 세팅
+    void CreatePlayer();  // 로컬 멀티 플레이어 셍성
 
 private:
     // 맵에 생성할 영혼 클래스
@@ -43,9 +42,4 @@ private:
     // 씬 카메라
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQHUDWidget, Meta = (AllowPrivateAccess = "true"))
     TObjectPtr<class AFQMainCenterCamera> mMainCamera;
-
-    // 로컬 플레이어 생성 ( 임시 )
-    int32 mCreatedPlayerCount = 0;      // 이미 생성된 Player 수
-    int32 mMaxLocalPlayers = 4;         // 최대 로컬 플레이어 수 (원하는 수만큼 설정 가능)
-    ESoulType mCurrentSoulType;         // 생성할 영혼 타입
 };

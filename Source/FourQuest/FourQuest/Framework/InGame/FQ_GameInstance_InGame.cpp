@@ -1,7 +1,72 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FQ_GameInstance_InGame.h"
+#include "FQPlayerState_InGame.h"
+#include "FQPlayerController_InGame.h"
 
 UFQ_GameInstance_InGame::UFQ_GameInstance_InGame()
 {
+	// 임시 로컬 멀티 플레이어 생성 코드
+	for (int32 i = 0; i < 3; i++)
+	{
+		FQ_LocalMulti::FQLocalMultiPlayerInfomation Infomation;
+		Infomation.bSpawnLocalPlayer = true;
+		Infomation.mArmourType = i % 2 ? EArmourType::Knight : EArmourType::Magic;
+		Infomation.mSoulType = i % 2 ? ESoulType::Knight : ESoulType::Magic;
+		mLocalMultiPlayerArr.Emplace(i, Infomation);
+	}
+}
+
+void UFQ_GameInstance_InGame::SavePlayerInfomation(APawn* Player)
+{
+	if (!Player)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UFQ_GameInstance_InGame %d] Player is nullptr!!"), __LINE__);
+		return;
+	}
+
+	AFQPlayerController_InGame* PC = Cast<AFQPlayerController_InGame>(Player->GetController());
+	if (!PC)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UFQ_GameInstance_InGame %d] AFQPlayerController_InGame is nullptr!!"), __LINE__);
+		return;
+	}
+
+	AFQPlayerState_InGame* PlayerState = Cast<AFQPlayerState_InGame>(Player->GetPlayerState());
+	if (!PlayerState)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UFQ_GameInstance_InGame %d] AFQPlayerState_InGame is nullptr!!"), __LINE__);
+		return;
+	}
+
+	UWorld* World = Player->GetWorld();
+	if (!World)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UFQ_GameInstance_InGame %d] World is nullptr!!"), __LINE__);
+		return;
+	}
+
+	int32 PlayerControllerId = 0;
+	for (ULocalPlayer* LP : LocalPlayers)
+	{
+		if (LP && LP->PlayerController == PC)
+		{
+			PlayerControllerId = LP->GetControllerId();
+			break;
+		}
+	}
+
+	if (mLocalMultiPlayerArr.Find(PlayerControllerId) == nullptr)
+	{
+		FQ_LocalMulti::FQLocalMultiPlayerInfomation PlayerInfomation;
+		PlayerInfomation.mSoulType = PlayerState->GetSoulType();
+		PlayerInfomation.mArmourType = PlayerState->GetArmourType();
+		mLocalMultiPlayerArr.Add(PlayerControllerId, PlayerInfomation);
+	}
+	else
+	{
+		FQ_LocalMulti::FQLocalMultiPlayerInfomation PlayerInfomation = mLocalMultiPlayerArr[PlayerControllerId];
+		PlayerInfomation.mSoulType = PlayerState->GetSoulType();
+		PlayerInfomation.mArmourType = PlayerState->GetArmourType();
+	}
 }

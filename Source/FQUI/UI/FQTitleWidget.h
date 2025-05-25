@@ -7,9 +7,6 @@
 #include "FQGameCore\Common.h"
 #include "FQTitleWidget.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class FQUI_API UFQTitleWidget : public UFQUserWidget
 {

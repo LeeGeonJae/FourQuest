@@ -18,12 +18,13 @@ class FOURQUEST_API AFQGameMode_SoulSelect : public AGameModeBase, public IFQGam
 public:
 	AFQGameMode_SoulSelect();
 
-	// Interface Funtion
+	// Interface virtual Funtion
 	virtual void MoveButton(const FInputActionValue& Value) override;
 	virtual void CancelInteraction() override;
 	virtual void SelectInteraction() override;
 
 protected:
+	// Parent virtual Function
 	virtual void BeginPlay() override;
 
 private:

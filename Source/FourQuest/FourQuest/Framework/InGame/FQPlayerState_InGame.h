@@ -17,9 +17,9 @@ public:
 
 public:
     // Delegate
-    FQSoulTypeChangeDelegate mSoulChangeDelegate;
-    FQArmourTypeChangeDelegate mArmourChangeDelegate;
-    FQSoulGaugeSettingDelegate mSoulGaugeDelegate;
+    FQ_PlayerStateDelegate::FQSoulTypeChangeDelegate mSoulChangeDelegate;
+    FQ_PlayerStateDelegate::FQArmourTypeChangeDelegate mArmourChangeDelegate;
+    FQ_PlayerStateDelegate::FQSoulGaugeSettingDelegate mSoulGaugeDelegate;
 
     // Interface Funtion
     virtual ESoulType GetSoulType() const override { return mSoulType; }

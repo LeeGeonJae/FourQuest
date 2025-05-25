@@ -23,6 +23,8 @@ class FOURQUEST_API AFQPlayerController_InGame : public APlayerController, publi
 public:
 	AFQPlayerController_InGame();
 
+	void UpdateHUDSetting();
+
 	// Interface Class Funtion
 	virtual void ChangeToArmour(EArmourType InArmourType) override;
 	virtual void ChangeToSoul() override;
@@ -45,22 +47,14 @@ private:
 
 private:
 	// Input
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> mMoveAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> mPickAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> mCancelAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQInput, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputMappingContext> mDefaultMappingContext;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQData, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UFQPlayerInputDataAsset> mPlayerInputDataAsset;
 
 	// GameMode의 Horizontal Box에 추가할 Player HUD Widget
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UUserWidget> mPlayerHUDWidget;
 
+	// 갑옷 타입과 영혼 타입에 따라 생성할 소울 캐릭터와 갑옷 캐릭터
 	UPROPERTY(EditAnywhere, Category = FQCharacter, Meta = (AllowPrivateAccess = "true"))
 	TMap<EArmourType, TSubclassOf<class AFQPlayerBase>> mPlayerArmourCharacterClasses;
 
