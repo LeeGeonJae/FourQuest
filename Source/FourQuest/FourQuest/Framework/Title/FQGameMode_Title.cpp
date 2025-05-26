@@ -2,8 +2,11 @@
 
 
 #include "FQGameMode_Title.h"
+
 #include "Blueprint/UserWidget.h"
-#include "FQUI\UI\FQTitleWidget.h"
+#include "FQUI\UI\FQTitleScreenWidget.h"
+#include "Kismet\KismetSystemLibrary.h"
+#include "Kismet\GameplayStatics.h"
 
 AFQGameMode_Title::AFQGameMode_Title()
 {
@@ -15,7 +18,7 @@ void AFQGameMode_Title::BeginPlay()
 
 	if (mTitleWidgetClass)
 	{
-		mTitleWidgetHandle = CreateWidget<UFQTitleWidget>(GetWorld(), mTitleWidgetClass);
+		mTitleWidgetHandle = CreateWidget<UFQTitleScreenWidget>(GetWorld(), mTitleWidgetClass);
 		mTitleWidgetHandle->SetOwningActor(this);
 		mTitleWidgetHandle->AddToViewport();
 	}
@@ -23,6 +26,23 @@ void AFQGameMode_Title::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("[AFQGameMode_Title %d] mTitleWidgetClass is nullptr"), __LINE__);
 	}
+}
+
+void AFQGameMode_Title::StartGame()
+{
+	if (mTargetLevelName.IsNone())
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQGameMode_Title] TargetLevelName is not set!"));
+		return;
+	}
+
+	UGameplayStatics::OpenLevel(this, mTargetLevelName);
+	UE_LOG(LogTemp, Log, TEXT("[AFQGameMode_Title] StartGame: Opening level '%s'"), *mTargetLevelName.ToString());
+}
+
+void AFQGameMode_Title::ExitGame()
+{
+	UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, true);
 }
 
 void AFQGameMode_Title::MoveButton(const FInputActionValue& Value)
@@ -54,4 +74,15 @@ void AFQGameMode_Title::CancelInteraction()
 void AFQGameMode_Title::SelectInteraction()
 {
 	mTitleWidgetHandle->WidgetInput(EWidgetInputType::Select);
+
+	ETitleButtonType ButtonType = mTitleWidgetHandle->GetSelectIndex();
+	switch (ButtonType)
+	{
+	case ETitleButtonType::GameStart:
+		StartGame();
+		break;
+	case ETitleButtonType::GameExit:
+		ExitGame();
+		break;
+	}
 }

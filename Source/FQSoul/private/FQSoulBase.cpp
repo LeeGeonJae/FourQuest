@@ -20,6 +20,7 @@
 #include "FQGameCore\Player\FQPlayerInputDataAsset.h"
 #include "FQUI\FQWidgetComponent.h"
 #include "FQUI/Soul/FQSoulGaugeWidget.h"
+#include "Kismet\GameplayStatics.h"
 
 AFQSoulBase::AFQSoulBase()
 {
@@ -176,6 +177,7 @@ void AFQSoulBase::CheckArmour(float DeltaTime)
 		{
 			UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d]GaugeWidget is nullptr!!"), __LINE__);
 		}
+
 		return;
 	}
 

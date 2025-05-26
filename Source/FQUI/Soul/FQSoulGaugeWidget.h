@@ -20,10 +20,7 @@ public:
 	void SetChargeGaugeValueSet(float InValue);
 
 protected:
-	virtual void NativeConstruct() override;
-
-protected:
 	// Widget 게이지
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQGauge)
-	class URadialSlider* mArmourChargeGauge;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class URadialSlider> mChargeGauge;
 };

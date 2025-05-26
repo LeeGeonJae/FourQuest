@@ -24,12 +24,20 @@ public:
 	virtual void SelectInteraction() override;
 
 protected:
+	// Parent Function
 	virtual void BeginPlay() override;
 
 private:
+	void StartGame();
+	void ExitGame();
+
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQTitle, Meta = (AllowPrivateAccess = "true"))
+	FName mTargetLevelName;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UFQTitleWidget> mTitleWidgetClass;
+	TSubclassOf<class UFQTitleScreenWidget> mTitleWidgetClass;
 
 	UPROPERTY()
-	TObjectPtr<class UFQTitleWidget> mTitleWidgetHandle;
+	TObjectPtr<class UFQTitleScreenWidget> mTitleWidgetHandle;
 };

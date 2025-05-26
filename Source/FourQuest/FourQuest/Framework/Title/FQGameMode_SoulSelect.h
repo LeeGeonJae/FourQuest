@@ -28,9 +28,12 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	void CreatePlayer();
+
+private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UFQSoulSelectWidget> mSoulSelectWidgetClass;
+	TSubclassOf<class UFQSoulSelectScreenWidget> mSoulSelectWidgetClass;
 
 	UPROPERTY()
-	TObjectPtr<class UFQSoulSelectWidget> mSoulSelectWidgetHandle;
+	TObjectPtr<class UFQSoulSelectScreenWidget> mSoulSelectWidgetHandle;
 };

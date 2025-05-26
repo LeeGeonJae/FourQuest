@@ -1,24 +1,23 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FQTitleWidget.h"
+#include "FQTitleScreenWidget.h"
 
 #include "Components\Image.h"
 #include "Components/CanvasPanelSlot.h"
 
 
-UFQTitleWidget::UFQTitleWidget()
+UFQTitleScreenWidget::UFQTitleScreenWidget()
     : mElapsedTime(0.f)
     , mCurrentFrameIndex(0)
-    , mCurrentSelectIndex(0)
+    , mCurrentSelectIndex(ETitleButtonType::GameStart)
     , mSoulAnimations{}
     , mSelectButton()
     , mCurrentSelect()
-    , mMaxSelectIndex(2)
 {
 }
 
-void UFQTitleWidget::WidgetInput(EWidgetInputType InputType)
+void UFQTitleScreenWidget::WidgetInput(EWidgetInputType InputType)
 {
     switch (InputType)
     {
@@ -41,10 +40,9 @@ void UFQTitleWidget::WidgetInput(EWidgetInputType InputType)
         CancelButton();
         break;
     }
-
 }
 
-void UFQTitleWidget::NativeConstruct()
+void UFQTitleScreenWidget::NativeConstruct()
 {
     Super::NativeConstruct();
     if (mSelectButton == nullptr || mCurrentSelect == nullptr)
@@ -54,7 +52,7 @@ void UFQTitleWidget::NativeConstruct()
     }
 }
 
-void UFQTitleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UFQTitleScreenWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
 
@@ -80,17 +78,17 @@ void UFQTitleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
     }
 }
 
-void UFQTitleWidget::MoveIndex(EWidgetInputType InputType)
+void UFQTitleScreenWidget::MoveIndex(EWidgetInputType InputType)
 {
     if (mSelectButton == nullptr || mCurrentSelect == nullptr)
     {
+        UE_LOG(LogTemp, Error, TEXT("[UFQTitleWidget %d] mSelectButton Or mCurrentSelect Is nullptr!!"), __LINE__);
         return;
     }
 
-    if (InputType == EWidgetInputType::Up && mCurrentSelectIndex > 0)
+    if (InputType == EWidgetInputType::Up && mCurrentSelectIndex != ETitleButtonType::GameStart)
     {
-        UE_LOG(LogTemp, Log, TEXT("[UFQTitleWidget %d] MoveIndex Function Call : Up"), __LINE__);
-        mCurrentSelectIndex -= 1;
+        mCurrentSelectIndex = (ETitleButtonType)((uint8)(mCurrentSelectIndex) - 1);
 
         if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(mSelectButton->Slot))
         {
@@ -101,10 +99,9 @@ void UFQTitleWidget::MoveIndex(EWidgetInputType InputType)
             CanvasSlot->SetPosition(CanvasSlot->GetPosition() + FVector2D(0, -100));
         }
     }
-    else if (InputType == EWidgetInputType::Down && mMaxSelectIndex > mCurrentSelectIndex)
+    else if (InputType == EWidgetInputType::Down && mCurrentSelectIndex != ETitleButtonType::GameExit)
     {
-        UE_LOG(LogTemp, Log, TEXT("[UFQTitleWidget %d] MoveIndex Function Call : Down"), __LINE__);
-        mCurrentSelectIndex += 1;
+        mCurrentSelectIndex = (ETitleButtonType)((uint8)mCurrentSelectIndex + 1);
 
         if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(mSelectButton->Slot))
         {
@@ -117,12 +114,12 @@ void UFQTitleWidget::MoveIndex(EWidgetInputType InputType)
     }
 }
 
-void UFQTitleWidget::SelectButton()
+void UFQTitleScreenWidget::SelectButton()
 {
 
 }
 
-void UFQTitleWidget::CancelButton()
+void UFQTitleScreenWidget::CancelButton()
 {
 
 }

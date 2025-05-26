@@ -12,9 +12,7 @@
 
 
 UFQPlayerHUDWidget::UFQPlayerHUDWidget()
-    : mKnightSoulTexture(nullptr)
-    , mMagicSoulTexture(nullptr)
-    , mElapsedTime(0.f)
+    : mElapsedTime(0.f)
     , mbIsSoulBurning(true)
     , mCurrentFrameIndex()
     , mSoulType(ESoulType::Knight)
@@ -28,11 +26,11 @@ UFQPlayerHUDWidget::UFQPlayerHUDWidget()
 void UFQPlayerHUDWidget::NativeConstruct()
 {
     Super::NativeConstruct();
-    if (mKnightSoulTexture == nullptr || mMagicSoulTexture == nullptr)
-    {
-        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] KnightArmour Or MagicArmour Texture Is Null!!"), __LINE__);
-        return;
-    }
+    //if (mKnightSoulTexture == nullptr || mMagicSoulTexture == nullptr)
+    //{
+    //    UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] KnightArmour Or MagicArmour Texture Is Null!!"), __LINE__);
+    //    return;
+    //}
 
     IFQPlayerControllerInterface* OwnerPlayerController = Cast<IFQPlayerControllerInterface>(mOwningActor);
     if (OwnerPlayerController == nullptr)
@@ -75,33 +73,33 @@ void UFQPlayerHUDWidget::PlaySoulBurningAnimation(float DeltaTime)
 }
 
 
-void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
-{
-    mSoulType = InSoulType;
-    UTexture2D* SelectedTexture = nullptr;
-    switch (InSoulType)
-    {
-    case ESoulType::Knight:
-        SelectedTexture = mKnightSoulTexture;
-        break;
-    case ESoulType::Magic:
-        SelectedTexture = mMagicSoulTexture;
-        break;
-    default:
-        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] SoulType Is End"), __LINE__);
-        break;
-    }
-
-    UImage* SoulTypeImage = Cast<UImage>(GetWidgetFromName(TEXT("SoulType")));
-    if (SoulTypeImage && SelectedTexture != nullptr)
-    {
-        SoulTypeImage->SetBrushFromTexture(SelectedTexture);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] PlayerHUD have not \'SoulType\' Widget Component!!"), __LINE__);
-    }
-}
+//void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
+//{
+//    mSoulType = InSoulType;
+//    UTexture2D* SelectedTexture = nullptr;
+//    switch (InSoulType)
+//    {
+//    case ESoulType::Knight:
+//        SelectedTexture = mKnightSoulTexture;
+//        break;
+//    case ESoulType::Magic:
+//        SelectedTexture = mMagicSoulTexture;
+//        break;
+//    default:
+//        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] SoulType Is End"), __LINE__);
+//        break;
+//    }
+//
+//    UImage* SoulTypeImage = Cast<UImage>(GetWidgetFromName(TEXT("SoulType")));
+//    if (SoulTypeImage && SelectedTexture != nullptr)
+//    {
+//        SoulTypeImage->SetBrushFromTexture(SelectedTexture);
+//    }
+//    else
+//    {
+//        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] PlayerHUD have not \'SoulType\' Widget Component!!"), __LINE__);
+//    }
+//}
 
 void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
 {
@@ -115,20 +113,20 @@ void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
         mSkillBox->SetVisibility(ESlateVisibility::Visible);
         mArmourType->SetVisibility(ESlateVisibility::Visible);
         
-        UTexture2D* ArmourType = mArmourTypeMap[InArmourType];
-        UTexture2D* SkillX = mXSkillMap[InArmourType];
-        UTexture2D* SkillA = mASkillMap[InArmourType];
-        UTexture2D* SkillR = mRSkillMap[InArmourType];
-        if (SkillX == nullptr || SkillA == nullptr || SkillR == nullptr || ArmourType == nullptr)
+        UTexture2D* ArmourTypeTexture = mArmourTypeMap[InArmourType];
+        UTexture2D* SkillXTexture = mXSkillMap[InArmourType];
+        UTexture2D* SkillATexture = mASkillMap[InArmourType];
+        UTexture2D* SkillRTexture = mRSkillMap[InArmourType];
+        if (SkillXTexture == nullptr || SkillATexture == nullptr || SkillRTexture == nullptr || ArmourTypeTexture == nullptr)
         {
             UE_LOG(LogTemp, Error, TEXT("[UpdateArmourSkill %d] Skill Or ArmourType Texture Is Null!!"), __LINE__);
             return;
         }
 
-        mArmourType->SetBrushFromTexture(ArmourType);
-        mSkill_X->SetBrushFromTexture(SkillX);
-        mSkill_A->SetBrushFromTexture(SkillA);
-        mSkill_R->SetBrushFromTexture(SkillR);
+        mArmourType->SetBrushFromTexture(ArmourTypeTexture);
+        mSkill_X->SetBrushFromTexture(SkillXTexture);
+        mSkill_A->SetBrushFromTexture(SkillATexture);
+        mSkill_R->SetBrushFromTexture(SkillRTexture);
     }
 }
 

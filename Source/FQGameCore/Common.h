@@ -29,15 +29,6 @@ enum class EWidgetInputType : uint8
 	End
 };
 
-UENUM()
-enum class ETitleButtonType : uint8
-{
-	GameStart = 0,
-	GameSetting,
-	GameExit,
-	End
-};
-
 namespace FQ_LocalMulti
 {
 	USTRUCT()
@@ -56,9 +47,4 @@ namespace FQ_PlayerStateDelegate
 	DECLARE_MULTICAST_DELEGATE_OneParam(FQSoulTypeChangeDelegate, ESoulType /*NewSoulType*/);					// PlayerState의 SoulType 변경 델리게이트
 	DECLARE_MULTICAST_DELEGATE_OneParam(FQArmourTypeChangeDelegate, EArmourType /*NewArmourType*/);				// PlayerState의 ArmourType 변경 델리게이트
 	DECLARE_MULTICAST_DELEGATE_OneParam(FQSoulGaugeSettingDelegate, float /*GaugeValue*/);						// PlayerState의 SoulGauge 변경 델리게이트
-}
-
-namespace FQ_TitleWidgetDelegate
-{
-	DECLARE_MULTICAST_DELEGATE_OneParam(FQTitleButtonDelegate, ETitleButtonType /*TitleButtonType*/);			// PlayerState의 SoulType 변경 델리게이트
 }

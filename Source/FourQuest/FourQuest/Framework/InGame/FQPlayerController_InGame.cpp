@@ -45,11 +45,11 @@ void AFQPlayerController_InGame::UpdateHUDSetting()
 	}
 
 	// HUD Widget 함수 Binding
-	FQPlayerState->mSoulChangeDelegate.AddLambda([&](ESoulType NewSoulType)
-		{
-			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
-			FQPlayerHUDWidget->UpdateSoulIcon(NewSoulType);
-		});
+	//FQPlayerState->mSoulChangeDelegate.AddLambda([&](ESoulType NewSoulType)
+	//	{
+	//		UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
+	//		FQPlayerHUDWidget->UpdateSoulIcon(NewSoulType);
+	//	});
 	FQPlayerState->mArmourChangeDelegate.AddLambda([&](EArmourType NewArmourType)
 		{
 			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
