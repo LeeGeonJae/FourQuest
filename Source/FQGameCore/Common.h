@@ -11,8 +11,10 @@ enum class EArmourType : uint8
 UENUM()
 enum class ESoulType : uint8
 {
-	Knight = 0,
-	Magic,
+	Sword,	// 검 영혼 0
+	Staff,	// 마법 영혼 1
+	Axe,	// 도끼 영혼 2
+	Bow,	// 활 영혼 3
 	End
 };
 

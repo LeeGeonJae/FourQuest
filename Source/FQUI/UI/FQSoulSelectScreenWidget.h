@@ -8,12 +8,11 @@
 #include "FQSoulSelectScreenWidget.generated.h"
 
 UENUM()
-enum class ESoulSelectButtonType : uint8
+enum class EPlayerStateType : uint8
 {
 	NoSelect = 0,
 	SoulSelect,
-	SoulComplate,
-	End
+	SoulComplate
 };
 
 UCLASS()
@@ -25,25 +24,44 @@ public:
 	UFQSoulSelectScreenWidget();
 
 	// Input Function
-	void WidgetInput(EWidgetInputType InputType, int32 ControllerId);
+	void WidgetInput(ESoulType SoulType, int32 ControllerId);
+	void UpdatePlayerState(EPlayerStateType PlayerStateType, ESoulType SoulType, int32 ControllerId);
+
+	// GetSet Function
+	FORCEINLINE bool GetStartNextLevel() const { return mStartNextLevel; }
+	FORCEINLINE void SetAllReady(bool AllReady) { mAllReady = AllReady; }
 
 protected:
+	// Parent Function
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 private:
 	// Common Function
-	void MoveIndex(EWidgetInputType InputType, int32 ControllerId);
-	void SelectButton(int32 ControllerId);
-	void CancelButton(int32 ControllerId);
+	void MoveIndex(ESoulType SoulType, int32 ControllerId);
+
 
 private:
+	uint8 mStartNextLevel : 1;
+	uint8 mAllReady : 1;
+	float mReadyElapsedTime;
+	uint8 mCurrentReadyCount;
+	float mAnimationElapsedTime;
+	uint8 mCurrentFrameIndex;
+
 	UPROPERTY()
 	TArray<TObjectPtr<class UImage>> mNoSelectSoulArr;
-
 	UPROPERTY()
 	TArray<TObjectPtr<class UFQSoulSelectUI>> mSoulSelectUIArr;
-
 	UPROPERTY()
 	TArray<TObjectPtr<class UFQSoulComplateUI>> mSoulComplateUIArr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQReady, Meta = (AllowPrivateAccess = "true"))
+	TArray<FText> mReadyCountText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UTextBlock> mReadyCount;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UTextBlock> mReadyText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> mReadyBackGround;
 };

@@ -19,9 +19,9 @@ public:
 	AFQGameMode_Title();
 
 	// Interface Funtion
-	virtual void MoveButton(const FInputActionValue& Value) override;
-	virtual void CancelInteraction() override;
-	virtual void SelectInteraction() override;
+	virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) override;
+	virtual void CancelInteraction(int32 ControllerId) override;
+	virtual void SelectInteraction(int32 ControllerId) override;
 
 protected:
 	// Parent Function

@@ -45,7 +45,7 @@ void AFQGameMode_Title::ExitGame()
 	UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, true);
 }
 
-void AFQGameMode_Title::MoveButton(const FInputActionValue& Value)
+void AFQGameMode_Title::MoveButton(const FInputActionValue& Value, int32 ControllerId)
 {
 	FVector2D Direction = Value.Get<FVector2D>();
 	if (Direction.X >= 0.8f)
@@ -66,12 +66,12 @@ void AFQGameMode_Title::MoveButton(const FInputActionValue& Value)
 	}
 }
 
-void AFQGameMode_Title::CancelInteraction()
+void AFQGameMode_Title::CancelInteraction(int32 ControllerId)
 {
 	mTitleWidgetHandle->WidgetInput(EWidgetInputType::Cancel);
 }
 
-void AFQGameMode_Title::SelectInteraction()
+void AFQGameMode_Title::SelectInteraction(int32 ControllerId)
 {
 	mTitleWidgetHandle->WidgetInput(EWidgetInputType::Select);
 

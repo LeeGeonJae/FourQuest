@@ -8,7 +8,6 @@
 #include "FQ_GameInstance_InGame.generated.h"
 
 
-
 UCLASS()
 class FOURQUEST_API UFQ_GameInstance_InGame : public UGameInstance
 {
@@ -21,6 +20,7 @@ public:
 	FORCEINLINE TMap<PlayerControllerId, FQ_LocalMulti::FQLocalMultiPlayerInfomation> GetLocalMultiPlayerInfomation() const { return mLocalMultiPlayerArr; }
 
 	void SavePlayerInfomation(APawn* Player);
+	void SavePlayerInfomation(int32 PlayerControllerId, FQ_LocalMulti::FQLocalMultiPlayerInfomation InPlayerInfomation);
 
 private:
 	TMap<PlayerControllerId, FQ_LocalMulti::FQLocalMultiPlayerInfomation> mLocalMultiPlayerArr;

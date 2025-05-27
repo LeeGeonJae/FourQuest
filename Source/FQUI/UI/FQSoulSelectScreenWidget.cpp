@@ -4,11 +4,18 @@
 #include "FQSoulSelectScreenWidget.h"
 
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 
 #include "FQSoulComplateUI.h"
 #include "FQSoulSelectUI.h"
 
 UFQSoulSelectScreenWidget::UFQSoulSelectScreenWidget()
+    : mCurrentFrameIndex()
+    , mAnimationElapsedTime()
+    , mCurrentReadyCount()
+    , mAllReady()
+    , mReadyElapsedTime()
+    , mStartNextLevel(false)
 {
 }
 
@@ -25,8 +32,18 @@ void UFQSoulSelectScreenWidget::NativeConstruct()
         {
             if (UImage* Img = Cast<UImage>(FoundWidget))
             {
+                FoundWidget->SetVisibility(ESlateVisibility::Visible);
                 mNoSelectSoulArr.Add(Img);
+                UE_LOG(LogTemp, Log, TEXT("[UFQSoulSelectScreenWidget %d] UImage(%s) Find It!! : %d"), __LINE__, *NoSelectName, i);
             }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("[UFQSoulSelectScreenWidget %d] UImage(%s) Can't Find It!! : %d"), __LINE__, *NoSelectName, i);
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("[UFQSoulSelectScreenWidget %d] NoSelectName(%s) Can't Find It!! : %d"), __LINE__,*NoSelectName, i);
         }
 
         // Soul Select UI
@@ -35,8 +52,19 @@ void UFQSoulSelectScreenWidget::NativeConstruct()
         {
             if (UFQSoulSelectUI* SelectUI = Cast<UFQSoulSelectUI>(FoundWidget))
             {
+                SelectUI->SetVisibility(ESlateVisibility::Hidden);
+                SelectUI->SetOwningActor(mOwningActor);
                 mSoulSelectUIArr.Add(SelectUI);
+                UE_LOG(LogTemp, Log, TEXT("[UFQSoulSelectScreenWidget %d] UFQSoulSelectUI(%s) Find It!! : %d"), __LINE__, *NoSelectName, i);
             }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("[UFQSoulSelectScreenWidget %d] UFQSoulSelectUI(%s) Can't Find It!! : %d"), __LINE__, *NoSelectName, i);
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("[UFQSoulSelectScreenWidget %d] SelectUIName(%s) Can't Find It!! : %d"), __LINE__, *SelectUIName, i);
         }
 
         // Soul Complete UI
@@ -45,53 +73,158 @@ void UFQSoulSelectScreenWidget::NativeConstruct()
         {
             if (UFQSoulComplateUI* ComplateUI = Cast<UFQSoulComplateUI>(FoundWidget))
             {
+                ComplateUI->SetVisibility(ESlateVisibility::Hidden);
+                ComplateUI->SetOwningActor(mOwningActor);
                 mSoulComplateUIArr.Add(ComplateUI);
+                UE_LOG(LogTemp, Log, TEXT("[UFQSoulSelectScreenWidget %d] UFQSoulComplateUI(%s) Find It!! : %d"), __LINE__, *NoSelectName, i);
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("[UFQSoulSelectScreenWidget %d] UFQSoulComplateUI(%s) Can't Find It!! : %d"), __LINE__, *NoSelectName, i);
             }
         }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("[UFQSoulSelectScreenWidget %d] ComplateUIName(%s) Can't Find It!! : %d"), __LINE__, *ComplateUIName, i);
+        }
     }
+
+    mReadyBackGround->SetVisibility(ESlateVisibility::Hidden);
+    mReadyCount->SetVisibility(ESlateVisibility::Hidden);
+    mReadyText->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UFQSoulSelectScreenWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-}
 
-void UFQSoulSelectScreenWidget::WidgetInput(EWidgetInputType InputType, int32 ControllerId)
-{
-    switch (InputType)
+    mAnimationElapsedTime += InDeltaTime;
+    if (mAnimationElapsedTime > 0.1f)
     {
-    case EWidgetInputType::Left:
-        MoveIndex(EWidgetInputType::Left, ControllerId);
-        break;
-    case EWidgetInputType::Right:
-        MoveIndex(EWidgetInputType::Right, ControllerId);
-        break;
-    case EWidgetInputType::Up:
-        MoveIndex(EWidgetInputType::Up, ControllerId);
-        break;
-    case EWidgetInputType::Down:
-        MoveIndex(EWidgetInputType::Down, ControllerId);
-        break;
-    case EWidgetInputType::Select:
-        SelectButton(ControllerId);
-        break;
-    case EWidgetInputType::Cancel:
-        CancelButton(ControllerId);
-        break;
+        mAnimationElapsedTime = 0.f;
+
+        // 애니메이션 플레이
+        mCurrentFrameIndex = (mCurrentFrameIndex + 1) % 50;
+        for (auto& SoulSelectUI : mSoulSelectUIArr)
+        {
+			SoulSelectUI->UpdateSoulAnimation(mCurrentFrameIndex);
+        }
+    }
+
+    if (mAllReady)
+    {
+        mReadyElapsedTime += InDeltaTime;
+        if (mReadyElapsedTime > 1.f)
+        {
+            mReadyElapsedTime = 0.f;
+            mCurrentReadyCount++;
+
+            if (mCurrentReadyCount == mReadyCountText.Num())
+            {
+                mStartNextLevel = true;
+            }
+            else
+            {
+                mReadyCount->SetText(mReadyCountText[mCurrentReadyCount]);
+            }
+        }
+    }
+    else
+    {
+        mCurrentReadyCount = 0;
+        mReadyElapsedTime = 0.f;
+        mReadyCount->SetText(mReadyCountText[mCurrentReadyCount]);
     }
 }
 
-void UFQSoulSelectScreenWidget::MoveIndex(EWidgetInputType InputType, int32 ControllerId)
+void UFQSoulSelectScreenWidget::WidgetInput(ESoulType SoulType, int32 ControllerId)
 {
-
+	MoveIndex(SoulType, ControllerId);
 }
 
-void UFQSoulSelectScreenWidget::SelectButton(int32 ControllerId)
+void UFQSoulSelectScreenWidget::UpdatePlayerState(EPlayerStateType PlayerStateType, ESoulType SoulType, int32 ControllerId)
 {
+	switch (PlayerStateType)
+	{
+	case EPlayerStateType::NoSelect:
+	{
+		mNoSelectSoulArr[ControllerId]->SetVisibility(ESlateVisibility::Visible);
+		mSoulSelectUIArr[ControllerId]->SetVisibility(ESlateVisibility::Hidden);
+		mSoulComplateUIArr[ControllerId]->SetVisibility(ESlateVisibility::Hidden);
 
+        mAllReady = true;
+        for (int32 i = 0; i < 4; i++)
+        {
+            if (mSoulSelectUIArr[i]->GetVisibility() == ESlateVisibility::Visible)
+            {
+                mAllReady = false;
+            }
+        }
+
+        if (mAllReady)
+        {
+            mReadyBackGround->SetVisibility(ESlateVisibility::Visible);
+            mReadyCount->SetVisibility(ESlateVisibility::Visible);
+            mReadyText->SetVisibility(ESlateVisibility::Visible);
+        }
+        else
+        {
+            mReadyBackGround->SetVisibility(ESlateVisibility::Hidden);
+            mReadyCount->SetVisibility(ESlateVisibility::Hidden);
+            mReadyText->SetVisibility(ESlateVisibility::Hidden);
+        }
+	}
+	break;
+	case EPlayerStateType::SoulSelect:
+	{
+		mNoSelectSoulArr[ControllerId]->SetVisibility(ESlateVisibility::Hidden);
+		mSoulSelectUIArr[ControllerId]->SetVisibility(ESlateVisibility::Visible);
+		mSoulComplateUIArr[ControllerId]->SetVisibility(ESlateVisibility::Hidden);
+
+        mAllReady = false;
+        mReadyBackGround->SetVisibility(ESlateVisibility::Hidden);
+        mReadyCount->SetVisibility(ESlateVisibility::Hidden);
+        mReadyText->SetVisibility(ESlateVisibility::Hidden);
+	}
+	break;
+	case EPlayerStateType::SoulComplate:
+	{
+		mNoSelectSoulArr[ControllerId]->SetVisibility(ESlateVisibility::Hidden);
+		mSoulSelectUIArr[ControllerId]->SetVisibility(ESlateVisibility::Hidden);
+		mSoulComplateUIArr[ControllerId]->SetVisibility(ESlateVisibility::Visible);
+
+        mSoulComplateUIArr[ControllerId]->UpdateSoulAnimation(SoulType);
+
+        mAllReady = true;
+        for (int32 i = 0; i < 4; i++)
+        {
+            if (mSoulSelectUIArr[i]->GetVisibility() == ESlateVisibility::Visible)
+            {
+                mAllReady = false;
+            }
+        }
+
+        if (mAllReady)
+        {
+            mReadyBackGround->SetVisibility(ESlateVisibility::Visible);
+            mReadyCount->SetVisibility(ESlateVisibility::Visible);
+            mReadyText->SetVisibility(ESlateVisibility::Visible);
+        }
+        else
+        {
+            mReadyBackGround->SetVisibility(ESlateVisibility::Hidden);
+            mReadyCount->SetVisibility(ESlateVisibility::Hidden);
+            mReadyText->SetVisibility(ESlateVisibility::Hidden);
+        }
+	}
+	break;
+	}
 }
 
-void UFQSoulSelectScreenWidget::CancelButton(int32 ControllerId)
+void UFQSoulSelectScreenWidget::MoveIndex(ESoulType SoulType, int32 ControllerId)
 {
-
+    if (mSoulSelectUIArr[ControllerId]->GetVisibility() == ESlateVisibility::Visible)
+    {
+        mSoulSelectUIArr[ControllerId]->UpdateSoulType(SoulType);
+    }
 }

@@ -45,11 +45,6 @@ void AFQPlayerController_InGame::UpdateHUDSetting()
 	}
 
 	// HUD Widget 함수 Binding
-	//FQPlayerState->mSoulChangeDelegate.AddLambda([&](ESoulType NewSoulType)
-	//	{
-	//		UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
-	//		FQPlayerHUDWidget->UpdateSoulIcon(NewSoulType);
-	//	});
 	FQPlayerState->mArmourChangeDelegate.AddLambda([&](EArmourType NewArmourType)
 		{
 			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
@@ -98,10 +93,11 @@ void AFQPlayerController_InGame::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Local Player Subsystem에 MappingContext 추가
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	// 로그 확인
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
 	{
-		Subsystem->AddMappingContext(mPlayerInputDataAsset->mDefaultMappingContext, 0);
+		int32 ControllerId = LocalPlayer->GetControllerId();
+		UE_LOG(LogTemp, Log, TEXT("[AFQPlayerController_InGame %d] BeginPlay Function Call : PlayerController Id(%d)"), __LINE__, ControllerId);
 	}
 }
 
@@ -180,6 +176,19 @@ void AFQPlayerController_InGame::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
+	// 로그 확인
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
+	{
+		int32 ControllerId = LocalPlayer->GetControllerId();
+		UE_LOG(LogTemp, Log, TEXT("[AFQPlayerController_InGame %d] SetupInputComponent Function Call : PlayerController Id(%d)"), __LINE__, ControllerId);
+	}
+
+	// Local Player Subsystem에 MappingContext 추가
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(mPlayerInputDataAsset->mDefaultMappingContext, 0);
+	}
+
 	// EnhancedInputComponent 사용
 	UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent);
 	if (EnhancedInput == nullptr)
@@ -253,10 +262,17 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 
 void AFQPlayerController_InGame::HandlePickButton()
 {
+	GetLocalPlayer()->GetLocalPlayerIndex();
+
 	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
 	{
-		MyGameMode->SelectInteraction();
+		if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
+		{
+			int32 ControllerId = LocalPlayer->GetControllerId();
+			UE_LOG(LogTemp, Log, TEXT("[AFQPlayerController_InGame %d] HandlePickButton Function Call : Controller Id(%d)"), __LINE__, ControllerId);
+			MyGameMode->SelectInteraction(ControllerId);
+		}
 	}
 }
 
@@ -265,7 +281,12 @@ void AFQPlayerController_InGame::HandleCancelButton()
 	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
 	{
-		MyGameMode->CancelInteraction();
+		if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
+		{
+			int32 ControllerId = LocalPlayer->GetControllerId();
+			UE_LOG(LogTemp, Log, TEXT("[AFQPlayerController_InGame %d] HandleCancelButton Function Call : Controller Id(%d)"), __LINE__, ControllerId);
+			MyGameMode->CancelInteraction(ControllerId);
+		}
 	}
 }
 
@@ -311,6 +332,10 @@ void AFQPlayerController_InGame::DoMove()
 	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
 	{
-		MyGameMode->MoveButton(mMoveDirection);
+		if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
+		{
+			int32 ControllerId = LocalPlayer->GetControllerId();
+			MyGameMode->MoveButton(mMoveDirection, ControllerId);
+		}
 	}
 }

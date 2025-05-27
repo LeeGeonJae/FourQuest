@@ -15,7 +15,7 @@ UFQPlayerHUDWidget::UFQPlayerHUDWidget()
     : mElapsedTime(0.f)
     , mbIsSoulBurning(true)
     , mCurrentFrameIndex()
-    , mSoulType(ESoulType::Knight)
+    , mSoulType(ESoulType::Sword)
 {
     LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Blue/"), TEXT("BlueSoul"), 39, mBlueSoulBurningAnimations);
     LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Yellow/"), TEXT("YellowSoul"), 39, mYellowSoulBurningAnimations);
@@ -26,11 +26,6 @@ UFQPlayerHUDWidget::UFQPlayerHUDWidget()
 void UFQPlayerHUDWidget::NativeConstruct()
 {
     Super::NativeConstruct();
-    //if (mKnightSoulTexture == nullptr || mMagicSoulTexture == nullptr)
-    //{
-    //    UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] KnightArmour Or MagicArmour Texture Is Null!!"), __LINE__);
-    //    return;
-    //}
 
     IFQPlayerControllerInterface* OwnerPlayerController = Cast<IFQPlayerControllerInterface>(mOwningActor);
     if (OwnerPlayerController == nullptr)
@@ -61,45 +56,16 @@ void UFQPlayerHUDWidget::PlaySoulBurningAnimation(float DeltaTime)
 
         // 애니메이션 플레이
 		mElapsedTime = 0.f;
-		if (mSoulType == ESoulType::Knight)
+		if (mSoulType == ESoulType::Sword)
 		{
             UpdateSoulBurningAnimation(mYellowSoulBurningAnimations);
 		}
-		else if (mSoulType == ESoulType::Magic)
+		else if (mSoulType == ESoulType::Staff)
 		{
             UpdateSoulBurningAnimation(mBlueSoulBurningAnimations);
 		}
     }
 }
-
-
-//void UFQPlayerHUDWidget::UpdateSoulIcon(ESoulType InSoulType)
-//{
-//    mSoulType = InSoulType;
-//    UTexture2D* SelectedTexture = nullptr;
-//    switch (InSoulType)
-//    {
-//    case ESoulType::Knight:
-//        SelectedTexture = mKnightSoulTexture;
-//        break;
-//    case ESoulType::Magic:
-//        SelectedTexture = mMagicSoulTexture;
-//        break;
-//    default:
-//        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] SoulType Is End"), __LINE__);
-//        break;
-//    }
-//
-//    UImage* SoulTypeImage = Cast<UImage>(GetWidgetFromName(TEXT("SoulType")));
-//    if (SoulTypeImage && SelectedTexture != nullptr)
-//    {
-//        SoulTypeImage->SetBrushFromTexture(SelectedTexture);
-//    }
-//    else
-//    {
-//        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] PlayerHUD have not \'SoulType\' Widget Component!!"), __LINE__);
-//    }
-//}
 
 void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
 {

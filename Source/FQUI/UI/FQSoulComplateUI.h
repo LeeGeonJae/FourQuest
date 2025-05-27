@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "FQUI/FQUserWidget.h"
+#include "FQGameCore\Common.h"
 #include "FQSoulComplateUI.generated.h"
 
 /**
@@ -17,7 +18,12 @@ class FQUI_API UFQSoulComplateUI : public UFQUserWidget
 public:
 	UFQSoulComplateUI();
 
+	void UpdateSoulAnimation(ESoulType InSoulType);
+
 private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul, Meta = (AllowPrivateAccess = "true"))
+	TMap<ESoulType, TObjectPtr<UMaterial>> mSoulMaterial;
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> m3DSoulAnimation;
 };

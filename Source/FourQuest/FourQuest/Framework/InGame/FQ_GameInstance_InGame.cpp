@@ -6,15 +6,6 @@
 
 UFQ_GameInstance_InGame::UFQ_GameInstance_InGame()
 {
-	// 임시 로컬 멀티 플레이어 생성 코드
-	for (int32 i = 0; i < 3; i++)
-	{
-		FQ_LocalMulti::FQLocalMultiPlayerInfomation Infomation;
-		Infomation.bSpawnLocalPlayer = true;
-		Infomation.mArmourType = i % 2 ? EArmourType::Knight : EArmourType::Magic;
-		Infomation.mSoulType = i % 2 ? ESoulType::Knight : ESoulType::Magic;
-		mLocalMultiPlayerArr.Emplace(i, Infomation);
-	}
 }
 
 void UFQ_GameInstance_InGame::SavePlayerInfomation(APawn* Player)
@@ -68,5 +59,24 @@ void UFQ_GameInstance_InGame::SavePlayerInfomation(APawn* Player)
 		FQ_LocalMulti::FQLocalMultiPlayerInfomation PlayerInfomation = mLocalMultiPlayerArr[PlayerControllerId];
 		PlayerInfomation.mSoulType = PlayerState->GetSoulType();
 		PlayerInfomation.mArmourType = PlayerState->GetArmourType();
+	}
+}
+
+void UFQ_GameInstance_InGame::SavePlayerInfomation(int32 PlayerControllerId, FQ_LocalMulti::FQLocalMultiPlayerInfomation InPlayerInfomation)
+{
+	if (mLocalMultiPlayerArr.Find(PlayerControllerId) == nullptr)
+	{
+		FQ_LocalMulti::FQLocalMultiPlayerInfomation PlayerInfomation;
+		PlayerInfomation.bSpawnLocalPlayer = InPlayerInfomation.bSpawnLocalPlayer;
+		PlayerInfomation.mSoulType = InPlayerInfomation.mSoulType;
+		PlayerInfomation.mArmourType = InPlayerInfomation.mArmourType;
+		mLocalMultiPlayerArr.Add(PlayerControllerId, PlayerInfomation);
+	}
+	else
+	{
+		FQ_LocalMulti::FQLocalMultiPlayerInfomation PlayerInfomation = mLocalMultiPlayerArr[PlayerControllerId];
+		PlayerInfomation.bSpawnLocalPlayer = InPlayerInfomation.bSpawnLocalPlayer;
+		PlayerInfomation.mSoulType = InPlayerInfomation.mSoulType;
+		PlayerInfomation.mArmourType = InPlayerInfomation.mArmourType;
 	}
 }

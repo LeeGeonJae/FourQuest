@@ -18,7 +18,6 @@ class FQUI_API UFQPlayerHUDWidget : public UFQUserWidget
 public:
 	UFQPlayerHUDWidget();
 
-    //void UpdateSoulIcon(ESoulType InSoulType);
     void UpdateArmourSkill(EArmourType InArmourType);
     void UpdateSoulGauge(float GaugeValue);
 
@@ -32,13 +31,6 @@ private:
     void UpdateSoulBurningAnimation(TArray<UTexture2D*> SoulAnimationKey);
 
 protected:
-    //// 영혼 타입별 이미지 (에디터에서 설정 가능)
-    //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
-    //TObjectPtr<UTexture2D> mKnightSoulTexture;
-
-    //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
-    //TObjectPtr<UTexture2D> mMagicSoulTexture;
-    
     // Soul Burning Animation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
     TArray<TObjectPtr<UTexture2D>> mBlueSoulBurningAnimations;

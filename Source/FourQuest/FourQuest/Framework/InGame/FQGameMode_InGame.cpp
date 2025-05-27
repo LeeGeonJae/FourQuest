@@ -69,9 +69,16 @@ void AFQGameMode_InGame::CreatePlayer()
         const int32 ControllerId = Infomation.Key;
         FQ_LocalMulti::FQLocalMultiPlayerInfomation PlayerInfomation = Infomation.Value;
 
+        // 생성할 로컬 플레이어인가
+        if (!PlayerInfomation.bSpawnLocalPlayer)
+        {
+            continue;
+        }
+
+        // 생성할 영혼 타입 지정
         if (mSoulPlayersType.Num() > (uint8)PlayerInfomation.mSoulType)
         {
-            DefaultPawnClass = mSoulPlayersType[(uint8)PlayerInfomation.mSoulType]; 
+            DefaultPawnClass = mSoulPlayersType[PlayerInfomation.mSoulType];
         }
 
         // CreateLocalPlayer는 자동으로 PlayerController를 생성하고 해당 입력을 매핑함
@@ -91,20 +98,22 @@ void AFQGameMode_InGame::CreatePlayer()
                 FQPlayerState->SetSoulType(PlayerInfomation.mSoulType);
                 FQPlayerState->SetArmourType(EArmourType::End);
                 FQPlayerState->SetSoulGauge(0);
-
-                if (PlayerInfomation.mSoulType == ESoulType::Knight)
-                {
-                    UE_LOG(LogTemp, Log, TEXT("[FQGameMode_InGame %d] Create Player Soul Type Is Knight"), __LINE__);
-                }
-                else if (PlayerInfomation.mSoulType == ESoulType::Magic)
-                {
-                    UE_LOG(LogTemp, Log, TEXT("[FQGameMode_InGame %d] Create Player Soul Type Is Magic"), __LINE__);
-                }
             }
         }
-        else if (ControllerId == 0)         // 0번째 플레이어 컨트롤러
+        else         // 플레이어 컨트롤러
         {
-            AFQPlayerController_InGame* PC = GetWorld()->GetFirstPlayerController<AFQPlayerController_InGame>();
+            // 생성할 로컬 플레이어인가
+            if (!PlayerInfomation.bSpawnLocalPlayer)
+            {
+                continue;
+            }
+
+            AFQPlayerController_InGame* PC = Cast<AFQPlayerController_InGame>(GetGameInstance()->GetLocalPlayers()[ControllerId]->GetPlayerController(GetWorld()));
+            if (!PC)
+            {
+                UE_LOG(LogTemp, Error, TEXT("[FQGameMode_InGame %d]"), __LINE__);
+                continue;
+            }
 
             // 기존 Pawn 제거 (선택 사항)
             if (PC->GetPawn())
@@ -112,10 +121,16 @@ void AFQGameMode_InGame::CreatePlayer()
                 PC->GetPawn()->Destroy();
             }
 
+            // 생성할 영혼 타입 지정
+            if (mSoulPlayersType.Num() > (uint8)PlayerInfomation.mSoulType)
+            {
+                DefaultPawnClass = mSoulPlayersType[PlayerInfomation.mSoulType];
+            }
+
             // 새로운 캐릭터 생성
-            FVector SpawnLocation = FVector::ZeroVector; // 위치 조정 가능
+            FVector SpawnLocation = FVector(0.f, 100.f * ControllerId, 0.f); // 위치 조정 가능
             FRotator SpawnRotation = FRotator::ZeroRotator;
-            AFQSoulBase* NewPawn = GetWorld()->SpawnActor<AFQSoulBase>(mSoulPlayersType[(uint8)PlayerInfomation.mSoulType], SpawnLocation, SpawnRotation);
+            AFQSoulBase* NewPawn = GetWorld()->SpawnActor<AFQSoulBase>(mSoulPlayersType[PlayerInfomation.mSoulType], SpawnLocation, SpawnRotation);
             if (!NewPawn)
             {
                 UE_LOG(LogTemp, Error, TEXT("[FQGameMode_InGame %d]Failed to spawn Pawn for ControllerId %d"), __LINE__, ControllerId);
@@ -134,10 +149,6 @@ void AFQGameMode_InGame::CreatePlayer()
                 PS->SetSoulGauge(0);
             }
             UE_LOG(LogTemp, Log, TEXT("[FQGameMode_InGame %d] Added Player %d"), __LINE__, ControllerId);
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("[FQGameMode_InGame %d] Failed Create player for ControllerId %d"), __LINE__, ControllerId);
         }
     }
 }

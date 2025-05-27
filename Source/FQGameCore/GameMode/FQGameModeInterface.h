@@ -22,8 +22,7 @@ class FQGAMECORE_API IFQGameModeInterface
 
 public:
 	// Input Funtion
-	virtual void MoveButton(const FInputActionValue& Value) abstract;
-	virtual void CancelInteraction() abstract;
-	virtual void SelectInteraction() abstract;
-
+	virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) abstract;
+	virtual void CancelInteraction(int32 ControllerId) abstract;
+	virtual void SelectInteraction(int32 ControllerId) abstract;
 };

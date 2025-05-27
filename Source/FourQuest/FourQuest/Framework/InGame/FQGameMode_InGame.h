@@ -33,13 +33,13 @@ protected:
 private:
     // 맵에 생성할 영혼 클래스
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul, Meta = (AllowPrivateAccess = "true"))
-    TArray<TSubclassOf<class AFQSoulBase>> mSoulPlayersType;
+    TMap<ESoulType, TSubclassOf<class AFQSoulBase>> mSoulPlayersType;
 
     // 플레이어 HUD WIdget Manager
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQHUDWidget, Meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FQHUDWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class AFQPlayerHUDManager> mPlayerHUDManager;
 
     // 씬 카메라
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQHUDWidget, Meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FQHUDWidget, Meta = (AllowPrivateAccess = "true"))
     TObjectPtr<class AFQMainCenterCamera> mMainCamera;
 };
