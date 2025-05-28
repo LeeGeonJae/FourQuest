@@ -2,10 +2,12 @@
 
 
 #include "FQArmourBase.h"
-#include "Components/BoxComponent.h"
+
 #include "Engine/StaticMesh.h"
-#include "FQGameCore\Soul\FQSoulCharacterInterface.h"
+#include "Components/BoxComponent.h"
 #include "Blueprint\UserWidget.h"
+
+#include "FQGameCore\Soul\FQSoulCharacterInterface.h"
 #include "FQUI\FQWidgetComponent.h"
 
 // Sets default values

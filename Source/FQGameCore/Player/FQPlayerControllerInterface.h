@@ -21,6 +21,6 @@ class FQGAMECORE_API IFQPlayerControllerInterface
 	GENERATED_BODY()
 
 public:
-	virtual void SetSoulType(ESoulType InSoulType) abstract;
-	virtual ESoulType GetSoulType() const abstract;
+	virtual void ChangeToArmour(EArmourType InArmourType) abstract;
+	virtual void ChangeToSoul() abstract;
 };
