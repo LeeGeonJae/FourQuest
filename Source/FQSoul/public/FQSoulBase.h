@@ -27,14 +27,12 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	// Common Function
-	void SetCharacterControl();
-
 	// Input Funtion
 	void Move(const FInputActionValue& Value);
 	void StartDash();
 	void SelectInteraction();
 	void CancelInteraction();
+	void AddSoulGauge();		// Test Function
 
 	// Change Armour Function
 	void CheckArmour(float DeltaTime);
@@ -48,28 +46,15 @@ private:
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
-	// Input
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> mMoveAction;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> mPickAction;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> mCancelAction;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> mDashAction;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Input)
-	TObjectPtr<class UInputMappingContext> mDefaultMappingContext;
-
 	// Data
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Data)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQData)
+	TObjectPtr<class UFQPlayerInputDataAsset> mPlayerInputDataAsset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQData)
 	TObjectPtr<class UFQSoulDataAsset> mSoulDataAsset;
 
 	// UI
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	TObjectPtr<class UFQWidgetComponent> mArmourGaugeWidget;
 
 private:

@@ -2,10 +2,12 @@
 
 
 #include "FQArmourBase.h"
-#include "Components/BoxComponent.h"
+
 #include "Engine/StaticMesh.h"
-#include "FQGameCore\Soul\FQSoulCharacterInterface.h"
+#include "Components/BoxComponent.h"
 #include "Blueprint\UserWidget.h"
+
+#include "FQGameCore\Soul\FQSoulCharacterInterface.h"
 #include "FQUI\FQWidgetComponent.h"
 
 // Sets default values
@@ -22,6 +24,7 @@ AFQArmourBase::AFQArmourBase()
 
 	//mTrigger->SetCollisionProfileName(CPROFILE_ABTRIGGER);
 	mTrigger->SetBoxExtent(FVector(40.0f, 42.0f, 30.0f));
+	mTrigger->SetCollisionProfileName(TEXT("ArmourCollision"));
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Props/Armour/Item_Amor.Item_Amor'"));
 	check(BoxMeshRef.Object);

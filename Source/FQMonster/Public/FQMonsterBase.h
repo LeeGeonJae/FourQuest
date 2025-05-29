@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "FQMonsterDataAsset.h"
+#include "FQGameCore/Player/FQPlayerAttackableInterface.h"
 #include "FQMonsterBase.generated.h"
 
 class AFQMonsterManager;
@@ -20,7 +21,7 @@ enum class EMonsterState : uint8
 };
 
 UCLASS()
-class FQMONSTER_API AFQMonsterBase : public ACharacter
+class FQMONSTER_API AFQMonsterBase : public ACharacter, public IFQPlayerAttackableInterface
 {
 	GENERATED_BODY()
 
@@ -70,4 +71,15 @@ public:
 
 protected:
 	AFQMonsterManager* Manager;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float mPushCoolTime;
+
+	virtual void TakeDamageByPlayer(AActor* Target, float Damage) override;
+	virtual void TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength) override;
+
+private:
+	uint8 mbCanPush : 1;
+	FTimerHandle mPushCoolTimer;
 };

@@ -1,19 +1,26 @@
 ﻿// Copyright (Your Project)
 
 #include "FQSoulBase.h"
+
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PlayerState.h"
 #include "Camera/CameraComponent.h"
+#include "Blueprint\UserWidget.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "FQSoul/Data/FQSoulDataAsset.h"
+#include "GameFramework/PlayerController.h"
+
+#include "FQSoulDataAsset.h"
 #include "FQGameCore/Armour/FQArmourInterface.h"
-#include "Blueprint\UserWidget.h"
+#include "FQGameCore\Player\FQPlayerControllerInterface.h"
+#include "FQGameCore\Player\FQPlayerStateInterface.h"
+#include "FQGameCore\Player\FQPlayerInputDataAsset.h"
 #include "FQUI\FQWidgetComponent.h"
 #include "FQUI/Soul/FQSoulGaugeWidget.h"
-#include "FQGameCore\Controller\FQPlayerControllerInterface.h"
+#include "Kismet\GameplayStatics.h"
 
 AFQSoulBase::AFQSoulBase()
 {
@@ -29,6 +36,7 @@ AFQSoulBase::AFQSoulBase()
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AFQSoulBase::OnOverlapBegin);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AFQSoulBase::OnOverlapEnd);
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("SoulCollision"));
 
 	// Movement Setup
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -38,38 +46,12 @@ AFQSoulBase::AFQSoulBase()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 
-	// Input Setup
-	ConstructorHelpers::FObjectFinder<UInputMappingContext> MappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Soul.IMC_Soul'"));
-	if (MappingContextRef.Succeeded()) mDefaultMappingContext = MappingContextRef.Object;
-	check(mDefaultMappingContext);
-
-	ConstructorHelpers::FObjectFinder<UInputAction> MoveActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulMove.IA_SoulMove'"));
-	if (MoveActionRef.Succeeded()) mMoveAction = MoveActionRef.Object;
-	check(mMoveAction);
-
-	ConstructorHelpers::FObjectFinder<UInputAction> DashActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulDash.IA_SoulDash'"));
-	if (DashActionRef.Succeeded()) mDashAction = DashActionRef.Object;
-	check(mDashAction);
-
-	ConstructorHelpers::FObjectFinder<UInputAction> PickActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulSelectArmour.IA_SoulSelectArmour'"));
-	if (PickActionRef.Succeeded()) mPickAction = PickActionRef.Object;
-	check(mPickAction);
-
-	ConstructorHelpers::FObjectFinder<UInputAction> CancelActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_SoulCancelArmour.IA_SoulCancelArmour'"));
-	if (CancelActionRef.Succeeded()) mCancelAction = CancelActionRef.Object;
-	check(mCancelAction);
-
-	ConstructorHelpers::FObjectFinder<UFQSoulDataAsset> DataAssetRef(TEXT("/Script/FQSoul.FQSoulDataAsset'/Game/Data/DA_SoulData.DA_SoulData'"));
-	if (DataAssetRef.Succeeded()) mSoulDataAsset = DataAssetRef.Object;
-	check(mSoulDataAsset);
-
 	// Widget Component
 	mArmourGaugeWidget = CreateDefaultSubobject<UFQWidgetComponent>(TEXT("Widget"));
 	mArmourGaugeWidget->SetupAttachment(RootComponent);
 	mArmourGaugeWidget->SetRelativeLocation(FVector(30.f, 0.f, 80.f));
 	
 	static ConstructorHelpers::FClassFinder<UFQSoulGaugeWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/Soul/WBP_SoulArmourGaugeWidget.WBP_SoulArmourGaugeWidget_C"));
-	check(ArmourWidgetRef.Class);
 	if (ArmourWidgetRef.Class)
 	{
 		mArmourGaugeWidget->SetWidgetClass(ArmourWidgetRef.Class);
@@ -88,7 +70,6 @@ void AFQSoulBase::BeginPlay()
 {
 	Super::BeginPlay();
 	GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mWalkSpeed;
-	SetCharacterControl();
 }
 
 void AFQSoulBase::Tick(float DeltaTime)
@@ -114,26 +95,35 @@ void AFQSoulBase::Tick(float DeltaTime)
 	CheckArmour(DeltaTime);
 }
 
-void AFQSoulBase::SetCharacterControl()
-{
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(mDefaultMappingContext, 0);
-		}
-	}
-}
-
 void AFQSoulBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-	Input->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQSoulBase::Move);
-	Input->BindAction(mPickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::SelectInteraction);
-	Input->BindAction(mCancelAction, ETriggerEvent::Triggered, this, &AFQSoulBase::CancelInteraction);
-	Input->BindAction(mDashAction, ETriggerEvent::Triggered, this, &AFQSoulBase::StartDash);
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(mPlayerInputDataAsset->mDefaultMappingContext, 0);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d] UEnhancedInputLocalPlayerSubsystem Is Not Vaild!!"), __LINE__);
+		}
+	}
+
+	if (mPlayerInputDataAsset)
+	{
+		UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
+		Input->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::Move);
+		Input->BindAction(mPlayerInputDataAsset->mBButtonAction, ETriggerEvent::Started, this, &AFQSoulBase::SelectInteraction);
+		Input->BindAction(mPlayerInputDataAsset->mBButtonAction, ETriggerEvent::Completed, this, &AFQSoulBase::CancelInteraction);
+		Input->BindAction(mPlayerInputDataAsset->mYButtonAction, ETriggerEvent::Triggered, this, &AFQSoulBase::AddSoulGauge);
+		Input->BindAction(mPlayerInputDataAsset->mAButtonAction, ETriggerEvent::Triggered, this, &AFQSoulBase::StartDash);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[SetupPlayerInputComponent %d] mPlayerInputDataAsset Is Not Vaild!!"), __LINE__);
+	}
 }
 
 void AFQSoulBase::Move(const FInputActionValue& Value)
@@ -188,6 +178,7 @@ void AFQSoulBase::CheckArmour(float DeltaTime)
 		{
 			UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d]GaugeWidget is nullptr!!"), __LINE__);
 		}
+
 		return;
 	}
 
@@ -195,8 +186,13 @@ void AFQSoulBase::CheckArmour(float DeltaTime)
 	EArmourType Type = CurrentArmourInterface->GetArmourType();
 	UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : %s"), *UEnum::GetValueAsString(Type));
 
+	IFQPlayerControllerInterface* PlayerController = Cast<IFQPlayerControllerInterface>(GetController());
+	if (PlayerController)
+	{
+		PlayerController->ChangeToArmour(Type);
+	}
+
 	CurrentArmourInterface->PickArmour();
-	CancelInteraction();
 }
 
 void AFQSoulBase::StartDash()
@@ -226,6 +222,15 @@ void AFQSoulBase::CancelInteraction()
 {
 	mArmourGaugeWidget->SetVisibility(false);
 	mbIsPressedArmourChange = false;
+}
+
+void AFQSoulBase::AddSoulGauge()
+{
+	IFQPlayerStateInterface* PlayerStateInterface = Cast<IFQPlayerStateInterface>(GetPlayerState());
+	if (PlayerStateInterface)
+	{
+		PlayerStateInterface->AddSoulGauge(5);
+	}
 }
 
 IFQArmourInterface* AFQSoulBase::CheckNearArmour()
