@@ -6,6 +6,11 @@
 
 UFQ_GameInstance_InGame::UFQ_GameInstance_InGame()
 {
+	FQ_LocalMulti::FQLocalMultiPlayerInfomation PlayerInfomation;
+	PlayerInfomation.bSpawnLocalPlayer = true;
+	PlayerInfomation.mSoulType = ESoulType::Sword;
+	PlayerInfomation.mArmourType = EArmourType::End;
+	mLocalMultiPlayerArr.Add(0, PlayerInfomation);
 }
 
 void UFQ_GameInstance_InGame::SavePlayerInfomation(APawn* Player)
