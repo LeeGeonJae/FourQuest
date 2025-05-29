@@ -2,6 +2,7 @@
 
 
 #include "FQSoulGaugeWidget.h"
+
 #include "Components\RadialSlider.h"
 
 UFQSoulGaugeWidget::UFQSoulGaugeWidget()
@@ -10,13 +11,8 @@ UFQSoulGaugeWidget::UFQSoulGaugeWidget()
 
 void UFQSoulGaugeWidget::SetChargeGaugeValueSet(float InValue)
 {
-	if (mArmourChargeGauge)
+	if (mChargeGauge)
 	{
-		mArmourChargeGauge->SetValue(InValue);
+		mChargeGauge->SetValue(InValue);
 	}
-}
-
-void UFQSoulGaugeWidget::NativeConstruct()
-{
-	mArmourChargeGauge = Cast<URadialSlider>(GetWidgetFromName(TEXT("ChargeGauge")));
 }

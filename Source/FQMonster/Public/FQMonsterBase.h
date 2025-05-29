@@ -10,6 +10,16 @@
 
 class AFQMonsterManager;
 
+UENUM()
+enum class EMonsterState : uint8
+{
+	Idle UMETA(DisplayName = "Idle"),
+	Patrol UMETA(DisplayName = "Patrol"),
+	Chase UMETA(DisplayName = "Chase"),
+	Attack UMETA(DisplayName = "Attack"),
+	Death UMETA(DisplayName = "Death")
+};
+
 UCLASS()
 class FQMONSTER_API AFQMonsterBase : public ACharacter, public IFQPlayerAttackableInterface
 {
@@ -44,6 +54,8 @@ public:
 	FName GroupID=TEXT("None");
 
 	FVector SpawnedLocation;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
+	EMonsterState mMonsterState;
 
 protected:
 	AFQMonsterManager* Manager;

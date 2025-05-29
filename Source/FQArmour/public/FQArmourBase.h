@@ -27,15 +27,15 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category = Box)
+	UPROPERTY(VisibleAnywhere, Category = FQBox)
 	TObjectPtr<class UBoxComponent> mTrigger;
 
-	UPROPERTY(VisibleAnywhere, Category = Box)
+	UPROPERTY(VisibleAnywhere, Category = FQBox)
 	TObjectPtr<class UStaticMeshComponent> mMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Armour, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour, Meta = (AllowPrivateAccess = "true"))
 	EArmourType mArmourType;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UFQWidgetComponent> mArmourWidget;
 };

@@ -23,9 +23,9 @@ protected:
 
 protected:
     // 타입별 텍스처 (에디터에서 설정 가능)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armour")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
     UTexture2D* mKnightArmourTexture;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armour")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
     UTexture2D* mMagicArmourTexture;
 };
