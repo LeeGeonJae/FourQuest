@@ -30,6 +30,7 @@ void UFQPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		return;
 	}
 
+	// Speed
 	mVelocity = mMovement->Velocity;
 	mGroundSpeed = mVelocity.Size2D();
 	mNormalizedSpeed = mGroundSpeed / mMovement->GetMaxSpeed();
@@ -44,15 +45,6 @@ void UFQPlayerAnimInstance::SetHitReacting(bool HitReacting)
 	}
 
 	mbHitReacting = HitReacting;
-	mOwner->SetHitReacting(mbHitReacting);	
+	mOwner->SetHitReacting(mbHitReacting);
 }
 
-void UFQPlayerAnimInstance::ProcessNextSection(const FName& SectionName)
-{
-	if (!mOwner)
-	{
-		return;
-	}
-
-	mOwner->ProcessNextSection(SectionName);
-}

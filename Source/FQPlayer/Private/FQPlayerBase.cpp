@@ -13,6 +13,8 @@
 // Sets default values
 AFQPlayerBase::AFQPlayerBase()
 {
+	mMoveDir = FVector::Zero();
+
 	// Pawn
 	// 컨트롤러에 의한 카메라 회전 방지
 	bUseControllerRotationPitch = false;
@@ -50,7 +52,6 @@ void AFQPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
 	EnhancedInputComponent->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQPlayerBase::Move);
-	
 }
 
 void AFQPlayerBase::SetHitReacting(bool HitReacting)
@@ -86,9 +87,14 @@ void AFQPlayerBase::BeginPlay()
 
 void AFQPlayerBase::Move(const FInputActionValue& Value)
 {
+	if (!CanMove())
+	{
+		return;
+	}
+
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	//UE_LOG(LogTemp, Log, TEXT("Movement : %f, %f"), MovementVector.X, MovementVector.Y);
+	UE_LOG(LogTemp, Log, TEXT("[Move] Default : %f, %f"), MovementVector.X, MovementVector.Y);
 	
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -98,6 +104,9 @@ void AFQPlayerBase::Move(const FInputActionValue& Value)
 
 	AddMovementInput(ForwardDirection, MovementVector.X);
 	AddMovementInput(RightDirection, MovementVector.Y);
+
+	FVector2D NormalizedVector = MovementVector.GetSafeNormal();
+	mMoveDir = FVector(NormalizedVector.X, NormalizedVector.Y, 0.0f);
 }
 
 void AFQPlayerBase::SetInputMappingContext()

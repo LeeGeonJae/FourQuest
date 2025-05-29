@@ -24,6 +24,9 @@ protected:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
+	UFUNCTION(BlueprintCallable)
+	void SetHitReacting(bool HitReacting);
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
 	TObjectPtr<class AFQPlayerBase> mOwner;
 	
@@ -45,13 +48,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
 	float mMovingThreshould;
 
-	// Knight
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
 	uint8 mbHitReacting : 1;
-
-	UFUNCTION(BlueprintCallable)
-	void SetHitReacting(bool HitReacting);
-
-	UFUNCTION(BlueprintCallable)
-	void ProcessNextSection(const FName& SectionName);
 };

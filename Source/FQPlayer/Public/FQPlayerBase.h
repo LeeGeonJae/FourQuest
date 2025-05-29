@@ -27,13 +27,15 @@ public:
 
 	void SetHitReacting(bool HitReacting);
 
-	virtual void ProcessNextSection(const FName& SectionName) PURE_VIRTUAL(AFQPlayerBase::ProcessNextSection, );
+	virtual void SetAnimInstance() PURE_VIRTUAL(AFQPlayerBase::SetAnimInstance, );
 
 protected:
 	virtual void BeginPlay() override;
 
 	// Setting
 	virtual void SetInputMappingContext();
+
+	virtual bool CanMove() PURE_VIRTUAL(AFQPlayerBase::CanMove, return true;);
 
 	// Input
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
@@ -42,7 +44,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> mMoveAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Input, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "기본 속도"))
 	float mDefaultSpeed;
 
 	void Move(const FInputActionValue& Value);
@@ -55,15 +56,14 @@ protected:
 	TObjectPtr<class UNiagaraSystem> mEffectSystem;
 
 	// Hit 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Knight, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
 	EHitState mHitState;
 
 	// X 버튼을 길게 누르고 있는 상태인지 확인하는 플래그
 	uint8 mbIsPressedX : 1;
 
-private:
-	
-	void SetMovement();
+	FVector mMoveDir;
 
-	
+private:
+	void SetMovement();
 };

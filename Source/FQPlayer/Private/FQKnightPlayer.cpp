@@ -9,47 +9,66 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "FQGameCore/Player/FQPlayerAttackableInterface.h"
+#include "FQPlayer/Public/FQKnightDataAsset.h"
+
 AFQKnightPlayer::AFQKnightPlayer()
 {
-	// Dash 
-	mDashSpeed = 500.0f;
-	mDashDuration = 0.5f;
-	mDashCoolTime = 1.0f;
-	mbCanDash = false;
-	mbIsDashing = false;
+	// Bash 
+	mbCanBash = true;
+	mbIsBashing = false;
+	mBashVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("BashVolume"));
+	mBashVolume->SetupAttachment(RootComponent);
 
 	// Knight
 	mSwordAttackState = EKnightSwordAttackState::None;
 	mSwordAttackComboState = EKnightSwordAttackComboState::None;
-	mSwordAttackCoolTime = 0.0f;
-	mSwordAttackWaitTime1 = 0.0f;
-	mSwordAttackWaitTime2 = 0.0f;
-
 	mSwordAttackVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("SwordAttackVolume"));
 	mSwordAttackVolume->SetupAttachment(RootComponent);
+
+	// Shield
+	mShieldState = EKnightShieldState::None;
+	mbIsShielding = false;
+	mShieldMoveAngle = 0.0f;
+	mShieldRotation = FRotator::ZeroRotator;
+	mShieldVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("ShieldVolume"));
+	mShieldVolume->SetupAttachment(RootComponent);
 }
 
 void AFQKnightPlayer::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (mbIsDashing && mDashCurve)
+	if (!mKnightDataAsset)
 	{
-		mDashElapsedTime += DeltaSeconds;
-		float NormalizedTime = FMath::Clamp(mDashElapsedTime / mDashDuration, 0.0f, 1.0f);
+		return;
+	}
 
-		mDashDirection = GetLastMovementInputVector().GetSafeNormal();
-		if (mDashDirection.IsZero())
+	if (mbIsBashing && mKnightDataAsset->mBashCurve)
+	{
+		
+		mBashElapsedTime += DeltaSeconds;
+		float NormalizedTime = FMath::Clamp(mBashElapsedTime / mKnightDataAsset->mBashDuration, 0.0f, 1.0f);
+
+		mBashDirection = GetLastMovementInputVector().GetSafeNormal();
+		if (mBashDirection.IsZero())
 		{
-			mDashDirection = GetActorForwardVector();
+			mBashDirection = GetActorForwardVector();
 		}
 
-		AddMovementInput(mDashDirection, mDashCurve->GetFloatValue(NormalizedTime));
+		AddMovementInput(mBashDirection, mKnightDataAsset->mBashCurve->GetFloatValue(NormalizedTime));
 
-		if (mDashElapsedTime >= mDashDuration)
+		if (mBashElapsedTime >= mKnightDataAsset->mBashDuration)
 		{
-			EndDash();
+			EndBash();
 		}
+	}
+
+	if (mShieldState == EKnightShieldState::Shield)
+	{
+		FRotator CurrentRotation = GetActorRotation();
+		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, mShieldRotation, DeltaSeconds, mKnightDataAsset->mShieldRotationSpeed);
+		SetActorRotation(NewRotation);
 	}
 }
 
@@ -59,11 +78,19 @@ void AFQKnightPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
-	EnhancedInputComponent->BindAction(mDashAction, ETriggerEvent::Started, this, &AFQKnightPlayer::Dash);
+	// Bash (A)
+	EnhancedInputComponent->BindAction(mBashAction, ETriggerEvent::Started, this, &AFQKnightPlayer::Bash);
+
+	// Sword Attack (X)
 	EnhancedInputComponent->BindAction(mSwordAttackAction, ETriggerEvent::Started, this, &AFQKnightPlayer::StartSwordAttack);
 	EnhancedInputComponent->BindAction(mSwordAttackAction, ETriggerEvent::Triggered, this, &AFQKnightPlayer::PressedSwordAttack);
 	EnhancedInputComponent->BindAction(mSwordAttackAction, ETriggerEvent::Completed, this, &AFQKnightPlayer::EndSwordAttack);
 	EnhancedInputComponent->BindAction(mSwordAttackAction, ETriggerEvent::Canceled, this, &AFQKnightPlayer::EndSwordAttack);
+
+	// Shield (Right Stick)
+	EnhancedInputComponent->BindAction(mShieldAction, ETriggerEvent::Started, this, &AFQKnightPlayer::StartShieldMove);
+	EnhancedInputComponent->BindAction(mShieldAction, ETriggerEvent::Triggered, this, &AFQKnightPlayer::ShieldMove);
+	EnhancedInputComponent->BindAction(mShieldAction, ETriggerEvent::Completed, this, &AFQKnightPlayer::EndShieldMove);
 }
 
 void AFQKnightPlayer::BeginPlay()
@@ -71,6 +98,22 @@ void AFQKnightPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	SetInputMappingContext();
+
+	if (mKnightDataAsset)
+	{
+		mDefaultSpeed = mKnightDataAsset->mDefaultSpeed;
+		GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
+	}
+
+	mBashVolume->OnComponentBeginOverlap.AddDynamic(this, &AFQKnightPlayer::OnBashVolumeBeginOverlap);
+	mShieldVolume->OnComponentBeginOverlap.AddDynamic(this, &AFQKnightPlayer::OnShieldVolumeBeginOverlap);
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+	{
+		return;
+	}
+	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQKnightPlayer::OnAnimMontageEnded);
 }
 
 void AFQKnightPlayer::SetInputMappingContext()
@@ -84,9 +127,208 @@ void AFQKnightPlayer::SetInputMappingContext()
 	}
 }
 
-void AFQKnightPlayer::ProcessNextSection(const FName& SectionName)
+bool AFQKnightPlayer::CanMove()
 {
+	switch (mSwordAttackState)
+	{
+	case EKnightSwordAttackState::Attack1 :
+	{
+		if (mbIsPressedX)
+		{
+			return false;
+		}
+		else
+		{
+			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+			if (!AnimInstance)
+			{
+				return false;
+			}
+
+			if (AnimInstance->Montage_IsPlaying(mSwordAttackAnim1))
+			{
+				return false;
+			}
+		}
+	}
+	break;
+	case EKnightSwordAttackState::Attack2 :
+	{
+		if (mbIsPressedX)
+		{
+			return false;
+		}
+		else
+		{
+			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+			if (!AnimInstance)
+			{
+				return false;
+			}
+
+			if (AnimInstance->Montage_IsPlaying(mSwordAttackAnim2))
+			{
+				return false;
+			}
+		}
+	}
+	break;
+	case EKnightSwordAttackState::Attack3:
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (!AnimInstance)
+		{
+			return false;
+		}
+
+		if (AnimInstance->Montage_IsPlaying(mSwordAttackAnim3))
+		{
+			return false;
+		}
+	}
+	break;
+	}
+	
+	return true;
+}
+
+void AFQKnightPlayer::ProcessNextSection()
+{
+	// X버튼을 꾹 누르고 있을 때
 	if (!mbIsPressedX)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[ProcessNextSection] 콤보 상태로 전환"));
+
+	mSwordAttackComboState = EKnightSwordAttackComboState::Combo;
+}
+
+void AFQKnightPlayer::EnableSwordAttackVolume()
+{
+	if (!mSwordAttackVolume)
+	{
+		return;
+	}
+
+	// Debug
+	UE_LOG(LogTemp, Log, TEXT("[EnableSwordAttackVolume]"));
+
+	mSwordAttackVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void AFQKnightPlayer::DisableSwordAttackVolume()
+{
+	if (!mSwordAttackVolume)
+	{
+		return;
+	}
+
+	// Debug
+	UE_LOG(LogTemp, Log, TEXT("[DisableSwordAttackVolume]"));
+
+	CheckSwordAttackVolume();
+
+	mSwordAttackVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AFQKnightPlayer::EnableBashVolume()
+{
+	if (!mBashVolume)
+	{
+		return;
+	}
+
+	// Debug
+	UE_LOG(LogTemp, Log, TEXT("[EnableBashVolume]"));
+
+	mBashVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+	// 이미 Bash Volume에 오버랩된 액터 밀어내기
+	CheckBashVolume();
+}
+
+void AFQKnightPlayer::DisableBashVolume()
+{
+	if (!mBashVolume)
+	{
+		return;
+	}
+
+	// Debug
+	UE_LOG(LogTemp, Log, TEXT("[DisableBashVolume]"));
+
+	mBashVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AFQKnightPlayer::EnableShieldVolume()
+{
+	if (!mShieldVolume)
+	{
+		return;
+	}
+
+	// Debug
+	UE_LOG(LogTemp, Log, TEXT("[EnableShieldVolume]"));
+
+	mShieldVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+	// 이미 Shield Volume에 오버랩된 액터 밀어내기
+	CheckShiedVolume();
+}
+
+void AFQKnightPlayer::DisableShieldVolume()
+{
+	if (!mShieldVolume)
+	{
+		return;
+	}
+
+	// Debug
+	UE_LOG(LogTemp, Log, TEXT("[DisableShieldVolume]"));
+
+	mShieldVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+float AFQKnightPlayer::GetShieldMoveAngle()
+{
+	return mShieldMoveAngle;
+}
+
+bool AFQKnightPlayer::IsHoldShield()
+{
+	if (mShieldState == EKnightShieldState::Shield)
+	{
+		return true;
+	}
+	return false;
+}
+
+void AFQKnightPlayer::SetAnimInstance()
+{
+	if (!mKnightAnimInstanceClass)
+	{
+		return;
+	}
+
+	GetMesh()->SetAnimInstanceClass(mKnightAnimInstanceClass);
+}
+
+void AFQKnightPlayer::Bash()
+{
+	// R스킬 실행 중일 때
+	if (!(mShieldState == EKnightShieldState::None || mShieldState == EKnightShieldState::CoolDown))
+	{
+		return;
+	}
+
+	if (!mbCanBash)
+	{
+		return;
+	}
+
+	if (mHitState == EHitState::HitReacting)
 	{
 		return;
 	}
@@ -97,105 +339,109 @@ void AFQKnightPlayer::ProcessNextSection(const FName& SectionName)
 		return;
 	}
 
-	if (!AnimInstance->Montage_IsPlaying(mSwordAttackAnim))
+	if (!AnimInstance->Montage_IsPlaying(mBashAnim))
 	{
-		UE_LOG(LogTemp, Log, TEXT("[ProcessNextSection] Section Name : %s"), *SectionName.ToString());
-
-		AnimInstance->Montage_Play(mSwordAttackAnim);
-		AnimInstance->Montage_JumpToSection(SectionName, mSwordAttackAnim);
+		AnimInstance->Montage_Play(mBashAnim);
 	}
 
-	if (SectionName == FName("SwordAttack2"))
-	{
-		mSwordAttackState = EKnightSwordAttackState::Attack2;
-	}
-	else if (SectionName == FName("SwordAttack3"))
-	{
-		mSwordAttackState = EKnightSwordAttackState::Attack3;
-
-		GetWorld()->GetTimerManager().ClearTimer(mKnightComboTimer);
-
-		ResetCombo();
-	}
-}
-
-void AFQKnightPlayer::EnableSwordAttackVolume()
-{
-	if (!mSwordAttackVolume)
-	{
-		return;
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("[EnableSwordAttackVolume]"));
-
-	mSwordAttackVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
-	DrawDebugBox(GetWorld(), mSwordAttackVolume->GetComponentLocation(), mSwordAttackVolume->Bounds.BoxExtent, FColor::Magenta, false, 1.0f);
-}
-
-void AFQKnightPlayer::DisableSwordAttackVolume()
-{
-	if (!mSwordAttackVolume)
-	{
-		return;
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("[DisableSwordAttackVolume]"));
-
-	FlushPersistentDebugLines(GetWorld());
-}
-
-void AFQKnightPlayer::Dash()
-{
-	mbCanDash = true;
-
-	if (mbCanDash)
-	{
-		StartDash();
-	}
+	StartBash();
 }
 
 void AFQKnightPlayer::StartSwordAttack()
 {
+	// R스킬 실행 중일 때
+	if (mShieldState == EKnightShieldState::Shield)
+	{
+		return;
+	}
+
 	if (mHitState == EHitState::HitReacting)
 	{
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[StartSwordAttack] Function Start"));
-
-	if (mSwordAttackComboState == EKnightSwordAttackComboState::CanBeCombo)
+	if (mSwordAttackComboState == EKnightSwordAttackComboState::None)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[StartSwordAttack] Combo"));
+		// 공격 입력이 처음으로 들어왔을 때
+		UE_LOG(LogTemp, Log, TEXT("[StartSwordAttack] 공격 입력이 처음으로 들어왔을 때"));
 
+		if (mSwordAttackState == EKnightSwordAttackState::CoolDown)
+		{
+			return;
+		}
+
+		// 공격 상태 설정
+		mSwordAttackState = EKnightSwordAttackState::Attack1;
+
+		// 애니메이션 재생
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (!AnimInstance)
+		{
+			return;
+		}
+		AnimInstance->Montage_Play(mSwordAttackAnim1);
+
+		// 콤보 가능 상태 설정
+		mSwordAttackComboState = EKnightSwordAttackComboState::CanBeCombo;
+		GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
+		GetWorld()->GetTimerManager().SetTimer(mSwordAttackComboTimer, this, &AFQKnightPlayer::ResetSwordAttackCombo, mKnightDataAsset->mSwordAttackWaitTime1, false);
+	}
+	else if (mSwordAttackComboState == EKnightSwordAttackComboState::CanBeCombo)
+	{ 
+		// 입력 대기 시간 내에 입력이 들어왔을 때
+		UE_LOG(LogTemp, Log, TEXT("[StartSwordAttack] 입력 대기 시간 내에 입력이 들어왔을 때"));
+
+		// 콤보 가능 상태 설정
 		mSwordAttackComboState = EKnightSwordAttackComboState::Combo;
 
 		switch (mSwordAttackState)
 		{
 		case EKnightSwordAttackState::Attack1:
 		{
+			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+			if (!AnimInstance)
+			{
+				return;
+			}
+
+			// 이전 애니메이션이 끝났을 때
+			if (AnimInstance->Montage_IsPlaying(mSwordAttackAnim1))
+			{
+				return;
+			}
+
 			mSwordAttackState = EKnightSwordAttackState::Attack2;
-			ProcessSwordAttack();
+
+			AnimInstance->Montage_Play(mSwordAttackAnim2);
+
+			GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
+			GetWorld()->GetTimerManager().SetTimer(mSwordAttackComboTimer, this, &AFQKnightPlayer::ResetSwordAttackCombo,mKnightDataAsset->mSwordAttackWaitTime2, false);
+
+			UE_LOG(LogTemp, Log, TEXT("[StartSwordAttack] Attack2 Anim 재생"));
 		}
 		break;
 		case EKnightSwordAttackState::Attack2:
 		{
+			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+			if (!AnimInstance)
+			{
+				return;
+			}
+
+			// 이전 애니메이션이 끝났을 때
+			if (AnimInstance->Montage_IsPlaying(mSwordAttackAnim2))
+			{
+				return;
+			}
+
 			mSwordAttackState = EKnightSwordAttackState::Attack3;
-			ProcessSwordAttack();
+
+			AnimInstance->Montage_Play(mSwordAttackAnim3);
+
+			UE_LOG(LogTemp, Log, TEXT("[StartSwordAttack] Attack3 Anim 재생"));
 		}
 		break;
 		}
-	}
-	else
-	{
-		// 공격 입력이 처음으로 들어왔을 때
-		if (mSwordAttackState == EKnightSwordAttackState::CoolDown)
-		{
-			return;
-		}
-
-		mSwordAttackState = EKnightSwordAttackState::Attack1;
-		ProcessSwordAttack();
 	}
 }
 
@@ -207,35 +453,303 @@ void AFQKnightPlayer::EndSwordAttack()
 	}
 }
 
-void AFQKnightPlayer::StartDash()
+void AFQKnightPlayer::StartShieldMove()
 {
-	if (!mbIsDashing)
+	// A스킬 실행 중일때
+	if (mbIsBashing)
 	{
-		mbCanDash = false;
-		mbIsDashing = true;
-		mDashElapsedTime = 0.0f;
+		return;
+	}
 
-		GetCharacterMovement()->MaxWalkSpeed = mDashSpeed;
-		GetCharacterMovement()->MaxAcceleration = 200000.0f;
+	if (mShieldState == EKnightShieldState::CoolDown)
+	{
+		return;
+	}
 
-		GetWorld()->GetTimerManager().SetTimer(mDashCoolTimer, this, &AFQKnightPlayer::ResetDash, mDashCoolTime, false);
+	if (mHitState == EHitState::HitReacting)
+	{
+		return;
+	}
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+	{
+		return;
+	}
+
+	if (!mShieldUpAnim)
+	{
+		return;
+	}
+
+	if (!AnimInstance->Montage_IsPlaying(mShieldUpAnim))
+	{
+		AnimInstance->Montage_Play(mShieldUpAnim);
+	}
+
+	EnableShieldVolume();
+
+	GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed * (mKnightDataAsset->mShieldWalkRatio / 100.0f);
+}
+
+void AFQKnightPlayer::ShieldMove(const FInputActionValue& Value)
+{
+	if (mShieldState != EKnightShieldState::Shield)
+	{
+		return;
+	}
+
+	// 입력 X축 반전
+	FVector2D MovementVector = Value.Get<FVector2D>();
+	FVector2D NormalizedVector = MovementVector.GetSafeNormal();
+	NormalizedVector.X *= -1.0f;
+
+	// 플레이어 회전 각도 설정
+	float PlayerAngle = FMath::Atan2(NormalizedVector.Y, NormalizedVector.X) * (180.0f / PI);
+	mShieldRotation = FRotator(0.0f, PlayerAngle, 0.0f);
+
+	//UE_LOG(LogTemp, Log, TEXT("[ShieldMove] InputAngle : %f"), PlayerAngle);
+
+	// 플레이어가 바라보는 방향 벡터
+	FVector LookDir = FVector(NormalizedVector.X, NormalizedVector.Y, 0.0f);
+
+	// 사잇각 크기
+	float AngleDegrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(LookDir, mMoveDir)));
+
+	// 방향성 판단
+	FVector Cross = FVector::CrossProduct(LookDir, mMoveDir);
+	mShieldMoveAngle = AngleDegrees * FMath::Sign(Cross.Z);
+
+	//UE_LOG(LogTemp, Log, TEXT("[ShieldMove] mShieldMoveAngle : %f"), mShieldMoveAngle);
+}
+
+void AFQKnightPlayer::EndShieldMove()
+{
+	if (mShieldState != EKnightShieldState::Shield)
+	{
+		return;
+	}
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+	{
+		return;
+	}
+
+	if (!mShieldDownAnim)
+	{
+		return;
+	}
+
+	if (!AnimInstance->Montage_IsPlaying(mShieldDownAnim))
+	{
+		AnimInstance->Montage_Play(mShieldDownAnim);
+	}
+
+	mShieldState = EKnightShieldState::CoolDown;
+
+	DisableShieldVolume();
+
+	GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
+
+	FTimerDelegate TimerDel;
+	TimerDel.BindLambda([this]() { mShieldState = EKnightShieldState::None; });
+	GetWorld()->GetTimerManager().SetTimer(mShieldCoolTimer, TimerDel, mKnightDataAsset->mShieldCoolTime, false);
+}
+
+void AFQKnightPlayer::CheckShiedVolume()
+{
+	TArray<AActor*> OverlappedActors;
+	mShieldVolume->GetOverlappingActors(OverlappedActors);
+	for (AActor* Actor : OverlappedActors)
+	{
+		if (!Actor)
+		{
+			return;
+		}
+
+		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+		if (!RootComp)
+		{
+			return;
+		}
+
+		if (RootComp == GetRootComponent())
+		{
+			continue;
+		}
+
+		ApplyPush(Actor, mKnightDataAsset->mShieldStrength);
 	}
 }
 
-void AFQKnightPlayer::EndDash()
+void AFQKnightPlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	mbIsDashing = false;
+	if (Montage == mShieldUpAnim)
+	{
+		if (!bInterrupted)
+		{
+			mShieldState = EKnightShieldState::Shield;
+		}
+	}
+	else if (Montage == mSwordAttackAnim1)
+	{
+		if (mSwordAttackComboState == EKnightSwordAttackComboState::Combo)
+		{
+			mSwordAttackState = EKnightSwordAttackState::Attack2;
+			mSwordAttackComboState = EKnightSwordAttackComboState::CanBeCombo;
+
+			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+			if (!AnimInstance)
+			{
+				return;
+			}
+
+			// 몽타주 중복 실행 방지
+			if (AnimInstance->Montage_IsPlaying(mSwordAttackAnim2))
+			{
+				return;
+			}
+
+			AnimInstance->Montage_Play(mSwordAttackAnim2);
+			
+			GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
+			GetWorld()->GetTimerManager().SetTimer(mSwordAttackComboTimer, this, &AFQKnightPlayer::ResetSwordAttackCombo, mKnightDataAsset->mSwordAttackWaitTime2, false);
+
+			UE_LOG(LogTemp, Log, TEXT("[OnAnimMontageEnded] Attack2 Anim 재생"));
+		}
+	}
+	else if (Montage == mSwordAttackAnim2)
+	{
+		if (mSwordAttackComboState == EKnightSwordAttackComboState::Combo)
+		{
+			mSwordAttackState = EKnightSwordAttackState::Attack3;
+
+			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+			if (!AnimInstance)
+			{
+				return;
+			}
+
+			// 몽타주 중복 실행 방지
+			if (AnimInstance->Montage_IsPlaying(mSwordAttackAnim3))
+			{
+				return;
+			}
+
+			AnimInstance->Montage_Play(mSwordAttackAnim3);
+
+			UE_LOG(LogTemp, Log, TEXT("[OnAnimMontageEnded] Attack3 Anim 재생"));
+		}
+	}
+	else if (Montage == mSwordAttackAnim3)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[OnAnimMontageEnded] 콤보 리셋"));
+
+		GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
+		ResetSwordAttackCombo();
+	}
+}
+
+void AFQKnightPlayer::OnShieldVolumeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
+	if (!RootComp)
+	{
+		return;
+	}
+
+	if (RootComp == GetRootComponent())
+	{
+		return;
+	}
+
+	ApplyPush(OtherActor, mKnightDataAsset->mShieldStrength);
+}
+
+void AFQKnightPlayer::StartBash()
+{
+	if (mbIsBashing)
+	{
+		return;
+	}
+
+	mbCanBash = false;
+	mbIsBashing = true;
+	mBashElapsedTime = 0.0f;
+
+	GetCharacterMovement()->MaxWalkSpeed = mKnightDataAsset->mBashSpeed;
+	GetCharacterMovement()->MaxAcceleration = 200000.0f;
+
+	GetWorld()->GetTimerManager().SetTimer(mBashCoolTimer, this, &AFQKnightPlayer::ResetBash, mKnightDataAsset->mBashCoolTime, false);
+}
+
+void AFQKnightPlayer::EndBash()
+{
+	mbIsBashing = false;
 
 	GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
 	GetCharacterMovement()->MaxAcceleration = 2048.0f;
 }
 
-void AFQKnightPlayer::ResetDash()
+void AFQKnightPlayer::ResetBash()
 {
-	mbCanDash = true;
+	mbCanBash = true;
 }
 
-void AFQKnightPlayer::ResetCombo()
+void AFQKnightPlayer::CheckBashVolume()
+{
+	TArray<AActor*> OverlappedActors;
+	mBashVolume->GetOverlappingActors(OverlappedActors);
+	for (AActor* Actor : OverlappedActors)
+	{
+		if (!Actor)
+		{
+			return;
+		}
+
+		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+		if (!RootComp)
+		{
+			return;
+		}
+
+		if (RootComp == GetRootComponent())
+		{
+			continue;
+		}
+
+		ApplyPush(Actor, mKnightDataAsset->mBashStrength);
+	}
+}
+
+void AFQKnightPlayer::OnBashVolumeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
+	if (!RootComp)
+	{
+		return;
+	}
+
+	if (RootComp == GetRootComponent())
+	{
+		return;
+	}
+
+	ApplyPush(OtherActor, mKnightDataAsset->mBashStrength);
+}
+
+void AFQKnightPlayer::ResetSwordAttackCombo()
 {
 	UE_LOG(LogTemp, Log, TEXT("[Timer] ResetCombo"));
 
@@ -243,11 +757,11 @@ void AFQKnightPlayer::ResetCombo()
 
 	mSwordAttackState = EKnightSwordAttackState::CoolDown;
 
-	GetWorld()->GetTimerManager().ClearTimer(mKnightCoolTimer);
-	GetWorld()->GetTimerManager().SetTimer(mKnightCoolTimer, this, &AFQKnightPlayer::ResetCoolDown, mSwordAttackCoolTime, false);
+	GetWorld()->GetTimerManager().ClearTimer(mSwordAttackCoolTimer);
+	GetWorld()->GetTimerManager().SetTimer(mSwordAttackCoolTimer, this, &AFQKnightPlayer::ResetSwordAttackCoolDown, mKnightDataAsset->mSwordAttackCoolTime, false);
 }
 
-void AFQKnightPlayer::ResetCoolDown()
+void AFQKnightPlayer::ResetSwordAttackCoolDown()
 {
 	UE_LOG(LogTemp, Log, TEXT("[Timer] ResetCoolDown"));
 
@@ -256,10 +770,68 @@ void AFQKnightPlayer::ResetCoolDown()
 
 void AFQKnightPlayer::ProcessSwordAttack()
 {
+	if (mSwordAttackState == EKnightSwordAttackState::None)
+	{
+		return;
+	}
+
+	// X버튼을 짧게 누를 때 
 	if (mbIsPressedX)
 	{
 		return;
 	}
+}
+
+void AFQKnightPlayer::PressedSwordAttack()
+{
+	mbIsPressedX = true;
+}
+
+void AFQKnightPlayer::CheckSwordAttackVolume()
+{
+	TArray<AActor*> OverlappedActors;
+	mSwordAttackVolume->GetOverlappingActors(OverlappedActors);
+	for (AActor* Actor : OverlappedActors)
+	{
+		if (!Actor)
+		{
+			return;
+		}
+
+		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+		if (!RootComp)
+		{
+			return;
+		}
+
+		if (RootComp == GetRootComponent())
+		{
+			continue;
+		}
+
+		if (mKnightDataAsset->mSwordAttackableTypes.IsEmpty())
+		{
+			return;
+		}
+
+		if (!mKnightDataAsset->mSwordAttackableTypes.Contains(RootComp->GetCollisionObjectType()))
+		{
+			continue;
+		}
+
+		ApplyDamage(Actor);
+	}
+}
+
+void AFQKnightPlayer::ApplyDamage(AActor* AttackableActor)
+{
+	IFQPlayerAttackableInterface* PlayerAttackableInterface = Cast<IFQPlayerAttackableInterface>(AttackableActor);
+	if (!PlayerAttackableInterface)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[ApplyDamage] Current Type : %s"), *UEnum::GetValueAsString(mSwordAttackState));
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (!AnimInstance)
@@ -271,68 +843,34 @@ void AFQKnightPlayer::ProcessSwordAttack()
 	{
 	case EKnightSwordAttackState::Attack1:
 	{
-		UE_LOG(LogTemp, Log, TEXT("[ProcessSwordAttack] SwordAttack1"));
-
-		if (!AnimInstance->Montage_IsPlaying(mSwordAttackAnim))
-		{
-			AnimInstance->Montage_Play(mSwordAttackAnim);
-			;
-			mSwordAttackComboState = EKnightSwordAttackComboState::CanBeCombo;
-
-			GetWorld()->GetTimerManager().ClearTimer(mKnightComboTimer);
-
-			GetWorld()->GetTimerManager().SetTimer(mKnightComboTimer, this, &AFQKnightPlayer::ResetCombo, mSwordAttackWaitTime1, false);
-		}
+		PlayerAttackableInterface->TakeDamageByPlayer(AttackableActor, mKnightDataAsset->mSwordAttackDamage1);
 	}
 	break;
 	case EKnightSwordAttackState::Attack2:
 	{
-		if (mSwordAttackComboState != EKnightSwordAttackComboState::Combo)
-		{
-			return;
-		}
-
-		UE_LOG(LogTemp, Log, TEXT("[ProcessSwordAttack] SwordAttack2"));
-
-		if (!AnimInstance->Montage_IsPlaying(mSwordAttackAnim))
-		{
-			AnimInstance->Montage_Play(mSwordAttackAnim);
-		}
-
-		AnimInstance->Montage_JumpToSection(FName("SwordAttack2"), mSwordAttackAnim);
-
-		mSwordAttackComboState = EKnightSwordAttackComboState::CanBeCombo;
-
-		GetWorld()->GetTimerManager().ClearTimer(mKnightComboTimer);
-
-		GetWorld()->GetTimerManager().SetTimer(mKnightComboTimer, this, &AFQKnightPlayer::ResetCombo, mSwordAttackWaitTime2, false);
+		PlayerAttackableInterface->TakeDamageByPlayer(AttackableActor, mKnightDataAsset->mSwordAttackDamage2);
 	}
 	break;
 	case EKnightSwordAttackState::Attack3:
 	{
-		if (mSwordAttackComboState != EKnightSwordAttackComboState::Combo)
-		{
-			return;
-		}
-
-		UE_LOG(LogTemp, Log, TEXT("[ProcessSwordAttack] SwordAttack3"));
-
-		if (!AnimInstance->Montage_IsPlaying(mSwordAttackAnim))
-		{
-			AnimInstance->Montage_Play(mSwordAttackAnim);
-		}
-
-		AnimInstance->Montage_JumpToSection(FName("SwordAttack3"), mSwordAttackAnim);
-
-		GetWorld()->GetTimerManager().ClearTimer(mKnightComboTimer);
-
-		ResetCombo();
+		// TODO : 쿨타임 상태로 너무 빨리 바뀌어서 여기로 안들어옴
+		ApplyPush(AttackableActor, mKnightDataAsset->mSwordAttackStrength);
 	}
 	break;
 	}
 }
 
-void AFQKnightPlayer::PressedSwordAttack()
+void AFQKnightPlayer::ApplyPush(AActor* AttackableActor, float Strength)
 {
-	mbIsPressedX = true;
+	IFQPlayerAttackableInterface* PlayerAttackableInterface = Cast<IFQPlayerAttackableInterface>(AttackableActor);
+	if (!PlayerAttackableInterface)
+	{
+		return;
+	}
+
+	FVector Forward = GetActorForwardVector();
+	Forward.Z = 0.f;
+	Forward.Normalize();
+
+	PlayerAttackableInterface->TakePushByPlayer(AttackableActor, Forward, Strength);
 }
