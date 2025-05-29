@@ -5,6 +5,7 @@
 #include "FQMonsterManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AFQMonsterBase::AFQMonsterBase()
@@ -14,6 +15,8 @@ AFQMonsterBase::AFQMonsterBase()
 
 	mbCanPush = true;
 	mPushCoolTime = 0.0f;
+
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("MonsterCollision"));
 }
 
 // Called when the game starts or when spawned

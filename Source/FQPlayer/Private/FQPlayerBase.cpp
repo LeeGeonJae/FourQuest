@@ -24,7 +24,7 @@ AFQPlayerBase::AFQPlayerBase()
 	// Capsule
 	// 캡슐 컴포넌트 크기 및 콜리전 설정
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCollision"));
 	
 	// Input
 	mDefaultSpeed = 200.0f;
@@ -33,7 +33,6 @@ AFQPlayerBase::AFQPlayerBase()
 	// 캐릭터 메쉬 설정
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -80.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	GetMesh()->SetCollisionProfileName(TEXT("PlayerCollision"));
 
 	// Effect
 	mEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SoulEffect"));

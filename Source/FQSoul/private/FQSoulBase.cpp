@@ -36,6 +36,7 @@ AFQSoulBase::AFQSoulBase()
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AFQSoulBase::OnOverlapBegin);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AFQSoulBase::OnOverlapEnd);
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("SoulCollision"));
 
 	// Movement Setup
 	GetCharacterMovement()->bOrientRotationToMovement = true;
