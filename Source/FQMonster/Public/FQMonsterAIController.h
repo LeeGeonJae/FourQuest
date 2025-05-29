@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "FQMonsterBase.h"
 #include "FQMonsterAIController.generated.h"
 
 class UAISenseConfig_Sight;
@@ -18,6 +19,8 @@ public:
 	AFQMonsterAIController();
 
 	void SetTargetActor(AActor* Actor);
+
+	void ChangeState(EMonsterState State);
 
 protected:
 	virtual void BeginPlay() override;

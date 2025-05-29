@@ -2,7 +2,6 @@
 
 
 #include "FQMonsterAIController.h"
-#include "FQMonsterBase.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -33,7 +32,18 @@ AFQMonsterAIController::AFQMonsterAIController()
 void AFQMonsterAIController::SetTargetActor(AActor* Actor)
 {
     GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
-    GetBlackboardComponent()->SetValueAsEnum(TEXT("CurrentState"), (uint8)EMonsterState::Chase);
+    ChangeState(EMonsterState::Chase);
+}
+
+void AFQMonsterAIController::ChangeState(EMonsterState State)
+{
+    //ai컨트롤러에서 블랙보드와 몬스터의 상태를 다 바꿔줌
+    GetBlackboardComponent()->SetValueAsEnum(TEXT("CurrentState"), (uint8)State);
+    AFQMonsterBase* Monster = GetPawn<AFQMonsterBase>();
+    if (Monster)
+    {
+        Monster->mMonsterState = State;
+    }
 }
 
 void AFQMonsterAIController::BeginPlay()
@@ -67,13 +77,7 @@ void AFQMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulu
                 // 감지 성공 시
                 AFQMonsterBase* Monster = Cast<AFQMonsterBase>(GetPawn());
                 Monster->ManagerSetTargetActor(Actor);
-                UE_LOG(LogTemp, Log, TEXT("target"));
             }
         }
-    }
-    else
-    {
-        // 시야에서 사라짐
-        //GetBlackboardComponent()->ClearValue(TEXT("TargetActor"));
     }
 }

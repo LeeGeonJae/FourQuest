@@ -40,7 +40,12 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void ManagerSetTargetActor(AActor* Actor);
+
+	void AttackPlayer(AActor* Actor);
 	
+	FName GetRandomSectionName();
+
+	void ApplyDamageToTarget();
 protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Stat")
 	float mCurrentHP;
@@ -53,8 +58,15 @@ public:
 	FName GroupID=TEXT("None");
 
 	FVector SpawnedLocation;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
 	EMonsterState mMonsterState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimationMontage")
+	UAnimMontage* AttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimationMontage")
+	AActor* TargetActor;
 
 protected:
 	AFQMonsterManager* Manager;

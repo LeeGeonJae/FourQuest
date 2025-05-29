@@ -7,15 +7,11 @@
 
 EBTNodeResult::Type UBTTask_ChangeState::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	AAIController* AIC = OwnerComp.GetAIOwner();
+	AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(OwnerComp.GetAIOwner());
 	if (AIC)
 	{
-		AFQMonsterBase* Monster = AIC->GetPawn<AFQMonsterBase>();
-		if (Monster)
-		{
-			Monster->mMonsterState = TargetState;
-			AIC->GetBlackboardComponent()->SetValueAsEnum(TEXT("CurrentState"), (uint8)TargetState);
-		}
+		AIC->ChangeState(TargetState);
+		
 	}
 	return EBTNodeResult::Succeeded;
 }

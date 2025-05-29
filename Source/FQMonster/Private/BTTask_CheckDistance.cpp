@@ -9,7 +9,7 @@
 
 EBTNodeResult::Type UBTTask_CheckDistance::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	AAIController* AIC = OwnerComp.GetAIOwner();
+	AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(OwnerComp.GetAIOwner());
 	if(AIC)
 	{
 		AActor* Target = Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
@@ -23,7 +23,7 @@ EBTNodeResult::Type UBTTask_CheckDistance::ExecuteTask(UBehaviorTreeComponent& O
 			{
 				if (Distance < Monster->mMonsterDataAsset->mAttackRange)
 				{
-					Monster->mMonsterState = TargetState;
+					AIC->ChangeState(TargetState);
 				}
 			}
 				break;
@@ -31,7 +31,7 @@ EBTNodeResult::Type UBTTask_CheckDistance::ExecuteTask(UBehaviorTreeComponent& O
 			{
 				if (Distance > Monster->mMonsterDataAsset->mAttackRange)
 				{
-					Monster->mMonsterState = TargetState;
+					AIC->ChangeState(TargetState);
 				}
 			}
 				break;

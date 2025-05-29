@@ -11,7 +11,8 @@ AFQMonsterBase::AFQMonsterBase()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	AttackMontage = nullptr;
+	TargetActor = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -53,7 +54,35 @@ void AFQMonsterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AFQMonsterBase::ManagerSetTargetActor(AActor* Actor)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Attack"));
+	if (!TargetActor)
+	{
+		TargetActor = Actor;
+	}
 	Manager->SetTargetActor(GroupID, Actor);
+}
+
+void AFQMonsterBase::AttackPlayer(AActor* Actor)
+{
+	if (AttackMontage)
+	{
+		FName SectionName = GetRandomSectionName();
+		UE_LOG(LogTemp, Warning, TEXT("%s"),*SectionName.ToString());
+		PlayAnimMontage(AttackMontage, 1.0f, SectionName);
+	}
+}
+
+FName AFQMonsterBase::GetRandomSectionName()
+{
+	const TArray<FName> Sections = { TEXT("Attack1"), TEXT("Attack2"), TEXT("Attack3"), TEXT("Attack4"), TEXT("Attack5") };
+	int32 Index = FMath::RandRange(0, Sections.Num() - 1);
+	return Sections[Index];
+}
+
+void AFQMonsterBase::ApplyDamageToTarget()
+{
+	UGameplayStatics::ApplyDamage(TargetActor, mMonsterDataAsset->mAttackPower, GetController(), this, UDamageType::StaticClass());
+	UE_LOG(LogTemp, Warning, TEXT("Attack"));
 }
 
 
