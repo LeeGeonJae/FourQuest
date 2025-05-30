@@ -17,10 +17,10 @@ UFQPlayerHUDWidget::UFQPlayerHUDWidget()
     , mCurrentFrameIndex()
     , mSoulType(ESoulType::Sword)
 {
-    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Blue/"), TEXT("BlueSoul"), 39, mBlueSoulBurningAnimations);
-    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Yellow/"), TEXT("YellowSoul"), 39, mYellowSoulBurningAnimations);
-    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Green/"), TEXT("GreenSoul"), 39, mGreenSoulBurningAnimations);
-    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Red/"), TEXT("RedSoul"), 39, mRedSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Props/Textures/ui/Player_HUD_Sprite/Blue/"), TEXT("BlueSoul"), 39, mBlueSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Props/Textures/ui/Player_HUD_Sprite/Yellow/"), TEXT("YellowSoul"), 39, mYellowSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Props/Textures/ui/Player_HUD_Sprite/Green/"), TEXT("GreenSoul"), 39, mGreenSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Props/Textures/ui/Player_HUD_Sprite/Red/"), TEXT("RedSoul"), 39, mRedSoulBurningAnimations);
 }
 
 void UFQPlayerHUDWidget::NativeConstruct()
@@ -69,6 +69,12 @@ void UFQPlayerHUDWidget::PlaySoulBurningAnimation(float DeltaTime)
 
 void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
 {
+    if (!mSkillBox || !mArmourType || !mSkill_X || !mSkill_A || !mSkill_R)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] UpdateArmourSkill Function Call Is Failed"), __LINE__);
+        return;
+    }
+
     if (InArmourType == EArmourType::End)
     {
         mSkillBox->SetVisibility(ESlateVisibility::Hidden);
@@ -79,6 +85,10 @@ void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
         mSkillBox->SetVisibility(ESlateVisibility::Visible);
         mArmourType->SetVisibility(ESlateVisibility::Visible);
         
+        if (mArmourTypeMap.Num() == 0 || mXSkillMap.Num() == 0 || mRSkillMap.Num() == 0 || mASkillMap.Num() == 0)
+        {
+            return;
+        }
         UTexture2D* ArmourTypeTexture = mArmourTypeMap[InArmourType];
         UTexture2D* SkillXTexture = mXSkillMap[InArmourType];
         UTexture2D* SkillATexture = mASkillMap[InArmourType];
@@ -98,9 +108,12 @@ void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
 
 void UFQPlayerHUDWidget::UpdateSoulGauge(float GaugeValue)
 {
-    UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHUDWidget %d] GaugeValue : %f"), __LINE__, GaugeValue);
+    if (!mSoulGauge)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] GaugeValue Function Is Failed!!"), __LINE__);
+        return;
+    }
     mSoulGauge->SetValue(GaugeValue);
-
     if (GaugeValue >= 1.f)
     {
         if (mSoulBurning)

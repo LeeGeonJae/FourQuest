@@ -27,7 +27,6 @@ AFQArmourBase::AFQArmourBase()
 	mTrigger->SetCollisionProfileName(TEXT("ArmourCollision"));
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Props/Armour/Item_Amor.Item_Amor'"));
-	check(BoxMeshRef.Object);
 	if (BoxMeshRef.Object)
 	{
 		mMesh->SetStaticMesh(BoxMeshRef.Object);
@@ -41,11 +40,9 @@ AFQArmourBase::AFQArmourBase()
 	mArmourWidget->SetupAttachment(mTrigger);
 	mArmourWidget->SetRelativeLocation(FVector(0.f, 0.f, 80.f));
 
-	static ConstructorHelpers::FClassFinder<UUserWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/Armour/WBP_ArmourType.WBP_ArmourType_C"));
-	check(ArmourWidgetRef.Class);
-	if (ArmourWidgetRef.Class)
+	if (mArmourWidgetClass)
 	{
-		mArmourWidget->SetWidgetClass(ArmourWidgetRef.Class);
+		mArmourWidget->SetWidgetClass(mArmourWidgetClass.Get());
 		mArmourWidget->SetWidgetSpace(EWidgetSpace::Screen);
 		mArmourWidget->SetDrawSize(FVector2D(10.f, 10.f));
 		mArmourWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);

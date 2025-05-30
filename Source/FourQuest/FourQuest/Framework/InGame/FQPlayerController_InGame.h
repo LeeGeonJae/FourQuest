@@ -52,6 +52,9 @@ private:
 
 	// GameMode의 Horizontal Box에 추가할 Player HUD Widget
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UFQPlayerHUDWidget> mPlayerHUDWidgetClass;
+
+	UPROPERTY()
 	TObjectPtr<class UUserWidget> mPlayerHUDWidget;
 
 	// 갑옷 타입과 영혼 타입에 따라 생성할 소울 캐릭터와 갑옷 캐릭터

@@ -51,10 +51,9 @@ AFQSoulBase::AFQSoulBase()
 	mArmourGaugeWidget->SetupAttachment(RootComponent);
 	mArmourGaugeWidget->SetRelativeLocation(FVector(30.f, 0.f, 80.f));
 	
-	static ConstructorHelpers::FClassFinder<UFQSoulGaugeWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/Soul/WBP_SoulArmourGaugeWidget.WBP_SoulArmourGaugeWidget_C"));
-	if (ArmourWidgetRef.Class)
+	if (mSoulGaugeWidget)
 	{
-		mArmourGaugeWidget->SetWidgetClass(ArmourWidgetRef.Class);
+		mArmourGaugeWidget->SetWidgetClass(mSoulGaugeWidget.Get());
 		mArmourGaugeWidget->SetWidgetSpace(EWidgetSpace::Screen);
 		mArmourGaugeWidget->SetDrawSize(FVector2D(20.f, 20.f));
 		mArmourGaugeWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);

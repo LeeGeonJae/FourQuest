@@ -54,6 +54,9 @@ protected:
 	TObjectPtr<class UFQSoulDataAsset> mSoulDataAsset;
 
 	// UI
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQUI)
+	TSubclassOf<class UFQSoulGaugeWidget> mSoulGaugeWidget;
+
 	UPROPERTY()
 	TObjectPtr<class UFQWidgetComponent> mArmourGaugeWidget;
 

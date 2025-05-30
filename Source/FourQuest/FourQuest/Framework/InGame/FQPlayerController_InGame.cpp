@@ -23,14 +23,13 @@
 
 AFQPlayerController_InGame::AFQPlayerController_InGame()
 {
-	ConstructorHelpers::FClassFinder<UUserWidget> PlayerHUDWidget(TEXT("/Game/Blueprints/HUD/WBP_PlayerWidget.WBP_PlayerWidget_C"));
-	if (PlayerHUDWidget.Class)
+	if (mPlayerHUDWidgetClass.Get())
 	{
-		mPlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDWidget.Class);
+		mPlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), mPlayerHUDWidgetClass.Get());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Faild Load Path : /Game/Blueprints/HUD/WBP_PlayerWidget.WBP_PlayerWidget"), __LINE__);
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Faild Load mPlayerHUDWidgetClass"), __LINE__);
 	}
 }
 
@@ -48,12 +47,18 @@ void AFQPlayerController_InGame::UpdateHUDSetting()
 	FQPlayerState->mArmourChangeDelegate.AddLambda([&](EArmourType NewArmourType)
 		{
 			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
-			FQPlayerHUDWidget->UpdateArmourSkill(NewArmourType);
+			if (FQPlayerHUDWidget)
+			{
+				FQPlayerHUDWidget->UpdateArmourSkill(NewArmourType);
+			}
 		});
 	FQPlayerState->mSoulGaugeDelegate.AddLambda([&](float CurrentSoulGauge)
 		{
 			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
-			FQPlayerHUDWidget->UpdateSoulGauge(CurrentSoulGauge);
+			if (FQPlayerHUDWidget)
+			{
+				FQPlayerHUDWidget->UpdateSoulGauge(CurrentSoulGauge);
+			}
 		});
 
 	// UFQPlayerHUDWidget에 소유 오브젝트 등록
