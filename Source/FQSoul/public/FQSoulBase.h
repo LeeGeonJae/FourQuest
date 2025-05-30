@@ -53,13 +53,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQData)
 	TObjectPtr<class UFQSoulDataAsset> mSoulDataAsset;
 
-	// UI
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQUI)
-	TSubclassOf<class UFQSoulGaugeWidget> mSoulGaugeWidget;
-
-	UPROPERTY()
-	TObjectPtr<class UFQWidgetComponent> mArmourGaugeWidget;
-
 private:
 	// 대시 변수
 	uint8 mbIsDashing : 1;

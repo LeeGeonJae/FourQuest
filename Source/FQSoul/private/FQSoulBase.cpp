@@ -45,24 +45,6 @@ AFQSoulBase::AFQSoulBase()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-
-	// Widget Component
-	mArmourGaugeWidget = CreateDefaultSubobject<UFQWidgetComponent>(TEXT("Widget"));
-	mArmourGaugeWidget->SetupAttachment(RootComponent);
-	mArmourGaugeWidget->SetRelativeLocation(FVector(30.f, 0.f, 80.f));
-	
-	if (mSoulGaugeWidget)
-	{
-		mArmourGaugeWidget->SetWidgetClass(mSoulGaugeWidget.Get());
-		mArmourGaugeWidget->SetWidgetSpace(EWidgetSpace::Screen);
-		mArmourGaugeWidget->SetDrawSize(FVector2D(20.f, 20.f));
-		mArmourGaugeWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		mArmourGaugeWidget->SetVisibility(false);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d] Is Not Vaild FQSoulGaugeWidget!!"), __LINE__);
-	}
 }
 
 void AFQSoulBase::BeginPlay()
@@ -159,27 +141,27 @@ void AFQSoulBase::CheckArmour(float DeltaTime)
 	if (!mbIsPressedArmourChange || mArmours.Num() == 0 || !mCurrentArmour) return;
 
 	// 시간이 안되면 리턴 & UI 표시
-	mArmourChangeTimer -= DeltaTime;
-	if (mArmourChangeTimer > 0.f)
-	{
-		if (mArmourGaugeWidget)
-		{
-			FVector WorldOffset = GetActorLocation() + FVector(0.f, 30.f, 80.f); // 앞쪽 + 위쪽
-			mArmourGaugeWidget->SetWorldLocation(WorldOffset);
-		}
+	//mArmourChangeTimer -= DeltaTime;
+	//if (mArmourChangeTimer > 0.f)
+	//{
+	//	if (mArmourGaugeWidget)
+	//	{
+	//		FVector WorldOffset = GetActorLocation() + FVector(0.f, 30.f, 80.f); // 앞쪽 + 위쪽
+	//		mArmourGaugeWidget->SetWorldLocation(WorldOffset);
+	//	}
 
-		UFQSoulGaugeWidget* GaugeWidget = Cast<UFQSoulGaugeWidget>(mArmourGaugeWidget->GetWidget());
-		if (GaugeWidget)
-		{
-			GaugeWidget->SetChargeGaugeValueSet(mArmourChangeTimer / mSoulDataAsset->mArmourDelayTime);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d]GaugeWidget is nullptr!!"), __LINE__);
-		}
+	//	UFQSoulGaugeWidget* GaugeWidget = Cast<UFQSoulGaugeWidget>(mArmourGaugeWidget->GetWidget());
+	//	if (GaugeWidget)
+	//	{
+	//		GaugeWidget->SetChargeGaugeValueSet(mArmourChangeTimer / mSoulDataAsset->mArmourDelayTime);
+	//	}
+	//	else
+	//	{
+	//		UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d]GaugeWidget is nullptr!!"), __LINE__);
+	//	}
 
-		return;
-	}
+	//	return;
+	//}
 
 	// 갑옷 타입 확인한 후 갑옷 입기
 	EArmourType Type = CurrentArmourInterface->GetArmourType();
@@ -209,17 +191,12 @@ void AFQSoulBase::StartDash()
 
 void AFQSoulBase::SelectInteraction()
 {
-	if (mCurrentArmour)
-	{
-		mArmourGaugeWidget->SetVisibility(true);
-	}
 	mbIsPressedArmourChange = true;
 	mArmourChangeTimer = mSoulDataAsset->mArmourDelayTime;
 }
 
 void AFQSoulBase::CancelInteraction()
 {
-	mArmourGaugeWidget->SetVisibility(false);
 	mbIsPressedArmourChange = false;
 }
 
