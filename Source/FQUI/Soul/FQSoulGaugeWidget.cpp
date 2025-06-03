@@ -9,7 +9,7 @@ UFQSoulGaugeWidget::UFQSoulGaugeWidget()
 {
 }
 
-void UFQSoulGaugeWidget::SetChargeGaugeValueSet(float InValue)
+void UFQSoulGaugeWidget::UpdateChargeGaugeValue(float InValue)
 {
 	if (mChargeGauge)
 	{

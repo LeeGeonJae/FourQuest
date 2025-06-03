@@ -23,6 +23,7 @@ class FOURQUEST_API AFQPlayerController_InGame : public APlayerController, publi
 public:
 	AFQPlayerController_InGame();
 
+	// Common Function
 	void UpdateHUDSetting();
 
 	// Interface Class Funtion
@@ -35,10 +36,12 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	// Common Function
 	void CreatePlayerCharacterByClass(TSubclassOf<class AFQPlayerBase> CharacterClass, const FTransform& SpawnTransform);
 	void CreateSoulCharacterByClass(TSubclassOf<class AFQSoulBase> CharacterClass, const FTransform& SpawnTransform);
+	void SpawnPlayerUIActor();
 
-	// UI Widget Input
+	// UI Widget Input Function
 	void HandlePickButton();
 	void HandleCancelButton();
 	void HandleMoveTriggered(const FInputActionValue& Value);
@@ -51,7 +54,11 @@ private:
 	TObjectPtr<class UFQPlayerInputDataAsset> mPlayerInputDataAsset;
 
 	UPROPERTY()
-	TObjectPtr<class UUserWidget> mPlayerHUDWidget;
+	TObjectPtr<class UFQPlayerHUDWidget> mPlayerHUDWidget;
+
+	// UI Actor
+	UPROPERTY()
+	TObjectPtr<class AFQPlayerUIActor> mPlayerOverheadUIActor;
 
 	// 갑옷 타입과 영혼 타입에 따라 생성할 소울 캐릭터와 갑옷 캐릭터
 	UPROPERTY(EditAnywhere, Category = FQCharacter, Meta = (AllowPrivateAccess = "true"))
@@ -65,4 +72,3 @@ private:
 	FVector2D mMoveDirection;
 	FTimerHandle mRepeatMoveTimerHandle;
 };
-

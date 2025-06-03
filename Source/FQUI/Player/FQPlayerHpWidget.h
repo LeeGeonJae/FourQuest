@@ -1,0 +1,51 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "FQUI/FQUserWidget.h"
+#include "FQGameCore\Common.h"
+#include "FQPlayerHpWidget.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class FQUI_API UFQPlayerHpWidget : public UFQUserWidget
+{
+	GENERATED_BODY()
+	
+public:
+	UFQPlayerHpWidget();
+
+	// Callback Function
+	void UpdateHp(float HpValue);
+	void UpdatePlayerControllerNumber(int32 PlayerControllerNumber, ESoulType SoulType);
+
+private:
+	// Parent Function
+	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQPlayer)
+	TMap<ESoulType, TSoftObjectPtr<UTexture2D>> mPlayerMap1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQPlayer)
+	TMap<ESoulType, TSoftObjectPtr<UTexture2D>> mPlayerMap2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQPlayer)
+	TMap<ESoulType, TSoftObjectPtr<UTexture2D>> mPlayerMap3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQPlayer)
+	TMap<ESoulType, TSoftObjectPtr<UTexture2D>> mPlayerMap4;
+
+private:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> mPlayerNumber;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> mHp;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> mHpDecrase;
+
+	float mMaxSize;
+	float mHpPercent;
+	float mHpDecrasePercent;
+};

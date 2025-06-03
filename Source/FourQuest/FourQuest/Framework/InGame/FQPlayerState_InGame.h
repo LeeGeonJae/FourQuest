@@ -20,6 +20,7 @@ public:
     FQ_PlayerStateDelegate::FQSoulTypeChangeDelegate mSoulChangeDelegate;
     FQ_PlayerStateDelegate::FQArmourTypeChangeDelegate mArmourChangeDelegate;
     FQ_PlayerStateDelegate::FQSoulGaugeSettingDelegate mSoulGaugeDelegate;
+    FQ_PlayerStateDelegate::FQPlayerHpUpdateDelegate mPlayerHpDelegate;
 
     // Interface Funtion
     virtual ESoulType GetSoulType() const override { return mSoulType; }
@@ -29,6 +30,11 @@ public:
     virtual void AddSoulGauge(const int32 AddValue) override;
     virtual void SetSoulGauge(const int32 NewValue) override;
     virtual int32 GetSoulGauge() const override { return mCurrentSoulGauge; }
+    virtual void SetMaxHp(const int32 NewValue) override { mMaxHp = NewValue; }
+    virtual int32 GetMaxHp() const override { return mMaxHp; }
+    virtual void SetHp(const int32 NewValue) override;
+    virtual void AddHp(const int32 AddValue) override;
+    virtual int32 GetHp() const override { return mCurrentHp; }
 
 protected:
     // Soul
@@ -37,6 +43,10 @@ protected:
     UPROPERTY(BlueprintReadWrite, Category = FQSoul)
     int32 mCurrentSoulGauge;
     int32 mMaxSoulGaue;
+
+    UPROPERTY(BlueprintReadWrite, Category = FQState)
+    int32 mMaxHp;
+    int32 mCurrentHp;
 
     // Armour
     UPROPERTY(BlueprintReadOnly, Category = FQArmour)
