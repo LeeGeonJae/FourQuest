@@ -61,43 +61,38 @@ void UFQPlayerHpWidget::UpdatePlayerControllerNumber(int32 PlayerControllerNumbe
 	}
 
 	// 플레이어 넘버 세팅
+	TSoftObjectPtr<UTexture2D>* TexturePtr = nullptr;
 	switch (PlayerControllerNumber)
 	{
 	case 0:
-	{
-		if (mPlayerMap1[SoulType] && mPlayerMap1[SoulType].IsValid())
-		{
-			UTexture2D* SettingTexture = mPlayerMap1[SoulType].LoadSynchronous();
-			mPlayerNumber->SetBrushFromTexture(SettingTexture);
-		}
-	}
-	break;
+		TexturePtr = mPlayerMap1.Find(SoulType);
+		break;
 	case 1:
-	{
-		if (mPlayerMap2[SoulType] && mPlayerMap2[SoulType].IsValid())
-		{
-			UTexture2D* SettingTexture = mPlayerMap1[SoulType].LoadSynchronous();
-			mPlayerNumber->SetBrushFromTexture(SettingTexture);
-		}
-	}
-	break;
+		TexturePtr = mPlayerMap2.Find(SoulType);
+		break;
 	case 2:
-	{
-		if (mPlayerMap3[SoulType] && mPlayerMap3[SoulType].IsValid())
-		{
-			UTexture2D* SettingTexture = mPlayerMap1[SoulType].LoadSynchronous();
-			mPlayerNumber->SetBrushFromTexture(SettingTexture);
-		}
-	}
-	break;
+		TexturePtr = mPlayerMap3.Find(SoulType);
+		break;
 	case 3:
+		TexturePtr = mPlayerMap4.Find(SoulType);
+		break;
+	}
+
+	if (TexturePtr)
 	{
-		if (mPlayerMap4[SoulType] && mPlayerMap4[SoulType].IsValid())
+		UTexture2D* LoadedTexture = TexturePtr->LoadSynchronous();
+		if (LoadedTexture)
 		{
-			UTexture2D* SettingTexture = mPlayerMap1[SoulType].LoadSynchronous();
-			mPlayerNumber->SetBrushFromTexture(SettingTexture);
+			mPlayerNumber->SetBrushFromTexture(LoadedTexture);
+			UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHpWidget %d] mPlayerNumber Image Changed Successfully"), __LINE__);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHpWidget %d] Failed to Load Texture for SoulType: %d"), __LINE__, (int32)SoulType);
 		}
 	}
-	break;
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHpWidget %d] TexturePtr is invalid or not found for SoulType: %d"), __LINE__, (int32)SoulType);
 	}
 }

@@ -38,9 +38,6 @@ AFQPlayerController_InGame::AFQPlayerController_InGame()
 void AFQPlayerController_InGame::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// UI Actor 생성
-	SpawnPlayerUIActor();
 }
 
 void AFQPlayerController_InGame::SetupInputComponent()
@@ -110,32 +107,37 @@ void AFQPlayerController_InGame::SpawnPlayerUIActor()
 		}
 	}
 
-	AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
-
 	// 로그 확인
 	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
 	{
 		int32 ControllerId = LocalPlayer->GetControllerId();
 
 		// 플레이어 스테이트 클래스 확인
+		AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
 		if (FQPlayerState && mPlayerOverheadUIActor)
 		{
 			mPlayerOverheadUIActor->UpdatePlayerNumber(ControllerId, FQPlayerState->GetSoulType());
+
+			// 델리게이트 등록
+			FQPlayerState->mPlayerHpDelegate.AddLambda([&](float CurrentHpValue)
+				{
+					if (mPlayerOverheadUIActor)
+					{
+						mPlayerOverheadUIActor->UpdatePlayerHp(CurrentHpValue);
+					}
+				});
 		}
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] FQPlayerState Or mPlayerOverheadUIActor Is Not Valid!!"), __LINE__, ControllerId);
 		}
 	}
+}
 
-	// 델리게이트 등록
-	FQPlayerState->mPlayerHpDelegate.AddLambda([&](float CurrentHpValue)
-		{
-			if (mPlayerOverheadUIActor)
-			{
-				mPlayerOverheadUIActor->UpdatePlayerHp(CurrentHpValue);
-			}
-		});
+void AFQPlayerController_InGame::CreateUI()
+{
+	UpdateHUDSetting();
+	SpawnPlayerUIActor();
 }
 
 void AFQPlayerController_InGame::UpdateHUDSetting()

@@ -90,8 +90,6 @@ void AFQGameMode_InGame::CreatePlayer()
 
             // 플레이어 스테이트 클래스에 소울 타입 지정
             AFQPlayerController_InGame* PC = Cast<AFQPlayerController_InGame>(NewPlayer->GetPlayerController(GetWorld()));
-            PC->UpdateHUDSetting();
-
             AFQPlayerState_InGame* FQPlayerState = PC->GetPlayerState<AFQPlayerState_InGame>();
             if (FQPlayerState)
             {
@@ -99,8 +97,11 @@ void AFQGameMode_InGame::CreatePlayer()
                 FQPlayerState->SetArmourType(EArmourType::End);
                 FQPlayerState->SetSoulGauge(0);
             }
+
+            // UI 생성
+            PC->CreateUI();
         }
-        else         // 플레이어 컨트롤러
+        else
         {
             // 생성할 로컬 플레이어인가
             if (!PlayerInfomation.bSpawnLocalPlayer)
@@ -139,7 +140,6 @@ void AFQGameMode_InGame::CreatePlayer()
 
             // Possess 처리
             PC->Possess(NewPawn);
-            PC->UpdateHUDSetting();
 
             // PlayerState 설정
             if (AFQPlayerState_InGame* PS = PC->GetPlayerState<AFQPlayerState_InGame>())
@@ -148,6 +148,9 @@ void AFQGameMode_InGame::CreatePlayer()
                 PS->SetArmourType(EArmourType::End);
                 PS->SetSoulGauge(0);
             }
+            
+            // UI 생성
+            PC->CreateUI();
             UE_LOG(LogTemp, Log, TEXT("[FQGameMode_InGame %d] Added Player %d"), __LINE__, ControllerId);
         }
     }

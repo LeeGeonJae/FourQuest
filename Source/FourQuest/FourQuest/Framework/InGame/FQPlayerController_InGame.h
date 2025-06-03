@@ -24,7 +24,7 @@ public:
 	AFQPlayerController_InGame();
 
 	// Common Function
-	void UpdateHUDSetting();
+	void CreateUI();
 
 	// Interface Class Funtion
 	virtual void ChangeToArmour(EArmourType InArmourType) override;
@@ -40,6 +40,7 @@ private:
 	void CreatePlayerCharacterByClass(TSubclassOf<class AFQPlayerBase> CharacterClass, const FTransform& SpawnTransform);
 	void CreateSoulCharacterByClass(TSubclassOf<class AFQSoulBase> CharacterClass, const FTransform& SpawnTransform);
 	void SpawnPlayerUIActor();
+	void UpdateHUDSetting();
 
 	// UI Widget Input Function
 	void HandlePickButton();

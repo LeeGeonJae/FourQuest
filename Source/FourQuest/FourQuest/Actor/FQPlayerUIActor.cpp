@@ -7,20 +7,18 @@
 
 AFQPlayerUIActor::AFQPlayerUIActor()
 {
+	mPlayerHpWidgetComponent = CreateDefaultSubobject<UFQWidgetComponent>(TEXT("PlayerHpWidget"));
+	mArmourGaugeWidgetComponent = CreateDefaultSubobject<UFQWidgetComponent>(TEXT("GaugeWidget"));
+	mPlayerHpWidgetComponent->SetupAttachment(RootComponent);
+	mArmourGaugeWidgetComponent->SetupAttachment(RootComponent);
+
 	static ConstructorHelpers::FClassFinder<UFQPlayerHpWidget> PlayerHpWidgetRef(TEXT("/Game/Blueprints/Player/WBP_PlayerHp.WBP_PlayerHp_C"));
 	if (PlayerHpWidgetRef.Class)
 	{
 		mPlayerHpWidgetComponent->SetWidgetClass(PlayerHpWidgetRef.Class);
-		mPlayerHpWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 100.f));
 		mPlayerHpWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 		mPlayerHpWidgetComponent->SetDrawSize(FVector2D(30.f, 30.f));
 		mPlayerHpWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-		mPlayerHpWidget = Cast<UFQPlayerHpWidget>(mPlayerHpWidgetComponent->GetUserWidgetObject());
-		if (!mPlayerHpWidget)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerUIActor %d] mPlayerHpWidget 캐스팅 실패!"), __LINE__);
-		}
 	}
 	else
 	{
@@ -31,17 +29,10 @@ AFQPlayerUIActor::AFQPlayerUIActor()
 	if (GaugeWidgetRef.Class)
 	{
 		mArmourGaugeWidgetComponent->SetWidgetClass(GaugeWidgetRef.Class);
-		mArmourGaugeWidgetComponent->SetRelativeLocation(FVector(40.f, 0.f, 100.f));
 		mArmourGaugeWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 		mArmourGaugeWidgetComponent->SetDrawSize(FVector2D(10.f, 10.f));
 		mArmourGaugeWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		mArmourGaugeWidgetComponent->SetVisibility(false);
-
-		mArmourGaugeWidget = Cast<UFQSoulGaugeWidget>(mArmourGaugeWidgetComponent->GetUserWidgetObject());
-		if (!mArmourGaugeWidget)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerUIActor %d] mPlayerHpWidget 캐스팅 실패!"), __LINE__);
-		}
 	}
 	else
 	{
@@ -52,10 +43,28 @@ AFQPlayerUIActor::AFQPlayerUIActor()
 void AFQPlayerUIActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	mPlayerHpWidget = Cast<UFQPlayerHpWidget>(mPlayerHpWidgetComponent->GetUserWidgetObject());
+	if (!mPlayerHpWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerUIActor %d] mPlayerHpWidget 캐스팅 실패!"), __LINE__);
+	}
+
+	mArmourGaugeWidget = Cast<UFQSoulGaugeWidget>(mArmourGaugeWidgetComponent->GetUserWidgetObject());
+	if (!mArmourGaugeWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerUIActor %d] mPlayerHpWidget 캐스팅 실패!"), __LINE__);
+	}
+}
+
+void AFQPlayerUIActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void AFQPlayerUIActor::UpdatePlayerNumber(int32 PlayerControllerNumber, ESoulType PlayerSoulType)
 {
+	UE_LOG(LogTemp, Log, TEXT("[AFQPlayerUIActor %d] UpdatePlayerNumber 함수 실행 : (플레이어 컨트롤러 숫자 : %d, 플레이어 영혼 타입 : %d)"), __LINE__, PlayerControllerNumber, (int32)PlayerSoulType);
 	if (mPlayerHpWidget)
 	{
 		mPlayerHpWidget->UpdatePlayerControllerNumber(PlayerControllerNumber, PlayerSoulType);
