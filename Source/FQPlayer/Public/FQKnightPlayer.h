@@ -23,8 +23,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// Sword Attack
-	void EnableSwordAttackVolume();
-	void DisableSwordAttackVolume();
+	virtual void EnableAttackVolume() override;
+	virtual void DisableAttackVolume() override;
 
 	// Bash
 	void EnableBashVolume();
@@ -38,20 +38,21 @@ public:
 
 	// Animation
 	virtual void SetAnimInstance() override;
-	void ProcessNextSection();
+	virtual void ProcessNextSection() override;
 
 protected:
 	// Default
 	virtual void BeginPlay() override;
+
+	// Input
+	virtual void SetInputMappingContext() override;
+	virtual bool CanMove() override;
 
 	// Data
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data)
 	TObjectPtr<class UFQKnightDataAsset> mKnightDataAsset;
 
 	// Input
-	virtual void SetInputMappingContext() override;
-	virtual bool CanMove() override;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputMappingContext> mKnightMappingContext;
 
@@ -85,17 +86,18 @@ protected:
 	EKnightSwordAttackState mSwordAttackState;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
-	EKnightSwordAttackComboState mSwordAttackComboState;
+	EComboState mSwordAttackComboState;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
 	EKnightShieldState mShieldState;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Bash, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[A] 충돌 콜리전"))
-	TObjectPtr<class UBoxComponent> mBashVolume;
-
 	// Sword Attack
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SwordAttack, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[X] 충돌 콜리전"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[X] 충돌 콜리전"))
 	TObjectPtr<class UBoxComponent> mSwordAttackVolume;
+
+	// Bash
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[A] 충돌 콜리전"))
+	TObjectPtr<class UBoxComponent> mBashVolume;
 
 	// Shield
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
@@ -104,7 +106,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> mShieldDownAnim;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shield, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[R] 충돌 콜리전"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[R] 충돌 콜리전"))
 	TObjectPtr<class UBoxComponent> mShieldVolume;
 
 private:
@@ -113,6 +115,7 @@ private:
 
 	// Bash
 	FVector mBashDirection;
+	float mBashElapsedTime;
 
 	// Bash할 수 있는 상태인지 확인하는 플래그
 	uint8 mbCanBash : 1;
@@ -120,8 +123,6 @@ private:
 	uint8 mbIsBashing : 1;
 
 	FTimerHandle mBashCoolTimer;
-
-	float mBashElapsedTime;
 
 	void StartBash();
 	void Bash();
@@ -136,12 +137,9 @@ private:
 	FTimerHandle mSwordAttackComboTimer;
 	FTimerHandle mSwordAttackCoolTimer;
 
-	
-
 	void ResetSwordAttackCombo();
 	void ResetSwordAttackCoolDown();
 	void StartSwordAttack();
-	void ProcessSwordAttack();
 	void EndSwordAttack();
 	void PressedSwordAttack();
 	void CheckSwordAttackVolume();

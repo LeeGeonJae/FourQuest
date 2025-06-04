@@ -4,7 +4,6 @@
 #include "FQKnightPlayer.h"
 
 #include "Components/BoxComponent.h"
-#include "DrawDebugHelpers.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -22,7 +21,7 @@ AFQKnightPlayer::AFQKnightPlayer()
 
 	// Knight
 	mSwordAttackState = EKnightSwordAttackState::None;
-	mSwordAttackComboState = EKnightSwordAttackComboState::None;
+	mSwordAttackComboState = EComboState::None;
 	mSwordAttackVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("SwordAttackVolume"));
 	mSwordAttackVolume->SetupAttachment(RootComponent);
 
@@ -46,7 +45,6 @@ void AFQKnightPlayer::Tick(float DeltaSeconds)
 
 	if (mbIsBashing && mKnightDataAsset->mBashCurve)
 	{
-		
 		mBashElapsedTime += DeltaSeconds;
 		float NormalizedTime = FMath::Clamp(mBashElapsedTime / mKnightDataAsset->mBashDuration, 0.0f, 1.0f);
 
@@ -93,21 +91,53 @@ void AFQKnightPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	EnhancedInputComponent->BindAction(mShieldAction, ETriggerEvent::Completed, this, &AFQKnightPlayer::EndShieldMove);
 }
 
+void AFQKnightPlayer::EnableAttackVolume()
+{
+	if (!mSwordAttackVolume)
+	{
+		return;
+	}
+
+	// Debug
+	UE_LOG(LogTemp, Log, TEXT("[EnableSwordAttackVolume]"));
+
+	mSwordAttackVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void AFQKnightPlayer::DisableAttackVolume()
+{
+	if (!mSwordAttackVolume)
+	{
+		return;
+	}
+
+	// Debug
+	UE_LOG(LogTemp, Log, TEXT("[DisableSwordAttackVolume]"));
+
+	CheckSwordAttackVolume();
+
+	mSwordAttackVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
 void AFQKnightPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Knight IMC 바인딩
 	SetInputMappingContext();
 
+	// Knight 에셋에서 기본 속도 설정
 	if (mKnightDataAsset)
 	{
 		mDefaultSpeed = mKnightDataAsset->mDefaultSpeed;
 		GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
 	}
 
+	// Collision BeginOverlap 바인딩
 	mBashVolume->OnComponentBeginOverlap.AddDynamic(this, &AFQKnightPlayer::OnBashVolumeBeginOverlap);
 	mShieldVolume->OnComponentBeginOverlap.AddDynamic(this, &AFQKnightPlayer::OnShieldVolumeBeginOverlap);
 
+	// Animation MontageEnded 바인딩
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (!AnimInstance)
 	{
@@ -119,6 +149,11 @@ void AFQKnightPlayer::BeginPlay()
 void AFQKnightPlayer::SetInputMappingContext()
 {
 	Super::SetInputMappingContext();
+
+	if (!mKnightMappingContext)
+	{
+		return;
+	}
 
 	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -202,35 +237,7 @@ void AFQKnightPlayer::ProcessNextSection()
 
 	UE_LOG(LogTemp, Log, TEXT("[ProcessNextSection] 콤보 상태로 전환"));
 
-	mSwordAttackComboState = EKnightSwordAttackComboState::Combo;
-}
-
-void AFQKnightPlayer::EnableSwordAttackVolume()
-{
-	if (!mSwordAttackVolume)
-	{
-		return;
-	}
-
-	// Debug
-	UE_LOG(LogTemp, Log, TEXT("[EnableSwordAttackVolume]"));
-
-	mSwordAttackVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-}
-
-void AFQKnightPlayer::DisableSwordAttackVolume()
-{
-	if (!mSwordAttackVolume)
-	{
-		return;
-	}
-
-	// Debug
-	UE_LOG(LogTemp, Log, TEXT("[DisableSwordAttackVolume]"));
-
-	CheckSwordAttackVolume();
-
-	mSwordAttackVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	mSwordAttackComboState = EComboState::Combo;
 }
 
 void AFQKnightPlayer::EnableBashVolume()
@@ -360,7 +367,7 @@ void AFQKnightPlayer::StartSwordAttack()
 		return;
 	}
 
-	if (mSwordAttackComboState == EKnightSwordAttackComboState::None)
+	if (mSwordAttackComboState == EComboState::None)
 	{
 		// 공격 입력이 처음으로 들어왔을 때
 		UE_LOG(LogTemp, Log, TEXT("[StartSwordAttack] 공격 입력이 처음으로 들어왔을 때"));
@@ -382,17 +389,17 @@ void AFQKnightPlayer::StartSwordAttack()
 		AnimInstance->Montage_Play(mSwordAttackAnim1);
 
 		// 콤보 가능 상태 설정
-		mSwordAttackComboState = EKnightSwordAttackComboState::CanBeCombo;
+		mSwordAttackComboState = EComboState::CanBeCombo;
 		GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
 		GetWorld()->GetTimerManager().SetTimer(mSwordAttackComboTimer, this, &AFQKnightPlayer::ResetSwordAttackCombo, mKnightDataAsset->mSwordAttackWaitTime1, false);
 	}
-	else if (mSwordAttackComboState == EKnightSwordAttackComboState::CanBeCombo)
+	else if (mSwordAttackComboState == EComboState::CanBeCombo)
 	{ 
 		// 입력 대기 시간 내에 입력이 들어왔을 때
 		UE_LOG(LogTemp, Log, TEXT("[StartSwordAttack] 입력 대기 시간 내에 입력이 들어왔을 때"));
 
 		// 콤보 가능 상태 설정
-		mSwordAttackComboState = EKnightSwordAttackComboState::Combo;
+		mSwordAttackComboState = EComboState::Combo;
 
 		switch (mSwordAttackState)
 		{
@@ -504,7 +511,7 @@ void AFQKnightPlayer::ShieldMove(const FInputActionValue& Value)
 	FVector2D NormalizedVector = MovementVector.GetSafeNormal();
 	NormalizedVector.X *= -1.0f;
 
-	// 플레이어 회전 각도 설정
+	// 플레이어 회전 각도 설정 
 	float PlayerAngle = FMath::Atan2(NormalizedVector.Y, NormalizedVector.X) * (180.0f / PI);
 	mShieldRotation = FRotator(0.0f, PlayerAngle, 0.0f);
 
@@ -516,7 +523,7 @@ void AFQKnightPlayer::ShieldMove(const FInputActionValue& Value)
 	// 사잇각 크기
 	float AngleDegrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(LookDir, mMoveDir)));
 
-	// 방향성 판단
+	// 방향성 판단 (BlendSpace)
 	FVector Cross = FVector::CrossProduct(LookDir, mMoveDir);
 	mShieldMoveAngle = AngleDegrees * FMath::Sign(Cross.Z);
 
@@ -594,10 +601,15 @@ void AFQKnightPlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupte
 	}
 	else if (Montage == mSwordAttackAnim1)
 	{
-		if (mSwordAttackComboState == EKnightSwordAttackComboState::Combo)
+		if (mHitState == EHitState::HitReacting)
+		{
+			return;
+		}
+
+		if (mSwordAttackComboState == EComboState::Combo)
 		{
 			mSwordAttackState = EKnightSwordAttackState::Attack2;
-			mSwordAttackComboState = EKnightSwordAttackComboState::CanBeCombo;
+			mSwordAttackComboState = EComboState::CanBeCombo;
 
 			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 			if (!AnimInstance)
@@ -621,7 +633,12 @@ void AFQKnightPlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupte
 	}
 	else if (Montage == mSwordAttackAnim2)
 	{
-		if (mSwordAttackComboState == EKnightSwordAttackComboState::Combo)
+		if (mHitState == EHitState::HitReacting)
+		{
+			return;
+		}
+
+		if (mSwordAttackComboState == EComboState::Combo)
 		{
 			mSwordAttackState = EKnightSwordAttackState::Attack3;
 
@@ -751,9 +768,9 @@ void AFQKnightPlayer::OnBashVolumeBeginOverlap(UPrimitiveComponent* OverlappedCo
 
 void AFQKnightPlayer::ResetSwordAttackCombo()
 {
-	UE_LOG(LogTemp, Log, TEXT("[Timer] ResetCombo"));
+	UE_LOG(LogTemp, Log, TEXT("[ResetSwordAttackCombo] ResetCombo"));
 
-	mSwordAttackComboState = EKnightSwordAttackComboState::None;
+	mSwordAttackComboState = EComboState::None;
 
 	mSwordAttackState = EKnightSwordAttackState::CoolDown;
 
@@ -763,23 +780,9 @@ void AFQKnightPlayer::ResetSwordAttackCombo()
 
 void AFQKnightPlayer::ResetSwordAttackCoolDown()
 {
-	UE_LOG(LogTemp, Log, TEXT("[Timer] ResetCoolDown"));
+	UE_LOG(LogTemp, Log, TEXT("[ResetSwordAttackCoolDown] ResetCoolDown"));
 
 	mSwordAttackState = EKnightSwordAttackState::None;
-}
-
-void AFQKnightPlayer::ProcessSwordAttack()
-{
-	if (mSwordAttackState == EKnightSwordAttackState::None)
-	{
-		return;
-	}
-
-	// X버튼을 짧게 누를 때 
-	if (mbIsPressedX)
-	{
-		return;
-	}
 }
 
 void AFQKnightPlayer::PressedSwordAttack()
@@ -853,7 +856,6 @@ void AFQKnightPlayer::ApplyDamage(AActor* AttackableActor)
 	break;
 	case EKnightSwordAttackState::Attack3:
 	{
-		// TODO : 쿨타임 상태로 너무 빨리 바뀌어서 여기로 안들어옴
 		ApplyPush(AttackableActor, mKnightDataAsset->mSwordAttackStrength);
 	}
 	break;
