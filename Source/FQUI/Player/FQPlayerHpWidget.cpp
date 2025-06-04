@@ -10,15 +10,19 @@ UFQPlayerHpWidget::UFQPlayerHpWidget()
 
 void UFQPlayerHpWidget::NativeConstruct()
 {
-	if (!mHp)
+	if (!mHpBar || !mHp || !mHpDecrase)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHpWidget %d] mHp Image Is Null!!"), __LINE__);
+		UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHpWidget %d] mHpBar, mHp, mHpDecrase Image 가 유효하지 않습니다!!"), __LINE__);
 		return;
 	}
 
 	// 현재 Hp 이미지 가로 사이즈 값 초기화 적용
 	const FSlateBrush& HpBrush = mHp->GetBrush();
 	mMaxSize = HpBrush.ImageSize.X;
+
+	mHpBar->SetVisibility(ESlateVisibility::Hidden);
+	mHp->SetVisibility(ESlateVisibility::Hidden);
+	mHpDecrase->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UFQPlayerHpWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -38,7 +42,7 @@ void UFQPlayerHpWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 	}
 }
 
-void UFQPlayerHpWidget::UpdateHp(float HpValue)
+void UFQPlayerHpWidget::UpdatePlayerHp(float HpValue)
 {
 	if (!mHp)
 	{
@@ -94,5 +98,27 @@ void UFQPlayerHpWidget::UpdatePlayerControllerNumber(int32 PlayerControllerNumbe
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHpWidget %d] TexturePtr is invalid or not found for SoulType: %d"), __LINE__, (int32)SoulType);
+	}
+}
+
+void UFQPlayerHpWidget::SetHpBarVisibility(bool bIsVisible)
+{
+	if (!mHpBar || !mHp || !mHpDecrase)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHpWidget %d] mHpBar, mHp, mHpDecrase 가 유효하지 않습니다!!"), __LINE__);
+		return;
+	}
+
+	if (bIsVisible)
+	{
+		mHpBar->SetVisibility(ESlateVisibility::Visible);
+		mHp->SetVisibility(ESlateVisibility::Visible);
+		mHpDecrase->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		mHpBar->SetVisibility(ESlateVisibility::Hidden);
+		mHp->SetVisibility(ESlateVisibility::Hidden);
+		mHpDecrase->SetVisibility(ESlateVisibility::Hidden);
 	}
 }

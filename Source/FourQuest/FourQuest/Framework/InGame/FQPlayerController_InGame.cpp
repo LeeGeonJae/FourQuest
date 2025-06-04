@@ -38,6 +38,7 @@ AFQPlayerController_InGame::AFQPlayerController_InGame()
 void AFQPlayerController_InGame::BeginPlay()
 {
 	Super::BeginPlay();
+
 }
 
 void AFQPlayerController_InGame::SetupInputComponent()
@@ -79,6 +80,12 @@ void AFQPlayerController_InGame::SetupInputComponent()
 }
 
 
+
+void AFQPlayerController_InGame::CreateUI()
+{
+	UpdateHUDSetting();
+	SpawnPlayerUIActor();
+}
 
 void AFQPlayerController_InGame::SpawnPlayerUIActor()
 {
@@ -126,18 +133,19 @@ void AFQPlayerController_InGame::SpawnPlayerUIActor()
 						mPlayerOverheadUIActor->UpdatePlayerHp(CurrentHpValue);
 					}
 				});
+			FQPlayerState->mArmourChangeDelegate.AddLambda([&](EArmourType NewArmourType)
+				{
+					if (mPlayerOverheadUIActor)
+					{
+						mPlayerOverheadUIActor->UpdateArmourType(NewArmourType);
+					}
+				});
 		}
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] FQPlayerState Or mPlayerOverheadUIActor Is Not Valid!!"), __LINE__, ControllerId);
 		}
 	}
-}
-
-void AFQPlayerController_InGame::CreateUI()
-{
-	UpdateHUDSetting();
-	SpawnPlayerUIActor();
 }
 
 void AFQPlayerController_InGame::UpdateHUDSetting()

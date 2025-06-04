@@ -12,8 +12,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameFramework/PlayerController.h"
-#include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "FQSoulDataAsset.h"
 #include "FQGameCore/Armour/FQArmourInterface.h"
@@ -52,6 +53,12 @@ void AFQSoulBase::BeginPlay()
 {
 	Super::BeginPlay();
 	GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mWalkSpeed;
+
+	if (mEquipEffectSystem)
+	{
+		mEquipEffectSystem->ConditionalPostLoad();  // 최소한의 보장
+		mEquipEffectSystem->AddToRoot();            // GC 방지용 (선택)
+	}
 }
 
 void AFQSoulBase::Tick(float DeltaTime)

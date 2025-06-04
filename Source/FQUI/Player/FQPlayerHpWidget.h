@@ -19,8 +19,9 @@ public:
 	UFQPlayerHpWidget();
 
 	// Callback Function
-	void UpdateHp(float HpValue);
+	void UpdatePlayerHp(float HpValue);
 	void UpdatePlayerControllerNumber(int32 PlayerControllerNumber, ESoulType SoulType);
+	void SetHpBarVisibility(bool bIsVisible);
 
 private:
 	// Parent Function
@@ -40,6 +41,8 @@ protected:
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> mPlayerNumber;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> mHpBar;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> mHp;
 	UPROPERTY(meta = (BindWidget))

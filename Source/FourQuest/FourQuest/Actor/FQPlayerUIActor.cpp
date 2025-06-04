@@ -75,7 +75,7 @@ void AFQPlayerUIActor::UpdatePlayerHp(float HpValue)
 {
 	if (mPlayerHpWidget)
 	{
-		mPlayerHpWidget->UpdateHp(HpValue);
+		mPlayerHpWidget->UpdatePlayerHp(HpValue);
 	}
 }
 
@@ -85,5 +85,23 @@ void AFQPlayerUIActor::UpdateArmourGauge(bool bIsVisible, float GaugeValue)
 	{
 		mArmourGaugeWidgetComponent->SetVisibility(bIsVisible);
 		mArmourGaugeWidget->UpdateChargeGaugeValue(GaugeValue);
+	}
+}
+
+void AFQPlayerUIActor::UpdateArmourType(EArmourType ChangedArmourType)
+{
+	if (!mPlayerHpWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerUIActor %d] mPlayerHpWidget가 유효하지 않습니다!"), __LINE__);
+		return;
+	}
+
+	if (ChangedArmourType == EArmourType::End)
+	{
+		mPlayerHpWidget->SetHpBarVisibility(false);
+	}
+	else
+	{
+		mPlayerHpWidget->SetHpBarVisibility(true);
 	}
 }

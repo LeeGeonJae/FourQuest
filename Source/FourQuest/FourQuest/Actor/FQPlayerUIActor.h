@@ -19,6 +19,7 @@ public:
 	void UpdatePlayerNumber(int32 PlayerControllerNumber, ESoulType PlayerSoulType);
 	void UpdatePlayerHp(float HpValue);
 	void UpdateArmourGauge(bool bIsVisible, float GaugeValue);
+	void UpdateArmourType(EArmourType ChangedArmourType);
 
 protected:
 	virtual void BeginPlay() override;
