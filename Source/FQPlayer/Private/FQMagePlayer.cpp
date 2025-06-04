@@ -29,9 +29,36 @@ void AFQMagePlayer::Tick(float DeltaSeconds)
 		return;
 	}
 
-	if (mProjectileAttackState != EMageProjectileAttackState::None && mProjectileAttackState != EMageProjectileAttackState::CoolDown)
+	switch (mProjectileAttackState)
 	{
-		SetActorRotation(mLookAtRotation);
+	case EMageProjectileAttackState::Attack1:
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (!AnimInstance)
+		{
+			return;
+		}
+
+		if (AnimInstance->Montage_IsPlaying(mProjectileAttackAnim1))
+		{
+			SetActorRotation(mLookAtRotation);
+		}
+	}
+	break;
+	case EMageProjectileAttackState::Attack2:
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (!AnimInstance)
+		{
+			return;
+		}
+
+		if (AnimInstance->Montage_IsPlaying(mProjectileAttackAnim2))
+		{
+			SetActorRotation(mLookAtRotation);
+		}
+	}
+	break;
 	}
 }
 
