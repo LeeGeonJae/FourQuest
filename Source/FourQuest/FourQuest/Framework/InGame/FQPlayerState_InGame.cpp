@@ -36,3 +36,39 @@ void AFQPlayerState_InGame::SetSoulGauge(const int32 NewValue)
 	float Value = (float)mCurrentSoulGauge / (float)mMaxSoulGaue;
 	mSoulGaugeDelegate.Broadcast(Value);
 }
+
+void AFQPlayerState_InGame::SetHp(const int32 NewValue)
+{
+	mCurrentHp = NewValue;
+	if (mCurrentHp > 0)
+	{
+		mCurrentHp = 0;
+		mPlayerHpDelegate.Broadcast(0);
+		return;
+	}
+	else if (mCurrentHp > mMaxHp)
+	{
+		mCurrentHp = mMaxHp;
+	}
+
+	float Value = (float)mCurrentHp / (float)mMaxHp;
+	mPlayerHpDelegate.Broadcast(Value);
+}
+
+void AFQPlayerState_InGame::AddHp(const int32 AddValue)
+{
+	mCurrentHp += AddValue;
+	if (mCurrentHp > 0)
+	{
+		mCurrentHp = 0;
+		mPlayerHpDelegate.Broadcast(0);
+		return;
+	}
+	else if (mCurrentHp > mMaxHp)
+	{
+		mCurrentHp = mMaxHp;
+	}
+
+	float Value = (float)mCurrentHp / (float)mMaxHp;
+	mPlayerHpDelegate.Broadcast(Value);
+}

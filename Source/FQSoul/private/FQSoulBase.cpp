@@ -12,6 +12,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "GameFramework/PlayerController.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "FQSoulDataAsset.h"
 #include "FQGameCore/Armour/FQArmourInterface.h"
@@ -29,7 +32,6 @@ AFQSoulBase::AFQSoulBase()
 	mbIsDashing = false;
 
 	// Armour State
-	mbIsPressedArmourChange = false;
 	mArmourChangeTimer = 0.f;
 
 	// Capsule Setup
@@ -51,6 +53,12 @@ void AFQSoulBase::BeginPlay()
 {
 	Super::BeginPlay();
 	GetCharacterMovement()->MaxWalkSpeed = mSoulDataAsset->mWalkSpeed;
+
+	if (mEquipEffectSystem)
+	{
+		mEquipEffectSystem->ConditionalPostLoad();  // 최소한의 보장
+		mEquipEffectSystem->AddToRoot();            // GC 방지용 (선택)
+	}
 }
 
 void AFQSoulBase::Tick(float DeltaTime)
@@ -72,8 +80,16 @@ void AFQSoulBase::Tick(float DeltaTime)
 		}
 	}
 
-	// Armour Logic
-	CheckArmour(DeltaTime);
+	IFQArmourInterface* Nearest = CheckNearArmour();
+	IFQArmourInterface* CurrentArmourInterface = Cast<IFQArmourInterface>(mCurrentArmour);
+	// 가장 가까운 갑옷이 다르면 취소
+	if (CurrentArmourInterface != Nearest)
+	{
+		if (CurrentArmourInterface) CurrentArmourInterface->SetNearestArmour(false);
+		if (Nearest) Nearest->SetNearestArmour(true);
+		mCurrentArmour = Cast<UObject>(Nearest);
+		return;
+	}
 }
 
 void AFQSoulBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -96,8 +112,7 @@ void AFQSoulBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	{
 		UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 		Input->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::Move);
-		Input->BindAction(mPlayerInputDataAsset->mBButtonAction, ETriggerEvent::Started, this, &AFQSoulBase::SelectInteraction);
-		Input->BindAction(mPlayerInputDataAsset->mBButtonAction, ETriggerEvent::Completed, this, &AFQSoulBase::CancelInteraction);
+		Input->BindAction(mPlayerInputDataAsset->mBButtonAction, ETriggerEvent::Started, this, &AFQSoulBase::CheckArmour);
 		Input->BindAction(mPlayerInputDataAsset->mYButtonAction, ETriggerEvent::Triggered, this, &AFQSoulBase::AddSoulGauge);
 		Input->BindAction(mPlayerInputDataAsset->mAButtonAction, ETriggerEvent::Triggered, this, &AFQSoulBase::StartDash);
 	}
@@ -122,58 +137,40 @@ void AFQSoulBase::Move(const FInputActionValue& Value)
 	AddMovementInput(MoveDir, MoveScale);
 }
 
-void AFQSoulBase::CheckArmour(float DeltaTime)
+void AFQSoulBase::CheckArmour()
 {
-	IFQArmourInterface* Nearest = CheckNearArmour();
-	IFQArmourInterface* CurrentArmourInterface = Cast<IFQArmourInterface>(mCurrentArmour);
-
-	// 가장 가까운 갑옷이 다르면 취소
-	if (CurrentArmourInterface != Nearest)
-	{
-		if (CurrentArmourInterface) CurrentArmourInterface->SetNearestArmour(false);
-		if (Nearest) Nearest->SetNearestArmour(true);
-		mCurrentArmour = Cast<UObject>(Nearest);
-		CancelInteraction();
-		return;
-	}
-
 	// 갑옷이 0개이거나 버튼을 안눌렀으면 중지
-	if (!mbIsPressedArmourChange || mArmours.Num() == 0 || !mCurrentArmour) return;
+	if (mArmours.Num() == 0 || !mCurrentArmour) return;
 
-	// 시간이 안되면 리턴 & UI 표시
-	//mArmourChangeTimer -= DeltaTime;
-	//if (mArmourChangeTimer > 0.f)
-	//{
-	//	if (mArmourGaugeWidget)
-	//	{
-	//		FVector WorldOffset = GetActorLocation() + FVector(0.f, 30.f, 80.f); // 앞쪽 + 위쪽
-	//		mArmourGaugeWidget->SetWorldLocation(WorldOffset);
-	//	}
-
-	//	UFQSoulGaugeWidget* GaugeWidget = Cast<UFQSoulGaugeWidget>(mArmourGaugeWidget->GetWidget());
-	//	if (GaugeWidget)
-	//	{
-	//		GaugeWidget->SetChargeGaugeValueSet(mArmourChangeTimer / mSoulDataAsset->mArmourDelayTime);
-	//	}
-	//	else
-	//	{
-	//		UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d]GaugeWidget is nullptr!!"), __LINE__);
-	//	}
-
-	//	return;
-	//}
-
-	// 갑옷 타입 확인한 후 갑옷 입기
-	EArmourType Type = CurrentArmourInterface->GetArmourType();
-	UE_LOG(LogTemp, Log, TEXT("Soul Pick Armour : %s"), *UEnum::GetValueAsString(Type));
-
-	IFQPlayerControllerInterface* PlayerController = Cast<IFQPlayerControllerInterface>(GetController());
-	if (PlayerController)
+	// 이펙트 시작
+	if (mEquipEffectSystem)
 	{
-		PlayerController->ChangeToArmour(Type);
-	}
+		mEquipEffectComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			mEquipEffectSystem,
+			RootComponent,
+			NAME_None,
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::KeepRelativeOffset,
+			true, true, ENCPoolMethod::None, true
+		);
 
-	CurrentArmourInterface->PickArmour();
+		if (mEquipEffectComponent)
+		{
+			// 연출 종료시 호출될 함수 바인딩
+			mEquipEffectComponent->OnSystemFinished.AddDynamic(this, &AFQSoulBase::OnEquipEffectFinished);
+		}
+
+		APlayerController* MyPC = Cast<APlayerController>(GetController());
+		if (MyPC)
+		{
+			DisableInput(MyPC); // 캐릭터에 대한 입력만 막음
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d] mEquipEffectSystem is Null!!"), __LINE__);
+	}
 }
 
 void AFQSoulBase::StartDash()
@@ -187,17 +184,6 @@ void AFQSoulBase::StartDash()
 
 		mDashDirection = GetLastMovementInputVector().IsZero() ? GetActorForwardVector() : GetLastMovementInputVector().GetSafeNormal();
 	}
-}
-
-void AFQSoulBase::SelectInteraction()
-{
-	mbIsPressedArmourChange = true;
-	mArmourChangeTimer = mSoulDataAsset->mArmourDelayTime;
-}
-
-void AFQSoulBase::CancelInteraction()
-{
-	mbIsPressedArmourChange = false;
 }
 
 void AFQSoulBase::AddSoulGauge()
@@ -229,6 +215,23 @@ IFQArmourInterface* AFQSoulBase::CheckNearArmour()
 	}
 
 	return Closest;
+}
+
+void AFQSoulBase::OnEquipEffectFinished(UNiagaraComponent* PSystem)
+{
+	IFQArmourInterface* CurrentArmourInterface = Cast<IFQArmourInterface>(mCurrentArmour);
+
+	// 갑옷 타입 확인한 후 갑옷 입기
+	EArmourType Type = CurrentArmourInterface->GetArmourType();
+	UE_LOG(LogTemp, Log, TEXT("[AFQSoulBase %d] Soul Pick Armour : %s"), __LINE__, *UEnum::GetValueAsString(Type));
+
+	IFQPlayerControllerInterface* PlayerController = Cast<IFQPlayerControllerInterface>(GetController());
+	if (PlayerController)
+	{
+		PlayerController->ChangeToArmour(Type);
+	}
+
+	CurrentArmourInterface->PickArmour();
 }
 
 

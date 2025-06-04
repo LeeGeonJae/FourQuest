@@ -30,13 +30,13 @@ private:
 	// Input Funtion
 	void Move(const FInputActionValue& Value);
 	void StartDash();
-	void SelectInteraction();
-	void CancelInteraction();
+	void CheckArmour();
 	void AddSoulGauge();		// Test Function
 
 	// Change Armour Function
-	void CheckArmour(float DeltaTime);
 	class IFQArmourInterface* CheckNearArmour();
+	void OnEquipEffectFinished(class UNiagaraComponent* PSystem);
+
 
 	// Collision
 	UFUNCTION()
@@ -53,6 +53,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQData)
 	TObjectPtr<class UFQSoulDataAsset> mSoulDataAsset;
 
+	UPROPERTY()
+	TObjectPtr<class UNiagaraComponent> mEquipEffectComponent;
+
+	UPROPERTY(EditAnywhere, Category = FQEffects)
+	TObjectPtr<class UNiagaraSystem> mEquipEffectSystem;
+
 private:
 	// 대시 변수
 	uint8 mbIsDashing : 1;
@@ -61,7 +67,6 @@ private:
 	float	mDashCoolTimer;
 
 	// 갑옷 변수
-	uint8 mbIsPressedArmourChange : 1;
 	float mArmourChangeTimer;
 
 	UPROPERTY()

@@ -25,7 +25,12 @@ public:
 	virtual ESoulType GetSoulType() const abstract;
 	virtual void SetArmourType(const EArmourType InArmourType) abstract;
 	virtual EArmourType GetArmourType() const abstract;
-	virtual void AddSoulGauge(const int32 AddValue) abstract;
 	virtual void SetSoulGauge(const int32 NewValue) abstract;
+	virtual void AddSoulGauge(const int32 AddValue) abstract;
 	virtual int32 GetSoulGauge() const abstract;
+	virtual void SetMaxHp(const int32 NewValue) abstract;
+	virtual int32 GetMaxHp() const abstract;
+	virtual void SetHp(const int32 NewValue) abstract;
+	virtual void AddHp(const int32 AddValue) abstract;
+	virtual int32 GetHp() const abstract;
 };
