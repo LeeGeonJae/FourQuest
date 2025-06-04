@@ -36,11 +36,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
 	EArmourType mArmourType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = FQWidget)
-	TSubclassOf<class UFQWidgetComponent> mArmourWidgetClass;
-
-private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	TObjectPtr<class UFQWidgetComponent> mArmourWidget;
 
 };

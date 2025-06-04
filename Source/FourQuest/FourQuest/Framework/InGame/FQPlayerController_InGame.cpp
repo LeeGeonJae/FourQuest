@@ -23,9 +23,10 @@
 
 AFQPlayerController_InGame::AFQPlayerController_InGame()
 {
-	if (mPlayerHUDWidgetClass.Get())
+	static ConstructorHelpers::FClassFinder<UFQPlayerHUDWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/HUD/WBP_PlayerWidget.WBP_PlayerWidget_C"));
+	if (ArmourWidgetRef.Class)
 	{
-		mPlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), mPlayerHUDWidgetClass.Get());
+		mPlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), ArmourWidgetRef.Class);
 	}
 	else
 	{

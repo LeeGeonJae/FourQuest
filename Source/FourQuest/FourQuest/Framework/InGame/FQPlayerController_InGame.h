@@ -50,10 +50,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQData, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UFQPlayerInputDataAsset> mPlayerInputDataAsset;
 
-	// GameMode의 Horizontal Box에 추가할 Player HUD Widget
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UFQPlayerHUDWidget> mPlayerHUDWidgetClass;
-
 	UPROPERTY()
 	TObjectPtr<class UUserWidget> mPlayerHUDWidget;
 
