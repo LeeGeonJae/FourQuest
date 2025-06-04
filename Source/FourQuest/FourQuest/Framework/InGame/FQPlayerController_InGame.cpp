@@ -298,6 +298,13 @@ void AFQPlayerController_InGame::CreatePlayerCharacterByClass(TSubclassOf<AFQPla
 		{
 			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame &d] AFQGameMode_InGame Is Not Vailed!!"), __LINE__);
 		}
+
+		// Head UI 캐릭터 등록
+		if (mPlayerOverheadUIActor)
+		{
+			// 컨트롤러가 붙은 Pawn을 따라가도록 설정
+			mPlayerOverheadUIActor->AttachToActor(GetPawn(), FAttachmentTransformRules::KeepWorldTransform);
+		}
 	}
 }
 
@@ -321,6 +328,13 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame &d] AFQGameMode_InGame Is Not Vailed!!"), __LINE__);
+		}
+
+		// Head UI 캐릭터 등록
+		if (mPlayerOverheadUIActor)
+		{
+			// 컨트롤러가 붙은 Pawn을 따라가도록 설정
+			mPlayerOverheadUIActor->AttachToActor(GetPawn(), FAttachmentTransformRules::KeepWorldTransform);
 		}
 	}
 }

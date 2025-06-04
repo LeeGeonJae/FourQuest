@@ -223,7 +223,7 @@ void AFQSoulBase::OnEquipEffectFinished(UNiagaraComponent* PSystem)
 
 	// 갑옷 타입 확인한 후 갑옷 입기
 	EArmourType Type = CurrentArmourInterface->GetArmourType();
-	UE_LOG(LogTemp, Log, TEXT("[AFQSoulBase %d] Soul Pick Armour : %s"), __LINE__, *UEnum::GetValueAsString(Type));
+	UE_LOG(LogTemp, Log, TEXT("[AFQSoulBase %d] Effect Finished Callback Function Call : %s"), __LINE__, *UEnum::GetValueAsString(Type));
 
 	IFQPlayerControllerInterface* PlayerController = Cast<IFQPlayerControllerInterface>(GetController());
 	if (PlayerController)

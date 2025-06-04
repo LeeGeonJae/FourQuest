@@ -35,6 +35,8 @@ private:
 
 	// Change Armour Function
 	class IFQArmourInterface* CheckNearArmour();
+
+	UFUNCTION()
 	void OnEquipEffectFinished(class UNiagaraComponent* PSystem);
 
 
