@@ -64,6 +64,7 @@ void UFQ_GameInstance_InGame::SavePlayerInfomation(APawn* Player)
 		FQ_LocalMulti::FQLocalMultiPlayerInfomation PlayerInfomation = mLocalMultiPlayerArr[PlayerControllerId];
 		PlayerInfomation.mSoulType = PlayerState->GetSoulType();
 		PlayerInfomation.mArmourType = PlayerState->GetArmourType();
+		mLocalMultiPlayerArr[PlayerControllerId] = PlayerInfomation;
 	}
 }
 
@@ -83,5 +84,6 @@ void UFQ_GameInstance_InGame::SavePlayerInfomation(int32 PlayerControllerId, FQ_
 		PlayerInfomation.bSpawnLocalPlayer = InPlayerInfomation.bSpawnLocalPlayer;
 		PlayerInfomation.mSoulType = InPlayerInfomation.mSoulType;
 		PlayerInfomation.mArmourType = InPlayerInfomation.mArmourType;
+		mLocalMultiPlayerArr[PlayerControllerId] = PlayerInfomation;
 	}
 }

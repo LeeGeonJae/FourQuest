@@ -18,6 +18,9 @@ class FQUI_API UFQPlayerHpWidget : public UFQUserWidget
 public:
 	UFQPlayerHpWidget();
 
+	// Common Function
+	void UpdateHpDecrasePercent(float InDeltaTime);
+
 	// Callback Function
 	void UpdatePlayerHp(float HpValue);
 	void UpdatePlayerControllerNumber(int32 PlayerControllerNumber, ESoulType SoulType);
@@ -26,7 +29,6 @@ public:
 private:
 	// Parent Function
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQPlayer)
@@ -44,11 +46,10 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> mHpBar;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UImage> mHp;
+	TObjectPtr<class UProgressBar> mHp;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UImage> mHpDecrase;
+	TObjectPtr<class UProgressBar> mHpDecrase;
 
-	float mMaxSize;
 	float mHpPercent;
 	float mHpDecrasePercent;
 };

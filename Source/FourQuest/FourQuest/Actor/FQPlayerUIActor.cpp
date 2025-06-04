@@ -7,11 +7,16 @@
 
 AFQPlayerUIActor::AFQPlayerUIActor()
 {
+	// Tick 함수 실행
+	PrimaryActorTick.bCanEverTick = true;
+
+	// 위젯 컴포넌트 생성
 	mPlayerHpWidgetComponent = CreateDefaultSubobject<UFQWidgetComponent>(TEXT("PlayerHpWidget"));
 	mArmourGaugeWidgetComponent = CreateDefaultSubobject<UFQWidgetComponent>(TEXT("GaugeWidget"));
 	mPlayerHpWidgetComponent->SetupAttachment(RootComponent);
 	mArmourGaugeWidgetComponent->SetupAttachment(RootComponent);
 
+	// Player Hp 위젯 세팅
 	static ConstructorHelpers::FClassFinder<UFQPlayerHpWidget> PlayerHpWidgetRef(TEXT("/Game/Blueprints/Player/WBP_PlayerHp.WBP_PlayerHp_C"));
 	if (PlayerHpWidgetRef.Class)
 	{
@@ -25,6 +30,7 @@ AFQPlayerUIActor::AFQPlayerUIActor()
 		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerUIActor %d] mPlayerHpWidgetClass 클래스를 못 찾았습니다!!"), __LINE__);
 	}
 
+	// Player Gauge 위젯 세팅
 	static ConstructorHelpers::FClassFinder<UFQSoulGaugeWidget> GaugeWidgetRef(TEXT("/Game/Blueprints/Player/WBP_ArmourGauge.WBP_ArmourGauge_C"));
 	if (GaugeWidgetRef.Class)
 	{
@@ -60,6 +66,15 @@ void AFQPlayerUIActor::BeginPlay()
 void AFQPlayerUIActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (mPlayerHpWidget && mPlayerHpWidgetComponent->GetVisibleFlag())
+	{
+		mPlayerHpWidget->UpdateHpDecrasePercent(DeltaTime);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerUIActor %d] mPlayerHpWidget가 유효하지 않습니다!"), __LINE__);
+	}
 }
 
 void AFQPlayerUIActor::UpdatePlayerNumber(int32 PlayerControllerNumber, ESoulType PlayerSoulType)

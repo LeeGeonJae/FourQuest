@@ -30,7 +30,7 @@ public:
     virtual void AddSoulGauge(const int32 AddValue) override;
     virtual void SetSoulGauge(const int32 NewValue) override;
     virtual int32 GetSoulGauge() const override { return mCurrentSoulGauge; }
-    virtual void SetMaxHp(const int32 NewValue) override { mMaxHp = NewValue; }
+    virtual void SetMaxHp(const int32 NewValue) override;
     virtual int32 GetMaxHp() const override { return mMaxHp; }
     virtual void SetHp(const int32 NewValue) override;
     virtual void AddHp(const int32 AddValue) override;

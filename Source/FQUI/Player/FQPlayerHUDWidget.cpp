@@ -7,6 +7,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/RadialSlider.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/ProgressBar.h"
 
 #include "FQGameCore\Player\FQPlayerControllerInterface.h"
 
@@ -16,6 +17,8 @@ UFQPlayerHUDWidget::UFQPlayerHUDWidget()
     , mbIsSoulBurning(true)
     , mCurrentFrameIndex()
     , mSoulType(ESoulType::Sword)
+    , mHpPercent(1.f)
+    , mHpDecrasePercent(1.f)
 {
     LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Props/Textures/ui/Player_HUD_Sprite/Blue/"), TEXT("BlueSoul"), 39, mBlueSoulBurningAnimations);
     LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Props/Textures/ui/Player_HUD_Sprite/Yellow/"), TEXT("YellowSoul"), 39, mYellowSoulBurningAnimations);
@@ -42,6 +45,7 @@ void UFQPlayerHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
     Super::NativeTick(MyGeometry, InDeltaTime);
 
 	PlaySoulBurningAnimation(InDeltaTime);
+    UpdateHpDecraceValue(InDeltaTime);
 }
 
 void UFQPlayerHUDWidget::PlaySoulBurningAnimation(float DeltaTime)
@@ -65,6 +69,24 @@ void UFQPlayerHUDWidget::PlaySoulBurningAnimation(float DeltaTime)
             UpdateSoulBurningAnimation(mBlueSoulBurningAnimations);
 		}
     }
+}
+
+void UFQPlayerHUDWidget::UpdateHpDecraceValue(float DeltaTime)
+{
+    if (!mHpDecrase || FMath::Abs(mHpDecrasePercent - mHpPercent) < 0.0001f)
+    {
+        return;
+    }
+
+    if (mHpDecrasePercent > mHpPercent)
+    {
+        mHpDecrasePercent -= DeltaTime * 0.1f;
+    }
+    else
+    {
+        mHpDecrasePercent = mHpPercent;
+    }
+    mHpDecrase->SetPercent(mHpDecrasePercent);
 }
 
 void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
@@ -131,6 +153,18 @@ void UFQPlayerHUDWidget::UpdateSoulGauge(float GaugeValue)
             mSoulBurning->SetVisibility(ESlateVisibility::Hidden);
         }
     }
+}
+
+void UFQPlayerHUDWidget::UpdateHpValue(float HpValue)
+{
+    if (!mHp)
+    {
+		UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mHp Or mHpDecrace 프로그래시브 바가 유효하지 않습니다!"), __LINE__);
+        return;
+    }
+
+    mHpPercent = HpValue;
+    mHp->SetPercent(mHpPercent);
 }
 
 

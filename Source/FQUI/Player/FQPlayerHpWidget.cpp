@@ -1,10 +1,10 @@
 #include "FQPlayerHpWidget.h"
 #include "Components/Image.h"
+#include "Components/ProgressBar.h"
 
 UFQPlayerHpWidget::UFQPlayerHpWidget()
 	: mHpPercent(1.f)
 	, mHpDecrasePercent(1.f)
-	, mMaxSize()
 {
 }
 
@@ -17,43 +17,39 @@ void UFQPlayerHpWidget::NativeConstruct()
 	}
 
 	// 현재 Hp 이미지 가로 사이즈 값 초기화 적용
-	const FSlateBrush& HpBrush = mHp->GetBrush();
-	mMaxSize = HpBrush.ImageSize.X;
-
 	mHpBar->SetVisibility(ESlateVisibility::Hidden);
 	mHp->SetVisibility(ESlateVisibility::Hidden);
 	mHpDecrase->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void UFQPlayerHpWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UFQPlayerHpWidget::UpdateHpDecrasePercent(float InDeltaTime)
 {
-	if (!mHpDecrase)
+	if (!mHpDecrase || FMath::Abs(mHpDecrasePercent - mHpPercent) < 0.0001f)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHpWidget %d] mHpDecrase Image Is Null!!"), __LINE__);
 		return;
 	}
 
-	if (mHpDecrasePercent < mHpPercent)
+	if (mHpDecrasePercent > mHpPercent)
 	{
-		FSlateBrush HpDecraseBrush = mHpDecrase->GetBrush();
-
-		mHpDecrasePercent -= (InDeltaTime * 0.5f);
-		HpDecraseBrush.ImageSize.X = mMaxSize * mHpDecrasePercent;
+		mHpDecrasePercent -= InDeltaTime * 0.1f;
 	}
+	else
+	{
+		mHpDecrasePercent = mHpPercent;
+	}
+	mHpDecrase->SetPercent(mHpDecrasePercent);
 }
 
 void UFQPlayerHpWidget::UpdatePlayerHp(float HpValue)
 {
 	if (!mHp)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHpWidget %d] mHp Image Is Null!!"), __LINE__);
+		UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mHp Or mHpDecrace 프로그래시브 바가 유효하지 않습니다!"), __LINE__);
 		return;
 	}
 
 	mHpPercent = HpValue;
-
-	FSlateBrush HpBrush = mHp->GetBrush();
-	HpBrush.ImageSize.X = mMaxSize * mHpPercent;
+	mHp->SetPercent(mHpPercent);
 }
 
 void UFQPlayerHpWidget::UpdatePlayerControllerNumber(int32 PlayerControllerNumber, ESoulType SoulType)

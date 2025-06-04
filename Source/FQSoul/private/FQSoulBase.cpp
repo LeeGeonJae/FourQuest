@@ -113,7 +113,7 @@ void AFQSoulBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 		UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 		Input->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Triggered, this, &AFQSoulBase::Move);
 		Input->BindAction(mPlayerInputDataAsset->mBButtonAction, ETriggerEvent::Started, this, &AFQSoulBase::CheckArmour);
-		Input->BindAction(mPlayerInputDataAsset->mYButtonAction, ETriggerEvent::Triggered, this, &AFQSoulBase::AddSoulGauge);
+		//Input->BindAction(mPlayerInputDataAsset->mYButtonAction, ETriggerEvent::Triggered, this, &AFQSoulBase::AddSoulGauge);
 		Input->BindAction(mPlayerInputDataAsset->mAButtonAction, ETriggerEvent::Triggered, this, &AFQSoulBase::StartDash);
 	}
 	else
@@ -165,6 +165,24 @@ void AFQSoulBase::CheckArmour()
 		if (MyPC)
 		{
 			DisableInput(MyPC); // 캐릭터에 대한 입력만 막음
+		}
+
+		IFQPlayerStateInterface* MyPlayerState = GetPlayerState<IFQPlayerStateInterface>();
+		if (!MyPlayerState)
+		{
+			UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d] PlayerStateInterface가 유효하지 않습니다!"), __LINE__);
+			return;
+		}
+
+		IFQArmourInterface* CurrentArmourInterface = Cast<IFQArmourInterface>(mCurrentArmour);
+		if (CurrentArmourInterface)
+		{
+			MyPlayerState->SetArmourType(CurrentArmourInterface->GetArmourType());
+			CurrentArmourInterface->PickArmour();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d] CurrentArmourInterface가 유효하지 않습니다!"), __LINE__);
 		}
 	}
 	else
@@ -219,10 +237,15 @@ IFQArmourInterface* AFQSoulBase::CheckNearArmour()
 
 void AFQSoulBase::OnEquipEffectFinished(UNiagaraComponent* PSystem)
 {
-	IFQArmourInterface* CurrentArmourInterface = Cast<IFQArmourInterface>(mCurrentArmour);
+	IFQPlayerStateInterface* MyPlayerState = GetPlayerState<IFQPlayerStateInterface>();
+	if (!MyPlayerState)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQSoulBase %d] PlayerStateInterface가 유효하지 않습니다!"), __LINE__);
+		return;
+	}
 
 	// 갑옷 타입 확인한 후 갑옷 입기
-	EArmourType Type = CurrentArmourInterface->GetArmourType();
+	EArmourType Type = MyPlayerState->GetArmourType();
 	UE_LOG(LogTemp, Log, TEXT("[AFQSoulBase %d] Effect Finished Callback Function Call : %s"), __LINE__, *UEnum::GetValueAsString(Type));
 
 	IFQPlayerControllerInterface* PlayerController = Cast<IFQPlayerControllerInterface>(GetController());
@@ -230,8 +253,6 @@ void AFQSoulBase::OnEquipEffectFinished(UNiagaraComponent* PSystem)
 	{
 		PlayerController->ChangeToArmour(Type);
 	}
-
-	CurrentArmourInterface->PickArmour();
 }
 
 

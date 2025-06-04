@@ -158,7 +158,7 @@ void AFQPlayerController_InGame::UpdateHUDSetting()
 		return;
 	}
 
-	// HUD Widget 함수 Binding
+	// HUD Widget 콜백 함수 Binding
 	FQPlayerState->mArmourChangeDelegate.AddLambda([&](EArmourType NewArmourType)
 		{
 			if (mPlayerHUDWidget)
@@ -171,6 +171,13 @@ void AFQPlayerController_InGame::UpdateHUDSetting()
 			if (mPlayerHUDWidget)
 			{
 				mPlayerHUDWidget->UpdateSoulGauge(CurrentSoulGauge);
+			}
+		});
+	FQPlayerState->mPlayerHpDelegate.AddLambda([&](float HpValue)
+		{
+			if (mPlayerHUDWidget)
+			{
+				mPlayerHUDWidget->UpdateHpValue(HpValue);
 			}
 		});
 
