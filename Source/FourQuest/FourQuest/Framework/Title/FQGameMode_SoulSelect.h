@@ -40,7 +40,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UFQSoulSelectScreenWidget> mSoulSelectWidgetClass;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UFQSoulSelectScreenWidget> mSoulSelectWidgetHandle;
 
 	TMap<uint8, EPlayerStateType> mPlayerStates;

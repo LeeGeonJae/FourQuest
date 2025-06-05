@@ -168,11 +168,14 @@ void AFQMainCenterCamera::CameraZoomControl(float DeltaTime)
     }
     
     // 디버그 체크
-    //DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), FVector(CurrentRange.X, CurrentRange.Y, 0.f), FColor::Yellow);
-    //DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), 
-    //    FVector(CurrentRange.X * mCameraDataAsset->mCheckRangeMinScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMinScale, 0.f), FColor::Green);
-    //DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), 
-    //    FVector(CurrentRange.X * mCameraDataAsset->mCheckRangeMaxScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMaxScale, 0.f), FColor::Red);
+    if (mCameraDataAsset->mbIsDebugRendering)
+    {
+        DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), FVector(CurrentRange.X, CurrentRange.Y, 0.f), FColor::Yellow);
+        DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), 
+            FVector(CurrentRange.X * mCameraDataAsset->mCheckRangeMinScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMinScale, 0.f), FColor::Green);
+        DrawDebugBox(GetWorld(), FVector(mCurrentCameraLocation.X, mCurrentCameraLocation.Y, 0.f), 
+            FVector(CurrentRange.X * mCameraDataAsset->mCheckRangeMaxScale, CurrentRange.Y * mCameraDataAsset->mCheckRangeMaxScale, 0.f), FColor::Red);
+    }
 
     // 플레이어와 카메라 간격 계산
     float PlayerDistanceX = 0.0f;
@@ -256,18 +259,29 @@ void AFQMainCenterCamera::RaycastFrustumEdges()
                 if (TargetBox)
                 {
                     TargetBox->SetWorldLocation(HitResult.ImpactPoint);
-                    //DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 12.f, 25.f, FColor::White);
+
+                    // 디버그 충돌
+                    if (mCameraDataAsset->mbIsDebugRendering)
+                    {
+                        DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 12.f, 25.f, FColor::White);
+                    }
                 }
             }
 
             // 디버그 라인
-            //DrawDebugLine(GetWorld(), RayStartPoint, TraceEnd, FColor::White);
+            if (mCameraDataAsset->mbIsDebugRendering)
+            {
+				DrawDebugLine(GetWorld(), RayStartPoint, TraceEnd, FColor::White);
+            }
         }
     }
 
     // 6. 디버그 박스 시각화
-    //DrawDebugBox(GetWorld(), mTopBoxComponents->GetComponentLocation(), mTopBoxComponents->GetScaledBoxExtent(), mTopBoxComponents->GetComponentQuat(), FColor::Red);
-    //DrawDebugBox(GetWorld(), mBottomBoxComponents->GetComponentLocation(), mBottomBoxComponents->GetScaledBoxExtent(), mBottomBoxComponents->GetComponentQuat(), FColor::Green);
-    //DrawDebugBox(GetWorld(), mRightBoxComponents->GetComponentLocation(), mRightBoxComponents->GetScaledBoxExtent(), mRightBoxComponents->GetComponentQuat(), FColor::Blue);
-    //DrawDebugBox(GetWorld(), mLeftBoxComponents->GetComponentLocation(), mLeftBoxComponents->GetScaledBoxExtent(), mLeftBoxComponents->GetComponentQuat(), FColor::Yellow);
+    if (mCameraDataAsset->mbIsDebugRendering)
+    {
+        DrawDebugBox(GetWorld(), mTopBoxComponents->GetComponentLocation(), mTopBoxComponents->GetScaledBoxExtent(), mTopBoxComponents->GetComponentQuat(), FColor::Red);
+        DrawDebugBox(GetWorld(), mBottomBoxComponents->GetComponentLocation(), mBottomBoxComponents->GetScaledBoxExtent(), mBottomBoxComponents->GetComponentQuat(), FColor::Green);
+        DrawDebugBox(GetWorld(), mRightBoxComponents->GetComponentLocation(), mRightBoxComponents->GetScaledBoxExtent(), mRightBoxComponents->GetComponentQuat(), FColor::Blue);
+        DrawDebugBox(GetWorld(), mLeftBoxComponents->GetComponentLocation(), mLeftBoxComponents->GetScaledBoxExtent(), mLeftBoxComponents->GetComponentQuat(), FColor::Yellow);
+    }
 }

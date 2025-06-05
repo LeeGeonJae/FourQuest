@@ -2,7 +2,7 @@
 
 
 #include "FQPlayer/Public/AnimNotify_ProcessNextSection.h"
-#include "FQPlayer/Public/FQKnightPlayer.h"
+#include "FQPlayer/Public/FQPlayerBase.h"
 
 void UAnimNotify_ProcessNextSection::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
@@ -13,7 +13,7 @@ void UAnimNotify_ProcessNextSection::Notify(USkeletalMeshComponent* MeshComp, UA
 		return;
 	}
 
-	AFQKnightPlayer* Player = Cast<AFQKnightPlayer>(MeshComp->GetOwner());
+	AFQPlayerBase* Player = Cast<AFQPlayerBase>(MeshComp->GetOwner());
 	if (!Player)
 	{
 		return;

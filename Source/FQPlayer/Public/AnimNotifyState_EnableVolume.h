@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "AnimNotifyState_SwordAttack.generated.h"
+#include "AnimNotifyState_EnableVolume.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FQPLAYER_API UAnimNotifyState_SwordAttack : public UAnimNotifyState
+class FQPLAYER_API UAnimNotifyState_EnableVolume : public UAnimNotifyState
 {
 	GENERATED_BODY()
 

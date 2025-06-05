@@ -9,6 +9,7 @@
 
 #include "FQGameCore\Soul\FQSoulCharacterInterface.h"
 #include "FQUI\FQWidgetComponent.h"
+#include "FQUI\Armour\FQArmourWidget.h"
 
 // Sets default values
 AFQArmourBase::AFQArmourBase()
@@ -18,16 +19,18 @@ AFQArmourBase::AFQArmourBase()
 
 	mTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
 	mMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	mArmourWidget = CreateDefaultSubobject<UFQWidgetComponent>(TEXT("ArmourWidget"));
 
 	RootComponent = mTrigger;
 	mMesh->SetupAttachment(mTrigger);
+	mArmourWidget->SetupAttachment(mTrigger);
 
 	//mTrigger->SetCollisionProfileName(CPROFILE_ABTRIGGER);
 	mTrigger->SetBoxExtent(FVector(40.0f, 42.0f, 30.0f));
 	mTrigger->SetCollisionProfileName(TEXT("ArmourCollision"));
 
+	// Mesh
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Props/Armour/Item_Amor.Item_Amor'"));
-	check(BoxMeshRef.Object);
 	if (BoxMeshRef.Object)
 	{
 		mMesh->SetStaticMesh(BoxMeshRef.Object);
@@ -37,12 +40,8 @@ AFQArmourBase::AFQArmourBase()
 	mMesh->SetCollisionProfileName(TEXT("NoCollision"));
 
 	// Widget Component
-	mArmourWidget = CreateDefaultSubobject<UFQWidgetComponent>(TEXT("Widget"));
-	mArmourWidget->SetupAttachment(mTrigger);
 	mArmourWidget->SetRelativeLocation(FVector(0.f, 0.f, 80.f));
-
-	static ConstructorHelpers::FClassFinder<UUserWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/Armour/WBP_ArmourType.WBP_ArmourType_C"));
-	check(ArmourWidgetRef.Class);
+	static ConstructorHelpers::FClassFinder<UFQArmourWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/Armour/WBP_ArmourType.WBP_ArmourType_C"));
 	if (ArmourWidgetRef.Class)
 	{
 		mArmourWidget->SetWidgetClass(ArmourWidgetRef.Class);
@@ -50,6 +49,10 @@ AFQArmourBase::AFQArmourBase()
 		mArmourWidget->SetDrawSize(FVector2D(10.f, 10.f));
 		mArmourWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		mArmourWidget->SetVisibility(false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQArmourBase %d] Failed UFQArmourWidget Class Reference Find!!"), __LINE__);
 	}
 }
 
@@ -81,7 +84,7 @@ void AFQArmourBase::SetNearestArmour(bool IsTrue)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Is Not Valid mArmourWidget"));
+		UE_LOG(LogTemp, Error, TEXT("[AFQArmourBase %d] Is Not Valid mArmourWidget"), __LINE__);
 	}
 }
 

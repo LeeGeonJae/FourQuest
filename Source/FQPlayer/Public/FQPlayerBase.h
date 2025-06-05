@@ -33,6 +33,10 @@ public:
 
 	void ApplyDamageToTarget(float DamageAmount, AActor* Target);
 
+	virtual void ProcessNextSection() PURE_VIRTUAL(AFQPlayerBase::ProcessNextSection, );
+	virtual void EnableAttackVolume() PURE_VIRTUAL(AFQPlayerBase::EnableAttackVolume, );
+	virtual void DisableAttackVolume() PURE_VIRTUAL(AFQPlayerBase::DisableAttackVolume, );
+
 protected:
 	virtual void BeginPlay() override;
 

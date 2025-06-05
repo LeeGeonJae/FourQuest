@@ -38,7 +38,7 @@ AFQPlayerBase::AFQPlayerBase()
 	// Effect
 	mEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SoulEffect"));
 	mEffect->SetupAttachment(RootComponent);
-	mEffect->SetAutoActivate(false);
+	mEffect->SetAutoActivate(true);
 
 	mHitState = EHitState::None;
 

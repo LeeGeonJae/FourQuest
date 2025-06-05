@@ -1,0 +1,95 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "FQPlayer/Public/FQMageProjectile.h"
+
+#include "Components/BoxComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "NiagaraComponent.h"
+
+#include "FQPlayer/Public/FQMagePlayer.h"
+
+// Sets default values
+AFQMageProjectile::AFQMageProjectile()
+{
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
+	mVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("Volume"));
+	RootComponent = mVolume;
+
+	mMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Movement"));
+	mMovement->UpdatedComponent = mVolume;
+	mMovement->bRotationFollowsVelocity = false;
+	mMovement->bShouldBounce = false;
+	mMovement->ProjectileGravityScale = 0.0f;
+
+	mEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Effect"));
+	mEffect->SetupAttachment(RootComponent);
+	mEffect->SetAutoActivate(true);
+}
+
+// Called when the game starts or when spawned
+void AFQMageProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (mEffectSystem)
+	{
+		mEffect->SetAsset(mEffectSystem);
+		mEffect->Activate();
+	}
+
+	mVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	mVolume->OnComponentBeginOverlap.AddDynamic(this, &AFQMageProjectile::OnVolumeBeginOverlap);
+}
+
+// Called every frame
+void AFQMageProjectile::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+void AFQMageProjectile::OnVolumeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!Owner)
+	{
+		return;
+	}
+
+	if (OtherActor == Owner)
+	{
+		return;
+	}
+
+	AFQMagePlayer* Player = Cast<AFQMagePlayer>(Owner);
+
+	if (!Player)
+	{
+		return;
+	}
+
+	if (mCount <= 0)
+	{
+		mVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Destroy();
+		return;
+	}
+
+	if (Player->ApplyPush(OtherActor))
+	{
+		mCount--;
+	}
+}
+
+void AFQMageProjectile::LaunchProjectile(const FVector& Direction, float Speed)
+{
+	mMovement->Velocity = Direction * Speed;
+}
+
+void AFQMageProjectile::SetCount(int32 Count)
+{
+	mCount = Count;
+}
+

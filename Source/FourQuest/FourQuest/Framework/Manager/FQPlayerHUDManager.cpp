@@ -9,11 +9,11 @@
 
 AFQPlayerHUDManager::AFQPlayerHUDManager()
 {
-	ConstructorHelpers::FClassFinder<UUserWidget> PlayerHUDWidget(TEXT("/Game/Blueprints/HUD/WBP_PlayerHUDWidget.WBP_PlayerHUDWidget_C"));
 	// UPROPERTY로 노출된 UUserWidget* 클래스를 지정
-	if (PlayerHUDWidget.Class)
+	ConstructorHelpers::FClassFinder<UUserWidget> HUDWidgetRef(TEXT("/Game/Blueprints/HUD/WBP_PlayerHUDWidget.WBP_PlayerHUDWidget_C"));
+	if (HUDWidgetRef.Class)
 	{
-		mHUDWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDWidget.Class);
+		mHUDWidget = CreateWidget<UUserWidget>(GetWorld(), HUDWidgetRef.Class);
 		if (mHUDWidget)
 		{
 			mHUDWidget->AddToViewport(); // 화면에 위젯 추가

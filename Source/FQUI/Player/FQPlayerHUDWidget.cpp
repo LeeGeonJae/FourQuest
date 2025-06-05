@@ -7,6 +7,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/RadialSlider.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/ProgressBar.h"
 
 #include "FQGameCore\Player\FQPlayerControllerInterface.h"
 
@@ -16,11 +17,13 @@ UFQPlayerHUDWidget::UFQPlayerHUDWidget()
     , mbIsSoulBurning(true)
     , mCurrentFrameIndex()
     , mSoulType(ESoulType::Sword)
+    , mHpPercent(1.f)
+    , mHpDecrasePercent(1.f)
 {
-    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Blue/"), TEXT("BlueSoul"), 39, mBlueSoulBurningAnimations);
-    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Yellow/"), TEXT("YellowSoul"), 39, mYellowSoulBurningAnimations);
-    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Green/"), TEXT("GreenSoul"), 39, mGreenSoulBurningAnimations);
-    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Textures/ui/Player_HUD_Sprite/Red/"), TEXT("RedSoul"), 39, mRedSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Props/Textures/ui/Player_HUD_Sprite/Blue/"), TEXT("BlueSoul"), 39, mBlueSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Props/Textures/ui/Player_HUD_Sprite/Yellow/"), TEXT("YellowSoul"), 39, mYellowSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Props/Textures/ui/Player_HUD_Sprite/Green/"), TEXT("GreenSoul"), 39, mGreenSoulBurningAnimations);
+    LoadingSoulBurningTexture(TEXT("/Script/Engine.Texture2D'/Game/Props/Textures/ui/Player_HUD_Sprite/Red/"), TEXT("RedSoul"), 39, mRedSoulBurningAnimations);
 }
 
 void UFQPlayerHUDWidget::NativeConstruct()
@@ -42,6 +45,7 @@ void UFQPlayerHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
     Super::NativeTick(MyGeometry, InDeltaTime);
 
 	PlaySoulBurningAnimation(InDeltaTime);
+    UpdateHpDecraceValue(InDeltaTime);
 }
 
 void UFQPlayerHUDWidget::PlaySoulBurningAnimation(float DeltaTime)
@@ -67,8 +71,32 @@ void UFQPlayerHUDWidget::PlaySoulBurningAnimation(float DeltaTime)
     }
 }
 
+void UFQPlayerHUDWidget::UpdateHpDecraceValue(float DeltaTime)
+{
+    if (!mHpDecrase || FMath::Abs(mHpDecrasePercent - mHpPercent) < 0.0001f)
+    {
+        return;
+    }
+
+    if (mHpDecrasePercent > mHpPercent)
+    {
+        mHpDecrasePercent -= DeltaTime * 0.1f;
+    }
+    else
+    {
+        mHpDecrasePercent = mHpPercent;
+    }
+    mHpDecrase->SetPercent(mHpDecrasePercent);
+}
+
 void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
 {
+    if (!mSkillBox || !mArmourType || !mSkill_X || !mSkill_A || !mSkill_R)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] UpdateArmourSkill Function Call Is Failed"), __LINE__);
+        return;
+    }
+
     if (InArmourType == EArmourType::End)
     {
         mSkillBox->SetVisibility(ESlateVisibility::Hidden);
@@ -79,6 +107,10 @@ void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
         mSkillBox->SetVisibility(ESlateVisibility::Visible);
         mArmourType->SetVisibility(ESlateVisibility::Visible);
         
+        if (mArmourTypeMap.Num() == 0 || mXSkillMap.Num() == 0 || mRSkillMap.Num() == 0 || mASkillMap.Num() == 0)
+        {
+            return;
+        }
         UTexture2D* ArmourTypeTexture = mArmourTypeMap[InArmourType];
         UTexture2D* SkillXTexture = mXSkillMap[InArmourType];
         UTexture2D* SkillATexture = mASkillMap[InArmourType];
@@ -98,9 +130,12 @@ void UFQPlayerHUDWidget::UpdateArmourSkill(EArmourType InArmourType)
 
 void UFQPlayerHUDWidget::UpdateSoulGauge(float GaugeValue)
 {
-    UE_LOG(LogTemp, Log, TEXT("[UFQPlayerHUDWidget %d] GaugeValue : %f"), __LINE__, GaugeValue);
+    if (!mSoulGauge)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] GaugeValue Function Is Failed!!"), __LINE__);
+        return;
+    }
     mSoulGauge->SetValue(GaugeValue);
-
     if (GaugeValue >= 1.f)
     {
         if (mSoulBurning)
@@ -118,6 +153,18 @@ void UFQPlayerHUDWidget::UpdateSoulGauge(float GaugeValue)
             mSoulBurning->SetVisibility(ESlateVisibility::Hidden);
         }
     }
+}
+
+void UFQPlayerHUDWidget::UpdateHpValue(float HpValue)
+{
+    if (!mHp)
+    {
+		UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mHp Or mHpDecrace 프로그래시브 바가 유효하지 않습니다!"), __LINE__);
+        return;
+    }
+
+    mHpPercent = HpValue;
+    mHp->SetPercent(mHpPercent);
 }
 
 
