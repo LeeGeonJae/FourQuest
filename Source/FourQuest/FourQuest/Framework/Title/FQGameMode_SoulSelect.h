@@ -39,7 +39,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UFQSoulSelectScreenWidget> mSoulSelectWidgetClass;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UFQSoulSelectScreenWidget> mSoulSelectWidgetHandle;
 

@@ -37,7 +37,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UFQTitleScreenWidget> mTitleWidgetClass;
-
 	UPROPERTY()
 	TObjectPtr<class UFQTitleScreenWidget> mTitleWidgetHandle;
 };

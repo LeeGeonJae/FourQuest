@@ -22,6 +22,7 @@ public:
 	void UpdateArmourType(EArmourType ChangedArmourType);
 
 protected:
+	// 가상 함수
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 

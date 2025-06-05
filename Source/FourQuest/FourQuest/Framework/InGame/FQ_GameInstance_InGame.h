@@ -19,6 +19,7 @@ public:
 
 	FORCEINLINE TMap<PlayerControllerId, FQ_LocalMulti::FQLocalMultiPlayerInfomation> GetLocalMultiPlayerInfomation() const { return mLocalMultiPlayerArr; }
 
+	// 플레이어 정보 저장
 	void SavePlayerInfomation(APawn* Player);
 	void SavePlayerInfomation(int32 PlayerControllerId, FQ_LocalMulti::FQLocalMultiPlayerInfomation InPlayerInfomation);
 

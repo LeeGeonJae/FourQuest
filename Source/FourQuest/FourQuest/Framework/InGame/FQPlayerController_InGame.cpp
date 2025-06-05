@@ -361,6 +361,12 @@ void AFQPlayerController_InGame::HandlePickButton()
 			MyGameMode->SelectInteraction(ControllerId);
 		}
 	}
+
+	AFQPlayerState_InGame* MyPlayerState = GetPlayerState<AFQPlayerState_InGame>();
+	if (MyPlayerState)
+	{
+		MyPlayerState->AddHp(-10);
+	}
 }
 
 void AFQPlayerController_InGame::HandleCancelButton()

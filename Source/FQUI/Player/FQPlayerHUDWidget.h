@@ -29,33 +29,27 @@ protected:
 private:
     void PlaySoulBurningAnimation(float DeltaTime);
     void UpdateHpDecraceValue(float DeltaTime);
-    void LoadingSoulBurningTexture(FString Path, FString FileName, uint32 TextureSize, TArray<TObjectPtr<UTexture2D>>& SoulTextureContainer);
-    void UpdateSoulBurningAnimation(TArray<UTexture2D*> SoulAnimationKey);
+    void LoadingSoulBurningTexture(FString Path, FString FileName, uint32 TextureSize, TArray<TSoftObjectPtr<UTexture2D>>& SoulTextureContainer);
+    void UpdateSoulBurningAnimation(TArray<TSoftObjectPtr<UTexture2D>>& SoulAnimationKey);
 
 protected:
     // Soul Burning Animation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
-    TArray<TObjectPtr<UTexture2D>> mBlueSoulBurningAnimations;
-
+    TArray<TSoftObjectPtr<UTexture2D>> mBlueSoulBurningAnimations;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
-    TArray<TObjectPtr<UTexture2D>> mYellowSoulBurningAnimations;
-
+    TArray<TSoftObjectPtr<UTexture2D>> mYellowSoulBurningAnimations;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
-    TArray<TObjectPtr<UTexture2D>> mRedSoulBurningAnimations;
-
+    TArray<TSoftObjectPtr<UTexture2D>> mRedSoulBurningAnimations;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQSoul)
-    TArray<TObjectPtr<UTexture2D>> mGreenSoulBurningAnimations;
+    TArray<TSoftObjectPtr<UTexture2D>> mGreenSoulBurningAnimations;
 
     // Armour Skill 이미지
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
     TMap<EArmourType, TObjectPtr<UTexture2D>> mArmourTypeMap;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
     TMap<EArmourType, TObjectPtr<UTexture2D>> mXSkillMap;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
     TMap<EArmourType, TObjectPtr<UTexture2D>> mASkillMap;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQArmour)
     TMap<EArmourType, TObjectPtr<UTexture2D>> mRSkillMap;
 
