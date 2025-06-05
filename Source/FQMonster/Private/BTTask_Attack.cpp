@@ -17,7 +17,7 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 			AActor* Target = Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
 			if(Target)
 			{
-				Monster->AttackPlayer(Target);
+				Monster->Attack(Target);
 				return EBTNodeResult::Succeeded;
 			}
 		}

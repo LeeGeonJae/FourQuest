@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 AFQMonsterBase::AFQMonsterBase()
@@ -13,11 +14,15 @@ AFQMonsterBase::AFQMonsterBase()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	AttackMontage = nullptr;
-	TargetActor = nullptr;
+	mAttackMontage = nullptr;
+	mTargetActor = nullptr;
 
 	mbCanPush = true;
 	mPushCoolTime = 0.0f;
+
+	mAttackBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Attack Collider"));
+	mAttackBox->SetupAttachment(RootComponent);
+	mAttackBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("MonsterCollision"));
 }
@@ -26,7 +31,7 @@ AFQMonsterBase::AFQMonsterBase()
 void AFQMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	SpawnedLocation = GetActorLocation();
+	mSpawnedLocation = GetActorLocation();
 
 	if (mMonsterDataAsset)
 	{
@@ -36,10 +41,10 @@ void AFQMonsterBase::BeginPlay()
 	for (TActorIterator<AFQMonsterManager> It(GetWorld()); It; ++It)
 	{
 		Manager = *It;
-		if(GroupID==TEXT("None"))
+		if(mGroupID==TEXT("None"))
 			It->RegisterGroup(TEXT("Default"), this);
 		else
-			It->RegisterGroup(GroupID, this);
+			It->RegisterGroup(mGroupID, this);
 		break;
 	}
 	
@@ -59,25 +64,26 @@ void AFQMonsterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 }
 
+void AFQMonsterBase::Attack(AActor* Actor)
+{
+	if (mAttackMontage)
+	{
+		FName SectionName = GetRandomSectionName();
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *SectionName.ToString());
+		PlayAnimMontage(mAttackMontage, 1.0f, SectionName);
+	}
+}
+
 void AFQMonsterBase::ManagerSetTargetActor(AActor* Actor)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Attack"));
-	if (!TargetActor)
+	if (!mTargetActor)
 	{
-		TargetActor = Actor;
+		mTargetActor = Actor;
 	}
-	Manager->SetTargetActor(GroupID, Actor);
+	Manager->SetTargetActor(mGroupID, Actor);
 }
 
-void AFQMonsterBase::AttackPlayer(AActor* Actor)
-{
-	if (AttackMontage)
-	{
-		FName SectionName = GetRandomSectionName();
-		UE_LOG(LogTemp, Warning, TEXT("%s"),*SectionName.ToString());
-		PlayAnimMontage(AttackMontage, 1.0f, SectionName);
-	}
-}
 
 FName AFQMonsterBase::GetRandomSectionName()
 {
@@ -88,8 +94,32 @@ FName AFQMonsterBase::GetRandomSectionName()
 
 void AFQMonsterBase::ApplyDamageToTarget()
 {
-	UGameplayStatics::ApplyDamage(TargetActor, mMonsterDataAsset->mAttackPower, GetController(), this, UDamageType::StaticClass());
-	UE_LOG(LogTemp, Warning, TEXT("Attack"));
+	TArray<AActor*> Overlapped;
+	mAttackBox->GetOverlappingActors(Overlapped, AActor::StaticClass());
+
+	for (AActor* Target : Overlapped)
+	{
+		if (Target && Target != this)
+		{
+			UGameplayStatics::ApplyDamage(Target, mMonsterDataAsset->mAttackPower, GetController(), this, UDamageType::StaticClass());
+			UE_LOG(LogTemp, Warning, TEXT("Attack"));
+		}
+	}
+	
+}
+
+void AFQMonsterBase::SetCollisionEnabled(bool CollisionEnabled)
+{
+	if (CollisionEnabled)
+		mAttackBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	else
+		mAttackBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+float AFQMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+
+	return 0.0f;
 }
 
 void AFQMonsterBase::TakeDamageByPlayer(AActor* Target, float Damage)

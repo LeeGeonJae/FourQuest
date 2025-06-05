@@ -29,6 +29,10 @@ public:
 
 	virtual void SetAnimInstance() PURE_VIRTUAL(AFQPlayerBase::SetAnimInstance, );
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
+
+	void ApplyDamageToTarget(float DamageAmount, AActor* Target);
+
 protected:
 	virtual void BeginPlay() override;
 

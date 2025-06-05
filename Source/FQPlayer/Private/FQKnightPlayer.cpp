@@ -205,6 +205,7 @@ void AFQKnightPlayer::ProcessNextSection()
 	mSwordAttackComboState = EKnightSwordAttackComboState::Combo;
 }
 
+
 void AFQKnightPlayer::EnableSwordAttackVolume()
 {
 	if (!mSwordAttackVolume)

@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "NiagaraComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AFQPlayerBase::AFQPlayerBase()
@@ -64,6 +65,23 @@ void AFQPlayerBase::SetHitReacting(bool HitReacting)
 void AFQPlayerBase::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+}
+
+float AFQPlayerBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (ActualDamage <= 0.f)
+	{
+		return 0.f;
+	}
+	UE_LOG(LogTemp,Warning,TEXT("Take Damage"))
+	return ActualDamage;
+}
+
+void AFQPlayerBase::ApplyDamageToTarget(float DamageAmount, AActor* Target)
+{
+	UGameplayStatics::ApplyDamage(Target, DamageAmount, GetController(), this, UDamageType::StaticClass());
 }
 
 void AFQPlayerBase::BeginPlay()

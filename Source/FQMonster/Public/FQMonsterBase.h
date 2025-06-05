@@ -9,6 +9,7 @@
 #include "FQMonsterBase.generated.h"
 
 class AFQMonsterManager;
+class UBoxComponent;
 
 UENUM()
 enum class EMonsterState : uint8
@@ -40,13 +41,17 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void ManagerSetTargetActor(AActor* Actor);
+	virtual void Attack(AActor* Actor);
 
-	void AttackPlayer(AActor* Actor);
+	void ManagerSetTargetActor(AActor* Actor);
 	
 	FName GetRandomSectionName();
 
 	void ApplyDamageToTarget();
+
+	void SetCollisionEnabled(bool CollisionEnabled);
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
 protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Stat")
 	float mCurrentHP;
@@ -56,18 +61,21 @@ public:
 	UFQMonsterDataAsset* mMonsterDataAsset;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "MonsterGroup")
-	FName GroupID=TEXT("None");
+	FName mGroupID=TEXT("None");
 
-	FVector SpawnedLocation;
+	FVector mSpawnedLocation;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
 	EMonsterState mMonsterState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimationMontage")
-	UAnimMontage* AttackMontage;
+	UAnimMontage* mAttackMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimationMontage")
-	AActor* TargetActor;
+	AActor* mTargetActor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	UBoxComponent* mAttackBox;
 
 protected:
 	AFQMonsterManager* Manager;
@@ -81,5 +89,8 @@ public:
 
 private:
 	uint8 mbCanPush : 1;
+
 	FTimerHandle mPushCoolTimer;
+
+
 };

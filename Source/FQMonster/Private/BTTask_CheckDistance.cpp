@@ -13,6 +13,10 @@ EBTNodeResult::Type UBTTask_CheckDistance::ExecuteTask(UBehaviorTreeComponent& O
 	if(AIC)
 	{
 		AActor* Target = Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
+		if (!Target)
+		{
+			AIC->SetTargetActor(nullptr);
+		}
 		AFQMonsterBase* Monster = AIC->GetPawn<AFQMonsterBase>();
 		if (Monster)
 		{
