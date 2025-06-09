@@ -71,7 +71,7 @@ protected:
 	// A 버튼을 누르고 있는 상태인지 확인하는 플래그
 	uint8 mbIsPressedA : 1;
 
-	FVector mMoveDir;
+	FVector mMoveDirection;
 
 private:
 	void SetMovement();

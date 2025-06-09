@@ -14,7 +14,7 @@
 // Sets default values
 AFQPlayerBase::AFQPlayerBase()
 {
-	mMoveDir = FVector::Zero();
+	mMoveDirection = FVector::Zero();
 
 	// Pawn
 	// 컨트롤러에 의한 카메라 회전 방지
@@ -108,7 +108,7 @@ void AFQPlayerBase::Move(const FInputActionValue& Value)
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 	FVector2D NormalizedVector = MovementVector.GetSafeNormal();
-	mMoveDir = FVector(NormalizedVector.X, NormalizedVector.Y, 0.0f);
+	mMoveDirection = FVector(NormalizedVector.X, NormalizedVector.Y, 0.0f);
 
 	ProcessInputMovement();
 

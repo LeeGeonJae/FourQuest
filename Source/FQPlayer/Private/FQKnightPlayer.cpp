@@ -522,10 +522,10 @@ void AFQKnightPlayer::ShieldMove(const FInputActionValue& Value)
 	FVector LookDir = FVector(NormalizedVector.X, NormalizedVector.Y, 0.0f);
 
 	// 사잇각 크기
-	float AngleDegrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(LookDir, mMoveDir)));
+	float AngleDegrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(LookDir, mMoveDirection)));
 
 	// 방향성 판단 (BlendSpace)
-	FVector Cross = FVector::CrossProduct(LookDir, mMoveDir);
+	FVector Cross = FVector::CrossProduct(LookDir, mMoveDirection);
 	mShieldMoveAngle = AngleDegrees * FMath::Sign(Cross.Z);
 
 	//UE_LOG(LogTemp, Log, TEXT("[ShieldMove] mShieldMoveAngle : %f"), mShieldMoveAngle);

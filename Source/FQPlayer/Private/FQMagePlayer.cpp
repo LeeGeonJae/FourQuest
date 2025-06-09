@@ -18,6 +18,7 @@ AFQMagePlayer::AFQMagePlayer()
 	mProjectileAttackVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("ProjectileAttackVolume"));
 	mProjectileAttackVolume->SetupAttachment(RootComponent);
 
+	mLookAtDirection = FVector::ZeroVector;
 	mLookAtRotation = FRotator::ZeroRotator;
 }
 
@@ -232,7 +233,7 @@ void AFQMagePlayer::ProcessInputMovement()
 
 	// 마법진 위치 
 	FVector CurrentLocation = mExplosionCircle->GetActorLocation();
-	FVector DeltaMove = mMoveDir * mMageDataAsset->mExplosionCircleSpeed * GetWorld()->GetDeltaSeconds();
+	FVector DeltaMove = mMoveDirection * mMageDataAsset->mExplosionCircleSpeed * GetWorld()->GetDeltaSeconds();
 	FVector NewLocation = CurrentLocation + DeltaMove;
 
 	float Distance = FVector::Dist(GetActorLocation(), NewLocation);
@@ -647,6 +648,17 @@ void AFQMagePlayer::ProcessProjectileAttack()
 
 void AFQMagePlayer::CheckProjectileAttackVolume()
 {
+	if (mMoveDirection.IsZero())
+	{
+		mLookAtDirection = GetActorForwardVector();
+	}
+	else
+	{
+		mLookAtDirection = mMoveDirection;
+	}
+	
+	mLookAtRotation = mLookAtDirection.Rotation();
+
 	float Distance = TNumericLimits<float>::Max();
 	TArray<AActor*> OverlappedActors;
 	mProjectileAttackVolume->GetOverlappingActors(OverlappedActors);
