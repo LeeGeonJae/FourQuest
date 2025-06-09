@@ -121,6 +121,7 @@ void AFQMainCenterCamera::CameraMoveControl(float DeltaTime)
     auto LocalPlayerInfomation = Cast<UFQ_GameInstance_InGame>(GetWorld()->GetGameInstance())->GetLocalMultiPlayerInfomation();
 
     FVector Sum = FVector::ZeroVector;
+    int32 Count = 0;
     for (APlayerController* PC : PlayerControllers)
     {
         if (PC && PC->GetPawn())
@@ -128,12 +129,12 @@ void AFQMainCenterCamera::CameraMoveControl(float DeltaTime)
             if (LocalPlayerInfomation[PC->GetLocalPlayer()->GetLocalPlayerIndex()].bSpawnLocalPlayer)
             {
                 Sum += PC->GetPawn()->GetActorLocation();
+                Count++;
             }
         }
     }
 
     // 카메라 위치 조정 (블렌더 처리)
-    int32 Count = PlayerControllers.Num();
     FVector CenterLocation = Count > 0 ? (Sum / Count) : FVector::ZeroVector;
 
     FVector TargetLocation = FVector(CenterLocation.X, CenterLocation.Y, mCurrentCameraLocation.Z); // Z는 유지
