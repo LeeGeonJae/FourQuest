@@ -19,30 +19,35 @@ class FOURQUEST_API AFQGameMode_SoulSelect : public AGameModeBase, public IFQGam
 public:
 	AFQGameMode_SoulSelect();
 
-	// Interface virtual Funtion
+	// 인터페이스 가상 함수
 	virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) override;
 	virtual void CancelInteraction(int32 ControllerId) override;
 	virtual void SelectInteraction(int32 ControllerId) override;
+	virtual void StartGame() override;
+	virtual void ExitGame() override;
 
 protected:
-	// Parent virtual Function
+	// 부모 가상 함수
 	virtual void StartPlay() override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	// 일반 함수
 	void CreatePlayer();
 
 private:
+	// Level
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQTitle, Meta = (AllowPrivateAccess = "true"))
 	FName mTargetLevelName;
 
+	// UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UFQSoulSelectScreenWidget> mSoulSelectWidgetClass;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UFQSoulSelectScreenWidget> mSoulSelectWidgetHandle;
-
+	
+	// Local Multi Player State
 	TMap<uint8, EPlayerStateType> mPlayerStates;
 	TMap<uint8, ESoulType> mPlayerSoulTypes;
 };

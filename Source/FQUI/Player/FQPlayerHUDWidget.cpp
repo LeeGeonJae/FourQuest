@@ -169,7 +169,7 @@ void UFQPlayerHUDWidget::UpdateHpValue(float HpValue)
 
 
 
-void UFQPlayerHUDWidget::LoadingSoulBurningTexture(FString Path, FString FileName, uint32 TextureSize, TArray<TObjectPtr<UTexture2D>>& SoulTextureContainer)
+void UFQPlayerHUDWidget::LoadingSoulBurningTexture(FString Path, FString FileName, uint32 TextureSize, TArray<TSoftObjectPtr<UTexture2D>>& SoulTextureContainer)
 {
     for (uint32 i = 0; i < TextureSize; i++)
     {
@@ -177,10 +177,10 @@ void UFQPlayerHUDWidget::LoadingSoulBurningTexture(FString Path, FString FileNam
         FString AddFileName = FileName + Number;
         FString AssetPath = Path + AddFileName + TEXT(".") + AddFileName + TEXT("\'");
 
-        UTexture2D* Texture = LoadObject<UTexture2D>(nullptr, *AssetPath);
-        if (Texture)
+        TSoftObjectPtr<UTexture2D> TextureSoftPtr(AssetPath);
+        if (TextureSoftPtr.ToSoftObjectPath().IsValid())
         {
-            SoulTextureContainer.Emplace(Texture);
+            SoulTextureContainer.Emplace(TextureSoftPtr);
         }
         else
         {
@@ -189,7 +189,7 @@ void UFQPlayerHUDWidget::LoadingSoulBurningTexture(FString Path, FString FileNam
     }
 }
 
-void UFQPlayerHUDWidget::UpdateSoulBurningAnimation(TArray<UTexture2D*> SoulAnimationKey)
+void UFQPlayerHUDWidget::UpdateSoulBurningAnimation(TArray<TSoftObjectPtr<UTexture2D>>& SoulAnimationKey)
 {
     if (SoulAnimationKey.Num() <= 0)
     {
@@ -198,12 +198,20 @@ void UFQPlayerHUDWidget::UpdateSoulBurningAnimation(TArray<UTexture2D*> SoulAnim
     }
 
     mCurrentFrameIndex = (mCurrentFrameIndex + 1) % SoulAnimationKey.Num();
-    if (mSoulBurning)
+    TSoftObjectPtr<UTexture2D>& TexturePtr = SoulAnimationKey[mCurrentFrameIndex];
+    if (TexturePtr.IsValid())
     {
-        mSoulBurning->SetBrushFromTexture(SoulAnimationKey[mCurrentFrameIndex]);
+        mSoulBurning->SetBrushFromTexture(TexturePtr.Get());
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mSoulBurning Is Nullptr!!"), __LINE__);
-    }
-}
+        UTexture2D* LoadedTexture = TexturePtr.LoadSynchronous();
+        if (LoadedTexture)
+        {
+            mSoulBurning->SetBrushFromTexture(LoadedTexture);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] Failed to Load Texture at Index %d"), __LINE__, mCurrentFrameIndex);
+        }
+    }}

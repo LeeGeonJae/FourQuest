@@ -64,8 +64,3 @@ void AFQPlayerHUDManager::AddPlayerController(APlayerController* NewPlayer, UUse
 		UE_LOG(LogTemp, Log, TEXT("[AFQPlayerHUDManager %d] HorizontalBox Add PlayerHUD"), __LINE__);
 	}
 }
-
-void AFQPlayerHUDManager::BeginPlay()
-{
-    Super::BeginPlay();
-}
