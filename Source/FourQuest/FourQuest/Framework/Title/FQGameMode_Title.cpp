@@ -74,15 +74,4 @@ void AFQGameMode_Title::CancelInteraction(int32 ControllerId)
 void AFQGameMode_Title::SelectInteraction(int32 ControllerId)
 {
 	mTitleWidgetHandle->WidgetInput(EWidgetInputType::Select);
-
-	ETitleButtonType ButtonType = mTitleWidgetHandle->GetSelectIndex();
-	switch (ButtonType)
-	{
-	case ETitleButtonType::GameStart:
-		StartGame();
-		break;
-	case ETitleButtonType::GameExit:
-		ExitGame();
-		break;
-	}
 }

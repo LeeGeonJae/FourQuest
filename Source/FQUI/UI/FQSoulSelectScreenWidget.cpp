@@ -153,12 +153,22 @@ void UFQSoulSelectScreenWidget::UpdatePlayerState(EPlayerStateType PlayerStateTy
 		mSoulComplateUIArr[ControllerId]->SetVisibility(ESlateVisibility::Hidden);
 
         mAllReady = true;
+        bool bCheckReady = false;
         for (int32 i = 0; i < 4; i++)
         {
+            if (mSoulComplateUIArr[i]->GetVisibility() == ESlateVisibility::Visible)
+            {
+                bCheckReady = true;
+            }
             if (mSoulSelectUIArr[i]->GetVisibility() == ESlateVisibility::Visible)
             {
                 mAllReady = false;
             }
+        }
+
+        if (mAllReady)
+        {
+            mAllReady = bCheckReady;
         }
 
         if (mAllReady)

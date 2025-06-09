@@ -17,18 +17,13 @@ class FQSOUL_API UFQSoulDataAsset : public UPrimaryDataAsset
 public:
 	UFQSoulDataAsset();
 
-	UPROPERTY(EditAnywhere, Category = Walk)
+	UPROPERTY(EditAnywhere, Category = Walk, meta = (ToolTip = "영혼 기본 속도"))
 	float	mWalkSpeed;
 
-	UPROPERTY(EditAnywhere, Category = Dash)
+	UPROPERTY(EditAnywhere, Category = Dash, meta = (ToolTip = "영혼 대쉬 지속시간"))
 	float	mDashDuration;
-
-	UPROPERTY(EditAnywhere, Category = Dash)
+	UPROPERTY(EditAnywhere, Category = Dash, meta = (ToolTip = "영혼 대쉬 쿨타임"))
 	float	mDashCoolTime;
-
-	UPROPERTY(EditAnywhere, Category = Dash)
+	UPROPERTY(EditAnywhere, Category = Dash, meta = (ToolTip = "영혼 대쉬 속도"))
 	float	mDashSpeed;
-
-	UPROPERTY(EditAnywhere, Category = Armour)
-	float	mArmourDelayTime;
 };

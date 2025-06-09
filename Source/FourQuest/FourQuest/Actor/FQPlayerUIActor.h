@@ -15,13 +15,14 @@ class FOURQUEST_API AFQPlayerUIActor : public AActor
 public:	
 	AFQPlayerUIActor();
 
-	// Callback Function
+	// 콜백 함수
 	void UpdatePlayerNumber(int32 PlayerControllerNumber, ESoulType PlayerSoulType);
 	void UpdatePlayerHp(float HpValue);
 	void UpdateArmourGauge(bool bIsVisible, float GaugeValue);
 	void UpdateArmourType(EArmourType ChangedArmourType);
 
 protected:
+	// 가상 함수
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 

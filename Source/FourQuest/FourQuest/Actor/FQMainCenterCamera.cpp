@@ -1,15 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "FQMainCenterCamera.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework\SpringArmComponent.h"
 #include "Components\BoxComponent.h"
-#include "FQCameraDataAsset.h"
 
+#include "FQCameraDataAsset.h"
+#include "FourQuest\FourQuest\Framework\InGame\FQ_GameInstance_InGame.h"
 
 AFQMainCenterCamera::AFQMainCenterCamera()
 {
@@ -119,12 +118,17 @@ void AFQMainCenterCamera::CameraMoveControl(float DeltaTime)
     }
 
     // 플레이어들의 위치 확인
+    auto LocalPlayerInfomation = Cast<UFQ_GameInstance_InGame>(GetWorld()->GetGameInstance())->GetLocalMultiPlayerInfomation();
+
     FVector Sum = FVector::ZeroVector;
     for (APlayerController* PC : PlayerControllers)
     {
         if (PC && PC->GetPawn())
         {
-            Sum += PC->GetPawn()->GetActorLocation();
+            if (LocalPlayerInfomation[PC->GetLocalPlayer()->GetLocalPlayerIndex()].bSpawnLocalPlayer)
+            {
+                Sum += PC->GetPawn()->GetActorLocation();
+            }
         }
     }
 

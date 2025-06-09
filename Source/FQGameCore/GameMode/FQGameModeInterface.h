@@ -21,6 +21,10 @@ class FQGAMECORE_API IFQGameModeInterface
 	GENERATED_BODY()
 
 public:
+	// 
+	virtual void StartGame() abstract;
+	virtual void ExitGame() abstract;
+
 	// Input Funtion
 	virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) abstract;
 	virtual void CancelInteraction(int32 ControllerId) abstract;
