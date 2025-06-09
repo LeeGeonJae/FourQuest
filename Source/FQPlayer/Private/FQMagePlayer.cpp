@@ -635,6 +635,12 @@ void AFQMagePlayer::ProcessProjectileAttack()
 		// 투사체 초기화 및 발사
 		Projectile->SetLifeSpan(mMageDataAsset->mProjectileDuration);
 		Projectile->SetCount(mMageDataAsset->mProjectileCount);
+
+		if (mLookAtDirection.IsZero())
+		{
+			mLookAtDirection = GetActorForwardVector();
+		}
+
 		Projectile->LaunchProjectile(mLookAtDirection, mMageDataAsset->mProjectileSpeed);
 
 		UE_LOG(LogTemp, Log, TEXT("[ProcessProjectileAttack] 생성 성공"));
