@@ -118,23 +118,7 @@ void AFQMonsterBase::SetCollisionEnabled(bool CollisionEnabled)
 
 float AFQMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-
 	return 0.0f;
-}
-
-void AFQMonsterBase::TakeDamageByPlayer(AActor* Target, float Damage)
-{
-	if (!Target)
-	{
-		return;
-	}
-
-	if (Target != this)
-	{
-		return;
-	}
-
-	// TODO : 플레이어에 의해 데미지를 입고, 몬스터의 체력 깎임
 }
 
 void AFQMonsterBase::TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength)

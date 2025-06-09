@@ -227,6 +227,10 @@ bool AFQKnightPlayer::CanMove()
 	return true;
 }
 
+void AFQKnightPlayer::ProcessInputMovement()
+{
+}
+
 void AFQKnightPlayer::ProcessNextSection()
 {
 	// X버튼을 꾹 누르고 있을 때
@@ -830,12 +834,6 @@ void AFQKnightPlayer::CheckSwordAttackVolume()
 
 void AFQKnightPlayer::ApplyDamage(AActor* AttackableActor)
 {
-	IFQPlayerAttackableInterface* PlayerAttackableInterface = Cast<IFQPlayerAttackableInterface>(AttackableActor);
-	if (!PlayerAttackableInterface)
-	{
-		return;
-	}
-
 	UE_LOG(LogTemp, Log, TEXT("[ApplyDamage] Current Type : %s"), *UEnum::GetValueAsString(mSwordAttackState));
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -848,12 +846,12 @@ void AFQKnightPlayer::ApplyDamage(AActor* AttackableActor)
 	{
 	case EKnightSwordAttackState::Attack1:
 	{
-		PlayerAttackableInterface->TakeDamageByPlayer(AttackableActor, mKnightDataAsset->mSwordAttackDamage1);
+		ApplyDamageToTarget(mKnightDataAsset->mSwordAttackDamage1, AttackableActor);
 	}
 	break;
 	case EKnightSwordAttackState::Attack2:
 	{
-		PlayerAttackableInterface->TakeDamageByPlayer(AttackableActor, mKnightDataAsset->mSwordAttackDamage2);
+		ApplyDamageToTarget(mKnightDataAsset->mSwordAttackDamage2, AttackableActor);
 	}
 	break;
 	case EKnightSwordAttackState::Attack3:

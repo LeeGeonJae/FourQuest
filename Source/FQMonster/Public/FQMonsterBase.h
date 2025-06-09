@@ -84,7 +84,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float mPushCoolTime;
 
-	virtual void TakeDamageByPlayer(AActor* Target, float Damage) override;
 	virtual void TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength) override;
 
 private:

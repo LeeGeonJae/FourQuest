@@ -21,8 +21,5 @@ class FQGAMECORE_API IFQPlayerAttackableInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION()
-	virtual void TakeDamageByPlayer(AActor* Target, float Damage) PURE_VIRTUAL(IFQPlayerAttackableInterface::TakeDamageByPlayer, );
-
-	UFUNCTION()
 	virtual void TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength) PURE_VIRTUAL(IFQPlayerAttackableInterface::TakePushByPlayer, );
 };

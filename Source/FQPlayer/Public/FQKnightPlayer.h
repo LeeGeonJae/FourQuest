@@ -47,6 +47,7 @@ protected:
 	// Input
 	virtual void SetInputMappingContext() override;
 	virtual bool CanMove() override;
+	virtual void ProcessInputMovement() override;
 
 	// Data
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data)
