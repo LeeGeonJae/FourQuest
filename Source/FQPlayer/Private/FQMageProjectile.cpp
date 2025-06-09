@@ -34,12 +34,6 @@ void AFQMageProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (mEffectSystem)
-	{
-		mEffect->SetAsset(mEffectSystem);
-		mEffect->Activate();
-	}
-
 	mVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	mVolume->OnComponentBeginOverlap.AddDynamic(this, &AFQMageProjectile::OnVolumeBeginOverlap);
 }

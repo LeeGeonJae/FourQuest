@@ -33,6 +33,7 @@ AFQPlayerBase::AFQPlayerBase()
 	// 캐릭터 메쉬 설정
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -80.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	GetMesh()->bReceivesDecals = false;
 
 	// Effect
 	mEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SoulEffect"));
@@ -42,6 +43,7 @@ AFQPlayerBase::AFQPlayerBase()
 	mHitState = EHitState::None;
 
 	mbIsPressedX = false;
+	mbIsPressedA = false;
 }
 
 void AFQPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -75,37 +77,30 @@ void AFQPlayerBase::BeginPlay()
 
 	// Character Movement 기본 설정 적용
 	SetMovement();
-
-	// Effect
-	if (mEffectSystem)
-	{
-		mEffect->SetAsset(mEffectSystem);
-		mEffect->Activate();
-	}
 }
 
 void AFQPlayerBase::Move(const FInputActionValue& Value)
 {
-	if (!CanMove())
-	{
-		return;
-	}
-
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	UE_LOG(LogTemp, Log, TEXT("[Move] Default : %f, %f"), MovementVector.X, MovementVector.Y);
-	
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	AddMovementInput(ForwardDirection, MovementVector.X);
-	AddMovementInput(RightDirection, MovementVector.Y);
-
 	FVector2D NormalizedVector = MovementVector.GetSafeNormal();
 	mMoveDir = FVector(NormalizedVector.X, NormalizedVector.Y, 0.0f);
+
+	ProcessInputMovement();
+
+	if (!CanMove())
+	{
+		return;
+	}
+
+	AddMovementInput(ForwardDirection, MovementVector.X);
+	AddMovementInput(RightDirection, MovementVector.Y);
 }
 
 void AFQPlayerBase::SetInputMappingContext()
@@ -127,4 +122,3 @@ void AFQPlayerBase::SetMovement()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
 }
-

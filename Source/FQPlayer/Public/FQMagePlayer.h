@@ -25,6 +25,8 @@ public:
 	// Animation
 	virtual void ProcessNextSection() override;
 
+	bool IsEnabledExplosionCircle();
+
 	// Projectile Attack
 	virtual void EnableAttackVolume() override;
 	virtual void DisableAttackVolume() override;
@@ -40,6 +42,7 @@ protected:
 	// Input
 	virtual void SetInputMappingContext() override;
 	virtual bool CanMove() override;
+	virtual void ProcessInputMovement() override;
 
 	// Data
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data)
@@ -67,6 +70,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> mProjectileAttackAnim2;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UAnimMontage> mExplosionStartAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UAnimMontage> mExplosionEndAnim;
+
 	// State
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
 	EMageProjectileAttackState mProjectileAttackState;
@@ -74,12 +83,19 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
 	EComboState mProjectileAttackComboState;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
+	EMageExplosionState mExplosionState;
+
 	// Projectile Attack
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UBoxComponent> mProjectileAttackVolume;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class AFQMageProjectile> mProjectile;
+	TSubclassOf<class AFQMageProjectile> mProjectileClass;
+
+	// Explosion
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class AFQMageCircle> mExplosionCircleClass;
 
 private:
 	// Animation
@@ -99,4 +115,15 @@ private:
 
 	void ResetProjectileAttackCombo();
 	void ResetProjectileAttackCoolDown();
+
+	// Explosion
+	UPROPERTY()
+	TObjectPtr<AFQMageCircle> mExplosionCircle;
+
+	FTimerHandle mExplosionCoolTimer;
+
+	void StartExplosion();
+	void ProcessExplosion();
+	void EndExplosion();
+	void Explosion();
 };

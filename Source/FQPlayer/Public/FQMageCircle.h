@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "FQMageProjectile.generated.h"
+#include "FQMageCircle.generated.h"
 
 UCLASS()
-class FQPLAYER_API AFQMageProjectile : public AActor
+class FQPLAYER_API AFQMageCircle : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AFQMageProjectile();
+	AFQMageCircle();
 
 protected:
 	// Called when the game starts or when spawned
@@ -26,19 +26,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<class UBoxComponent> mVolume;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UProjectileMovementComponent> mMovement;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UNiagaraComponent> mEffect;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UDecalComponent> mDecal;
+
+	void ActivateEffect();
+	void SetScale(float ScaleFactor);
+
 	UFUNCTION()
-	void OnVolumeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	void LaunchProjectile(const FVector& Direction, float Speed);
-
-	void SetCount(int32 Count);
+	void OnEffectFinished(class UNiagaraComponent* PSystem);
 
 private:
-	int32 mCount;
+	FVector mInitBoxExtent;
+	FVector mInitDecalSize;
 };

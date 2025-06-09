@@ -67,8 +67,6 @@ void AFQKnightPlayer::Tick(float DeltaSeconds)
 		FRotator CurrentRotation = GetActorRotation();
 		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, mShieldRotation, DeltaSeconds, mKnightDataAsset->mShieldRotationSpeed);
 		SetActorRotation(NewRotation);
-		UE_LOG(LogTemp, Log, TEXT("[Tick] mShieldRotation : %f(Yaw), %f(Pitch), %f(Roll)"), mShieldRotation.Yaw, mShieldRotation.Pitch, mShieldRotation.Roll);
-		UE_LOG(LogTemp, Log, TEXT("[Tick] CurrentRotation : %f(Yaw), %f(Pitch), %f(Roll)"), CurrentRotation.Yaw, CurrentRotation.Pitch, CurrentRotation.Roll);
 	}
 }
 

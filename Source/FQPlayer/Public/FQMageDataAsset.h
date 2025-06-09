@@ -37,7 +37,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 투사체 관통 수"))
 	int32 mProjectileCount;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 투사체 속도"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 투사체 발사 속도"))
 	float mProjectileSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 투사체 지속 시간"))
@@ -48,4 +48,24 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X,meta = (ToolTip = "[X] 피격 대상 타입"))
 	TArray<TEnumAsByte<ECollisionChannel>> mProjectileAttackableTypes;
+
+	// Explosion
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 쿨타임"))
+	float mExplosionCoolTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 마법진 이동 속도"))
+	float mExplosionCircleSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 마법진 크기 감소 시작 거리"))
+	float mMinDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 마법진 크기가 최솟값이 되는 거리"))
+	float mMaxDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 마법진 최소 크기"))
+	float mMinScale;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 피격 대상 타입"))
+	TArray<TEnumAsByte<ECollisionChannel>> mExplosionAttackableTypes;
+
 };

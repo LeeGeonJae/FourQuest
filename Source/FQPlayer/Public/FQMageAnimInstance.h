@@ -21,4 +21,6 @@ protected:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mage")
+	uint8 mbIsEnabledCircle : 1;
 };

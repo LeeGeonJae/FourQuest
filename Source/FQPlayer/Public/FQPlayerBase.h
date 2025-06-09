@@ -39,6 +39,7 @@ protected:
 	virtual void SetInputMappingContext();
 
 	virtual bool CanMove() PURE_VIRTUAL(AFQPlayerBase::CanMove, return true;);
+	virtual void ProcessInputMovement() PURE_VIRTUAL(AFQPlayerBase::ProcessInputMovement, );
 
 	// Input
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
@@ -52,11 +53,8 @@ protected:
 	void Move(const FInputActionValue& Value);
 
 	// Effect
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UNiagaraComponent> mEffect;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UNiagaraSystem> mEffectSystem;
+	TObjectPtr<class UNiagaraComponent> mEffect;
 
 	// Hit 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
@@ -64,6 +62,9 @@ protected:
 
 	// X 버튼을 길게 누르고 있는 상태인지 확인하는 플래그
 	uint8 mbIsPressedX : 1;
+
+	// A 버튼을 누르고 있는 상태인지 확인하는 플래그
+	uint8 mbIsPressedA : 1;
 
 	FVector mMoveDir;
 

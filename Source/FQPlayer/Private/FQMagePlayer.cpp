@@ -10,6 +10,7 @@
 
 #include "FQPlayer/Public/FQMageDataAsset.h" 
 #include "FQPlayer/Public/FQMageProjectile.h" 
+#include "FQPlayer/Public/FQMageCircle.h" 
 #include "FQGameCore/Player/FQPlayerAttackableInterface.h"
 
 AFQMagePlayer::AFQMagePlayer()
@@ -73,6 +74,11 @@ void AFQMagePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	EnhancedInputComponent->BindAction(mProjectileAttackAction, ETriggerEvent::Triggered, this, &AFQMagePlayer::PressedProjectileAttack);
 	EnhancedInputComponent->BindAction(mProjectileAttackAction, ETriggerEvent::Canceled, this, &AFQMagePlayer::EndProjectileAttack);
 	EnhancedInputComponent->BindAction(mProjectileAttackAction, ETriggerEvent::Completed, this, &AFQMagePlayer::EndProjectileAttack);
+
+	// Explosion (A)
+	EnhancedInputComponent->BindAction(mExplosionAction, ETriggerEvent::Started, this, &AFQMagePlayer::StartExplosion);
+	EnhancedInputComponent->BindAction(mExplosionAction, ETriggerEvent::Triggered, this, &AFQMagePlayer::ProcessExplosion);
+	EnhancedInputComponent->BindAction(mExplosionAction, ETriggerEvent::Completed, this, &AFQMagePlayer::EndExplosion);
 }
 
 void AFQMagePlayer::ProcessNextSection()
@@ -86,6 +92,16 @@ void AFQMagePlayer::ProcessNextSection()
 	{
 		mProjectileAttackComboState = EComboState::Combo;
 	}
+}
+
+bool AFQMagePlayer::IsEnabledExplosionCircle()
+{
+	if (mExplosionState == EMageExplosionState::Preparing || mExplosionState == EMageExplosionState::Enabled)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 void AFQMagePlayer::EnableAttackVolume()
@@ -151,7 +167,7 @@ void AFQMagePlayer::SetInputMappingContext()
 
 bool AFQMagePlayer::CanMove()
 {
-	// TODO : 이동 제한 조건 설정
+	// Projectile Attack 
 	switch (mProjectileAttackState)
 	{
 	case EMageProjectileAttackState::Attack1:
@@ -198,11 +214,55 @@ bool AFQMagePlayer::CanMove()
 	break;
 	}
 
+	// Explosion
+	if (mExplosionState == EMageExplosionState::Preparing || mExplosionState == EMageExplosionState::Enabled)
+	{
+		return false;
+	}
+
 	return true;
+}
+
+void AFQMagePlayer::ProcessInputMovement()
+{
+	if (!mExplosionCircle)
+	{
+		return;
+	}
+
+	// 마법진 위치 
+	FVector CurrentLocation = mExplosionCircle->GetActorLocation();
+	FVector DeltaMove = mMoveDir * mMageDataAsset->mExplosionCircleSpeed * GetWorld()->GetDeltaSeconds();
+	FVector NewLocation = CurrentLocation + DeltaMove;
+
+	float Distance = FVector::Dist(GetActorLocation(), NewLocation);
+	if (Distance >= mMageDataAsset->mMaxDistance)
+	{
+		return;
+	}
+
+	mExplosionCircle->SetActorLocation(NewLocation);
+
+	// 마법진 크기 
+	if (Distance > mMageDataAsset->mMinDistance)
+	{
+		float ExcessDistance = Distance - mMageDataAsset->mMinDistance;
+		float MaxExcess = mMageDataAsset->mMaxDistance - mMageDataAsset->mMinDistance;
+
+		float Alpha = FMath::Clamp(ExcessDistance / MaxExcess, 0.0f, 1.0f);
+		float NewScaleFactor = FMath::Lerp(1.0f, mMageDataAsset->mMinScale, Alpha);
+
+		mExplosionCircle->SetScale(NewScaleFactor);
+	}
+	else
+	{
+		mExplosionCircle->SetScale(1.0f);
+	}
 }
 
 void AFQMagePlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
+	// Projectile Attack
 	if (Montage == mProjectileAttackAnim1)
 	{
 		if (mHitState == EHitState::HitReacting)
@@ -267,6 +327,42 @@ void AFQMagePlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 			GetWorld()->GetTimerManager().ClearTimer(mProjectileAttackComboTimer);
 			ResetProjectileAttackCombo();
 		}
+	}
+
+	if (Montage == mExplosionStartAnim)
+	{
+		// 마법진 생성
+		if (!mExplosionCircleClass)
+		{
+			return;
+		}
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Owner = this;
+
+		mExplosionCircle = GetWorld()->SpawnActor<AFQMageCircle>(mExplosionCircleClass, GetActorLocation(), GetActorRotation(), SpawnParams);
+
+		// 상태 설정
+		if (mExplosionCircle)
+		{
+			mExplosionState = EMageExplosionState::Enabled;
+		}
+	}
+
+	// Explosion
+	if (Montage == mExplosionEndAnim)
+	{
+		// 쿨타임 설정
+		mExplosionState = EMageExplosionState::CoolDown;
+
+		FTimerDelegate TimerDel;
+		TimerDel.BindLambda([this]() { mExplosionState = EMageExplosionState::None; });
+		GetWorld()->GetTimerManager().SetTimer(mExplosionCoolTimer, TimerDel, mMageDataAsset->mExplosionCoolTime, false);
+
+		// 이펙트 재생
+		mExplosionCircle->ActivateEffect();
+		mExplosionCircle = nullptr;
 	}
 }
 
@@ -390,6 +486,119 @@ void AFQMagePlayer::ResetProjectileAttackCoolDown()
 	mProjectileAttackState = EMageProjectileAttackState::None;
 }
 
+void AFQMagePlayer::StartExplosion()
+{
+	if (mExplosionState == EMageExplosionState::CoolDown)
+	{
+		return;
+	}
+
+	if (mHitState == EHitState::HitReacting)
+	{
+		return;
+	}
+
+	if (!mExplosionCircleClass)
+	{
+		return;
+	}
+
+	// 애니메이션 재생
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+	{
+		return;
+	}
+
+	if (AnimInstance->Montage_IsPlaying(mExplosionStartAnim))
+	{
+		return;
+	}
+
+	AnimInstance->Montage_Play(mExplosionStartAnim);
+
+	// 상태 설정
+	mExplosionState = EMageExplosionState::Preparing;
+	mbIsPressedA = true;
+}
+
+void AFQMagePlayer::ProcessExplosion()
+{
+	if (mExplosionState != EMageExplosionState::Enabled)
+	{
+		return;
+	}
+
+	if (mHitState == EHitState::HitReacting)
+	{
+		// 피격 상태일 때 즉시 마법진 공격 실행
+		Explosion();
+	}
+}
+
+void AFQMagePlayer::EndExplosion()
+{
+	if (mExplosionState != EMageExplosionState::Enabled)
+	{
+		return;
+	}
+
+	Explosion();
+}
+
+void AFQMagePlayer::Explosion()
+{
+	TArray<AActor*> OverlappedActors;
+	mExplosionCircle->mVolume->GetOverlappingActors(OverlappedActors);
+	for (AActor* Actor : OverlappedActors)
+	{
+		if (!Actor)
+		{
+			return;
+		}
+
+		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+		if (!RootComp)
+		{
+			return;
+		}
+
+		if (RootComp == GetRootComponent())
+		{
+			continue;
+		}
+
+		if (mMageDataAsset->mExplosionAttackableTypes.IsEmpty())
+		{
+			return;
+		}
+
+		if (!mMageDataAsset->mExplosionAttackableTypes.Contains(RootComp->GetCollisionObjectType()))
+		{
+			continue;
+		}
+
+		// TODO : 해당 액터에 데미지 입히기
+	}
+
+	// 애니메이션 재생
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+	{
+		return;
+	}
+
+	if (AnimInstance->Montage_IsPlaying(mExplosionEndAnim))
+	{
+		return;
+	}
+
+	AnimInstance->Montage_Play(mExplosionEndAnim);
+
+	mExplosionState = EMageExplosionState::Destroy;
+	mbIsPressedA = false;
+}
+
 bool AFQMagePlayer::ApplyPush(AActor* AttackableActor)
 {
 	IFQPlayerAttackableInterface* PlayerAttackableInterface = Cast<IFQPlayerAttackableInterface>(AttackableActor);
@@ -409,7 +618,7 @@ bool AFQMagePlayer::ApplyPush(AActor* AttackableActor)
 
 void AFQMagePlayer::ProcessProjectileAttack()
 {
-	if (!mProjectile)
+	if (!mProjectileClass)
 	{
 		return;
 	}
@@ -419,7 +628,7 @@ void AFQMagePlayer::ProcessProjectileAttack()
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Owner = this;
 
-	AFQMageProjectile* Projectile = GetWorld()->SpawnActor<AFQMageProjectile>(mProjectile, GetActorLocation(), GetActorRotation(), SpawnParams);
+	AFQMageProjectile* Projectile = GetWorld()->SpawnActor<AFQMageProjectile>(mProjectileClass, GetActorLocation(), GetActorRotation(), SpawnParams);
 	
 	if (Projectile)
 	{

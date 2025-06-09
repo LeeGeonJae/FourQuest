@@ -2,9 +2,11 @@
 
 
 #include "FQMageAnimInstance.h"
+#include "FQPlayer/Public/FQMagePlayer.h"
 
 UFQMageAnimInstance::UFQMageAnimInstance()
 {
+	mbIsEnabledCircle = false;
 }
 
 void UFQMageAnimInstance::NativeInitializeAnimation()
@@ -15,4 +17,17 @@ void UFQMageAnimInstance::NativeInitializeAnimation()
 void UFQMageAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
+
+	if (!mOwner)
+	{
+		return;
+	}
+
+	AFQMagePlayer* Player = Cast<AFQMagePlayer>(mOwner);
+	if (!Player)
+	{
+		return;
+	}
+
+	mbIsEnabledCircle = Player->IsEnabledExplosionCircle();
 }

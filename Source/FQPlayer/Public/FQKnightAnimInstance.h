@@ -21,9 +21,9 @@ protected:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Knight")
 	float mShieldMoveAngle;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Knight")
 	uint8 mbIsHoldShield : 1;
 };
