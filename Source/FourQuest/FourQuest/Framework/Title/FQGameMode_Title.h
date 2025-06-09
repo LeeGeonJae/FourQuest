@@ -18,23 +18,23 @@ class FOURQUEST_API AFQGameMode_Title : public AGameModeBase, public IFQGameMode
 public:
 	AFQGameMode_Title();
 
-	// Interface Funtion
+	// 인터페이스 가상 함수
 	virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) override;
 	virtual void CancelInteraction(int32 ControllerId) override;
 	virtual void SelectInteraction(int32 ControllerId) override;
+	virtual void StartGame() override;
+	virtual void ExitGame() override;
 
 protected:
-	// Parent Function
+	// 부모 가상 함수
 	virtual void BeginPlay() override;
 
 private:
-	void StartGame();
-	void ExitGame();
-
-private:
+	// Level
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQTitle, Meta = (AllowPrivateAccess = "true"))
 	FName mTargetLevelName;
 
+	// UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UFQTitleScreenWidget> mTitleWidgetClass;
 	UPROPERTY()

@@ -17,18 +17,13 @@ class FOURQUEST_API AFQPlayerHUDManager : public AActor
 public:
 	AFQPlayerHUDManager();
 
-	// Common Funtion
+	// 일반 함수
 	void AddPlayerController(APlayerController* NewPlayer, UUserWidget* PlayerHUDWidget);
-
-protected:
-	// Parent Class Function
-	virtual void BeginPlay() override;
 
 private:
 	// UI
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UUserWidget> mHUDWidget;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FQWidget, Meta = (AllowPrivateAccess = "true"))
 	TArray<TObjectPtr<class UUserWidget>> mPlayerHUDs;
 };

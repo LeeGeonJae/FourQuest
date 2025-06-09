@@ -16,13 +16,13 @@ public:
     AFQPlayerState_InGame();
 
 public:
-    // Delegate
+    // 델리게이트
     FQ_PlayerStateDelegate::FQSoulTypeChangeDelegate mSoulChangeDelegate;
     FQ_PlayerStateDelegate::FQArmourTypeChangeDelegate mArmourChangeDelegate;
     FQ_PlayerStateDelegate::FQSoulGaugeSettingDelegate mSoulGaugeDelegate;
     FQ_PlayerStateDelegate::FQPlayerHpUpdateDelegate mPlayerHpDelegate;
 
-    // Interface Funtion
+    // 인터페이스 가상 함수
     virtual ESoulType GetSoulType() const override { return mSoulType; }
     virtual void SetSoulType(const ESoulType NewType) override { mSoulType = NewType; mSoulChangeDelegate.Broadcast(mSoulType); }
     virtual EArmourType GetArmourType() const override { return mArmourType; }
@@ -44,6 +44,7 @@ protected:
     int32 mCurrentSoulGauge;
     int32 mMaxSoulGaue;
 
+    // 체력
     UPROPERTY(BlueprintReadWrite, Category = FQState)
     int32 mMaxHp;
     int32 mCurrentHp;

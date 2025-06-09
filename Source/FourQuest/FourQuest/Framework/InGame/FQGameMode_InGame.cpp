@@ -67,7 +67,7 @@ void AFQGameMode_InGame::CreatePlayer()
     for (auto& Infomation : PlayerInfomations)
     {
         const int32 ControllerId = Infomation.Key;
-        FQ_LocalMulti::FQLocalMultiPlayerInfomation PlayerInfomation = Infomation.Value;
+        FQ_InGameSetting::FQLocalMultiPlayerInfomation PlayerInfomation = Infomation.Value;
 
         // 생성할 로컬 플레이어인가
         if (!PlayerInfomation.bSpawnLocalPlayer)

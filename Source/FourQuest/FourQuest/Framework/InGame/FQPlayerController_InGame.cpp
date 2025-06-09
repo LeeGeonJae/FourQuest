@@ -9,6 +9,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
+#include "Kismet\GameplayStatics.h"
 
 #include "FQGameCore\Soul\FQSoulCharacterInterface.h"
 #include "FQGameCore\GameMode\FQGameModeInterface.h"
@@ -21,9 +22,11 @@
 #include "FQUI/Player/FQPlayerHUDWidget.h"
 #include "FQGameCore\Player\FQPlayerInputDataAsset.h"
 #include "FourQuest\FourQuest\Actor\FQPlayerUIActor.h"
+#include "FQGameCore\GameInstance\FQGameInstanceInterface.h"
 
 AFQPlayerController_InGame::AFQPlayerController_InGame()
 {
+	// UI 생성 등록
 	static ConstructorHelpers::FClassFinder<UFQPlayerHUDWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/HUD/WBP_PlayerWidget.WBP_PlayerWidget_C"));
 	if (ArmourWidgetRef.Class)
 	{
@@ -66,6 +69,7 @@ void AFQPlayerController_InGame::SetupInputComponent()
 		return;
 	}
 
+	// 입력 함수 등록
 	if (mPlayerInputDataAsset)
 	{
 		EnhancedInput->BindAction(mPlayerInputDataAsset->mAButtonAction, ETriggerEvent::Started, this, &AFQPlayerController_InGame::HandlePickButton);
@@ -247,6 +251,7 @@ void AFQPlayerController_InGame::ChangeToArmour(EArmourType InArmourType)
 
 void AFQPlayerController_InGame::ChangeToSoul()
 {
+	// 현재 플레이어 캐릭터 삭제
 	APawn* PlayerCharacter = GetPawn();
 	FTransform SpawnTransform = FTransform(PlayerCharacter->GetActorTransform().GetLocation());
 	if (PlayerCharacter)
@@ -270,7 +275,7 @@ void AFQPlayerController_InGame::ChangeToSoul()
 	MyPlayerState->SetArmourType(EArmourType::End);
 	ESoulType PlayerSoulType = MyPlayerState->GetSoulType();
 
-	// 사용할 블루프린트 클래스 로딩
+	// 사용할 플레이어 캐릭터 클래스 탐색 후 생성
 	TSubclassOf<AFQSoulBase> CharacterBPClass = mPlayerSoulCharacterClasses[PlayerSoulType];
 	if (CharacterBPClass)
 	{
@@ -288,7 +293,7 @@ void AFQPlayerController_InGame::CreatePlayerCharacterByClass(TSubclassOf<AFQPla
 {
 	if (!CharacterClass) return;
 
-	// 캐릭터 생성
+	// 갑옷 캐릭터 생성
 	AFQPlayerBase* NewCharacter = GetWorld()->SpawnActorDeferred<AFQPlayerBase>(CharacterClass, SpawnTransform);
 	if (NewCharacter)
 	{
@@ -319,7 +324,7 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 {
 	if (!CharacterClass) return;
 
-	// 캐릭터 생성
+	// 영혼 캐릭터 생성
 	AFQSoulBase* NewCharacter = GetWorld()->SpawnActorDeferred<AFQSoulBase>(CharacterClass, SpawnTransform);
 	if (NewCharacter)
 	{
@@ -349,8 +354,14 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 
 void AFQPlayerController_InGame::HandlePickButton()
 {
-	GetLocalPlayer()->GetLocalPlayerIndex();
+	// Player Hp UI 작동 테스트 코드
+	AFQPlayerState_InGame* MyPlayerState = GetPlayerState<AFQPlayerState_InGame>();
+	if (MyPlayerState)
+	{
+		MyPlayerState->AddHp(-10);
+	}
 
+	// 입력 버튼
 	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
 	{
@@ -361,16 +372,30 @@ void AFQPlayerController_InGame::HandlePickButton()
 			MyGameMode->SelectInteraction(ControllerId);
 		}
 	}
-
-	AFQPlayerState_InGame* MyPlayerState = GetPlayerState<AFQPlayerState_InGame>();
-	if (MyPlayerState)
+	else
 	{
-		MyPlayerState->AddHp(-10);
+		return;
+	}
+
+	// 현재 UI가 켜져 있는가
+	IFQGameInstanceInterface* MyGameInstance = GetGameInstance<IFQGameInstanceInterface>();
+	if (MyGameInstance)
+	{
+		// 선택 소리 재생
+		if (mSelectButtonSound && MyGameInstance->GetOnWidget())
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				mSelectButtonSound,                 // USoundBase*
+				FVector()							// FVector 위치
+			);
+		}
 	}
 }
 
 void AFQPlayerController_InGame::HandleCancelButton()
 {
+	// 취소 버튼
 	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
 	{
@@ -379,6 +404,25 @@ void AFQPlayerController_InGame::HandleCancelButton()
 			int32 ControllerId = LocalPlayer->GetControllerId();
 			UE_LOG(LogTemp, Log, TEXT("[AFQPlayerController_InGame %d] HandleCancelButton Function Call : Controller Id(%d)"), __LINE__, ControllerId);
 			MyGameMode->CancelInteraction(ControllerId);
+		}
+	}
+	else
+	{
+		return;
+	}
+
+	// 현재 UI가 켜져 있는가
+	IFQGameInstanceInterface* MyGameInstance = GetGameInstance<IFQGameInstanceInterface>();
+	if (MyGameInstance)
+	{
+		// 선택 소리 재생
+		if (mCancelButtonSound && MyGameInstance->GetOnWidget())
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				mCancelButtonSound,					// USoundBase*
+				FVector()							// FVector 위치
+			);
 		}
 	}
 }
@@ -421,7 +465,8 @@ void AFQPlayerController_InGame::DoMove()
 	{
 		return;
 	}
-
+	
+	// 이동
 	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
 	{
@@ -429,6 +474,25 @@ void AFQPlayerController_InGame::DoMove()
 		{
 			int32 ControllerId = LocalPlayer->GetControllerId();
 			MyGameMode->MoveButton(mMoveDirection, ControllerId);
+		}
+	}
+	else
+	{
+		return;
+	}
+
+	// 현재 UI가 켜져 있는가
+	IFQGameInstanceInterface* MyGameInstance = GetGameInstance<IFQGameInstanceInterface>();
+	if (MyGameInstance)
+	{
+		// 선택 소리 재생
+		if (mMoveButtonSound && MyGameInstance->GetOnWidget())
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				mMoveButtonSound,					// USoundBase*
+				FVector()							// FVector 위치
+			);
 		}
 	}
 }

@@ -52,7 +52,7 @@ void AFQGameMode_SoulSelect::Tick(float DeltaTime)
 
         for (int32 i = 0; i < 4; i++)
         {
-            FQ_LocalMulti::FQLocalMultiPlayerInfomation PlayerInfomation;
+            FQ_InGameSetting::FQLocalMultiPlayerInfomation PlayerInfomation;
             PlayerInfomation.bSpawnLocalPlayer = mPlayerStates[i] == EPlayerStateType::SoulComplate ? true : false;
             PlayerInfomation.mSoulType = mPlayerSoulTypes[i];
 
@@ -138,4 +138,12 @@ void AFQGameMode_SoulSelect::SelectInteraction(int32 ControllerId)
     mPlayerStates[ControllerId] = mPlayerStates[ControllerId] == EPlayerStateType::SoulComplate ? EPlayerStateType::SoulComplate : (EPlayerStateType)((int8)(mPlayerStates[ControllerId]) + 1);
 
     mSoulSelectWidgetHandle->UpdatePlayerState(mPlayerStates[ControllerId], mPlayerSoulTypes[ControllerId], ControllerId);
+}
+
+void AFQGameMode_SoulSelect::StartGame()
+{
+}
+
+void AFQGameMode_SoulSelect::ExitGame()
+{
 }

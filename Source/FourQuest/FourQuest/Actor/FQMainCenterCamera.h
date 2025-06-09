@@ -24,16 +24,17 @@ public:
 	AFQMainCenterCamera();
 
 protected:
-	// Parent Class Function
+	// 부모 가상 함수
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	// 일반 함수
 	void CameraMoveControl(float DeltaTime);
 	void CameraZoomControl(float DeltaTime);
 	void CameraWallCollisionUpdate(float DeltaTime);
 
-	void RaycastFrustumEdges();
+	void RaycastFrustumEdges();							// 카메라 절두체 네방향 레이캐스트 쏘기
 
 private:
 	// Component

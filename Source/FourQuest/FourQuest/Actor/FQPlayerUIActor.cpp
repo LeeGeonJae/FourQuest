@@ -50,6 +50,7 @@ void AFQPlayerUIActor::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// UI가 제대로 생성이 되었는지 체크
 	mPlayerHpWidget = Cast<UFQPlayerHpWidget>(mPlayerHpWidgetComponent->GetUserWidgetObject());
 	if (!mPlayerHpWidget)
 	{
@@ -67,6 +68,7 @@ void AFQPlayerUIActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Hp 감소
 	if (mPlayerHpWidget && mPlayerHpWidgetComponent->GetVisibleFlag())
 	{
 		mPlayerHpWidget->UpdateHpDecrasePercent(DeltaTime);
@@ -80,6 +82,8 @@ void AFQPlayerUIActor::Tick(float DeltaTime)
 void AFQPlayerUIActor::UpdatePlayerNumber(int32 PlayerControllerNumber, ESoulType PlayerSoulType)
 {
 	UE_LOG(LogTemp, Log, TEXT("[AFQPlayerUIActor %d] UpdatePlayerNumber 함수 실행 : (플레이어 컨트롤러 숫자 : %d, 플레이어 영혼 타입 : %d)"), __LINE__, PlayerControllerNumber, (int32)PlayerSoulType);
+	
+	// Player Head UI 업데이트
 	if (mPlayerHpWidget)
 	{
 		mPlayerHpWidget->UpdatePlayerControllerNumber(PlayerControllerNumber, PlayerSoulType);
@@ -88,6 +92,7 @@ void AFQPlayerUIActor::UpdatePlayerNumber(int32 PlayerControllerNumber, ESoulTyp
 
 void AFQPlayerUIActor::UpdatePlayerHp(float HpValue)
 {
+	// Player Hp 업데이트
 	if (mPlayerHpWidget)
 	{
 		mPlayerHpWidget->UpdatePlayerHp(HpValue);
@@ -96,6 +101,7 @@ void AFQPlayerUIActor::UpdatePlayerHp(float HpValue)
 
 void AFQPlayerUIActor::UpdateArmourGauge(bool bIsVisible, float GaugeValue)
 {
+	// 갑옷 게이지 업데이트
 	if (mArmourGaugeWidgetComponent && mArmourGaugeWidget)
 	{
 		mArmourGaugeWidgetComponent->SetVisibility(bIsVisible);
@@ -111,6 +117,7 @@ void AFQPlayerUIActor::UpdateArmourType(EArmourType ChangedArmourType)
 		return;
 	}
 
+	// 갑옷 장착 여부에 따라 Hp UI 렌더링
 	if (ChangedArmourType == EArmourType::End)
 	{
 		mPlayerHpWidget->SetHpBarVisibility(false);

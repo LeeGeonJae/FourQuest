@@ -34,6 +34,7 @@ public:
 
 	// Input Function
 	void WidgetInput(EWidgetInputType InputType);
+	void TitleSetting(ETitleSettingType SettingType);
 
 	// GetSet Function
 	FORCEINLINE ETitleButtonType GetSelectIndex() const { return mCurrentSelectIndex; }
@@ -46,8 +47,10 @@ protected:
 private:
 	// Common Function
 	void MoveIndex(EWidgetInputType InputType);
+	void Move(EWidgetInputType MoveType);
 	void SelectButton();
 	void CancelButton();
+	void TitleSelectButton();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQAnimation)
@@ -55,7 +58,6 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> mSelectButton;
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> mCurrentSelect;
 
@@ -64,4 +66,12 @@ private:
 	uint8 mCurrentFrameIndex;
 
 	ETitleButtonType mCurrentSelectIndex;
+	ETitleSettingType mCurrentSettingType;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UFQTitleSettingUI> mTitleSettingUI;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UFQTitleVideoSettingUI> mTitleVideoSettingUI;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UFQTitleAudioSettingUI> mTitleAudioSettingUI;
 };

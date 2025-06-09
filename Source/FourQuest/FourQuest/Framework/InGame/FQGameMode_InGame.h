@@ -18,15 +18,15 @@ class FOURQUEST_API AFQGameMode_InGame : public AGameModeBase
 public:
 	AFQGameMode_InGame();
     
-    // GetSet Funtion
+    // 겟셋 함수
     FORCEINLINE class AFQPlayerHUDManager* GetPlayerHUDManager() const { return mPlayerHUDManager; }
     FORCEINLINE class AFQMainCenterCamera* GetMainCamera() const { return mMainCamera; }
 
 protected:
-    // Parent Class Funtion
+    // 부모 가상 함수
     virtual void BeginPlay() override;
 
-    // Common Funtion
+    // 일반 함수
     void SettingCamera(); // 카메라 및 HUD Widget 세팅
     void CreatePlayer();  // 로컬 멀티 플레이어 셍성
 
