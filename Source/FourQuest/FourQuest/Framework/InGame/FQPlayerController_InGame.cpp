@@ -20,17 +20,131 @@
 #include "FQPlayer\Public\FQPlayerBase.h"
 #include "FQUI/Player/FQPlayerHUDWidget.h"
 #include "FQGameCore\Player\FQPlayerInputDataAsset.h"
+#include "FourQuest\FourQuest\Actor\FQPlayerUIActor.h"
 
 AFQPlayerController_InGame::AFQPlayerController_InGame()
 {
 	static ConstructorHelpers::FClassFinder<UFQPlayerHUDWidget> ArmourWidgetRef(TEXT("/Game/Blueprints/HUD/WBP_PlayerWidget.WBP_PlayerWidget_C"));
 	if (ArmourWidgetRef.Class)
 	{
-		mPlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), ArmourWidgetRef.Class);
+		mPlayerHUDWidget = CreateWidget<UFQPlayerHUDWidget>(GetWorld(), ArmourWidgetRef.Class);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Faild Load mPlayerHUDWidgetClass"), __LINE__);
+	}
+}
+
+void AFQPlayerController_InGame::BeginPlay()
+{
+	Super::BeginPlay();
+
+}
+
+void AFQPlayerController_InGame::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	// 로그 확인
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
+	{
+		int32 ControllerId = LocalPlayer->GetControllerId();
+		UE_LOG(LogTemp, Log, TEXT("[AFQPlayerController_InGame %d] SetupInputComponent Function Call : PlayerController Id(%d)"), __LINE__, ControllerId);
+	}
+
+	// Local Player Subsystem에 MappingContext 추가
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(mPlayerInputDataAsset->mDefaultMappingContext, 0);
+	}
+
+	// EnhancedInputComponent 사용
+	UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent);
+	if (EnhancedInput == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] InputComponent Is nullptr"), __LINE__);
+		return;
+	}
+
+	if (mPlayerInputDataAsset)
+	{
+		EnhancedInput->BindAction(mPlayerInputDataAsset->mAButtonAction, ETriggerEvent::Started, this, &AFQPlayerController_InGame::HandlePickButton);
+		EnhancedInput->BindAction(mPlayerInputDataAsset->mBButtonAction, ETriggerEvent::Started, this, &AFQPlayerController_InGame::HandleCancelButton);
+		EnhancedInput->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Triggered, this, &AFQPlayerController_InGame::HandleMoveTriggered);
+		EnhancedInput->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Completed, this, &AFQPlayerController_InGame::HandleMoveCompleted);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] mPlayerInputDataAsset Is Not Vaild!!"), __LINE__);
+	}
+}
+
+
+
+void AFQPlayerController_InGame::CreateUI()
+{
+	UpdateHUDSetting();
+	SpawnPlayerUIActor();
+}
+
+void AFQPlayerController_InGame::SpawnPlayerUIActor()
+{
+	if (mPlayerOverheadUIActor == nullptr && GetWorld())
+	{
+		// 스폰 파라미터 설정
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;              // 소유자 지정
+		SpawnParams.Instigator = GetPawn();    // 필요시
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		// 위치는 플레이어 캐릭터 기준
+		FVector UISpawnLocation = GetPawn() ? GetPawn()->GetActorLocation() : FVector::ZeroVector;
+
+		mPlayerOverheadUIActor = GetWorld()->SpawnActor<AFQPlayerUIActor>(
+			AFQPlayerUIActor::StaticClass(),
+			UISpawnLocation,
+			FRotator::ZeroRotator,
+			SpawnParams
+		);
+
+		if (mPlayerOverheadUIActor)
+		{
+			// 컨트롤러가 붙은 Pawn을 따라가도록 설정
+			mPlayerOverheadUIActor->AttachToActor(GetPawn(), FAttachmentTransformRules::KeepWorldTransform);
+		}
+	}
+
+	// 로그 확인
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
+	{
+		int32 ControllerId = LocalPlayer->GetControllerId();
+
+		// 플레이어 스테이트 클래스 확인
+		AFQPlayerState_InGame* FQPlayerState = GetPlayerState<AFQPlayerState_InGame>();
+		if (FQPlayerState && mPlayerOverheadUIActor)
+		{
+			mPlayerOverheadUIActor->UpdatePlayerNumber(ControllerId, FQPlayerState->GetSoulType());
+
+			// 델리게이트 등록
+			FQPlayerState->mPlayerHpDelegate.AddLambda([&](float CurrentHpValue)
+				{
+					if (mPlayerOverheadUIActor)
+					{
+						mPlayerOverheadUIActor->UpdatePlayerHp(CurrentHpValue);
+					}
+				});
+			FQPlayerState->mArmourChangeDelegate.AddLambda([&](EArmourType NewArmourType)
+				{
+					if (mPlayerOverheadUIActor)
+					{
+						mPlayerOverheadUIActor->UpdateArmourType(NewArmourType);
+					}
+				});
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] FQPlayerState Or mPlayerOverheadUIActor Is Not Valid!!"), __LINE__, ControllerId);
+		}
 	}
 }
 
@@ -44,29 +158,33 @@ void AFQPlayerController_InGame::UpdateHUDSetting()
 		return;
 	}
 
-	// HUD Widget 함수 Binding
+	// HUD Widget 콜백 함수 Binding
 	FQPlayerState->mArmourChangeDelegate.AddLambda([&](EArmourType NewArmourType)
 		{
-			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
-			if (FQPlayerHUDWidget)
+			if (mPlayerHUDWidget)
 			{
-				FQPlayerHUDWidget->UpdateArmourSkill(NewArmourType);
+				mPlayerHUDWidget->UpdateArmourSkill(NewArmourType);
 			}
 		});
 	FQPlayerState->mSoulGaugeDelegate.AddLambda([&](float CurrentSoulGauge)
 		{
-			UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
-			if (FQPlayerHUDWidget)
+			if (mPlayerHUDWidget)
 			{
-				FQPlayerHUDWidget->UpdateSoulGauge(CurrentSoulGauge);
+				mPlayerHUDWidget->UpdateSoulGauge(CurrentSoulGauge);
+			}
+		});
+	FQPlayerState->mPlayerHpDelegate.AddLambda([&](float HpValue)
+		{
+			if (mPlayerHUDWidget)
+			{
+				mPlayerHUDWidget->UpdateHpValue(HpValue);
 			}
 		});
 
 	// UFQPlayerHUDWidget에 소유 오브젝트 등록
-	UFQPlayerHUDWidget* FQPlayerHUDWidget = Cast<UFQPlayerHUDWidget>(mPlayerHUDWidget);
-	if (FQPlayerHUDWidget)
+	if (mPlayerHUDWidget)
 	{
-		FQPlayerHUDWidget->SetOwningActor(this);
+		mPlayerHUDWidget->SetOwningActor(this);
 	}
 	else
 	{
@@ -94,20 +212,6 @@ void AFQPlayerController_InGame::UpdateHUDSetting()
 		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] Is Not Vaild AFQGameMode_InGame!!"), __LINE__);
 	}
 }
-
-void AFQPlayerController_InGame::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// 로그 확인
-	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
-	{
-		int32 ControllerId = LocalPlayer->GetControllerId();
-		UE_LOG(LogTemp, Log, TEXT("[AFQPlayerController_InGame %d] BeginPlay Function Call : PlayerController Id(%d)"), __LINE__, ControllerId);
-	}
-}
-
-
 
 void AFQPlayerController_InGame::ChangeToArmour(EArmourType InArmourType)
 {
@@ -178,44 +282,6 @@ void AFQPlayerController_InGame::ChangeToSoul()
 	}
 }
 
-void AFQPlayerController_InGame::SetupInputComponent()
-{
-	Super::SetupInputComponent();
-
-	// 로그 확인
-	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
-	{
-		int32 ControllerId = LocalPlayer->GetControllerId();
-		UE_LOG(LogTemp, Log, TEXT("[AFQPlayerController_InGame %d] SetupInputComponent Function Call : PlayerController Id(%d)"), __LINE__, ControllerId);
-	}
-
-	// Local Player Subsystem에 MappingContext 추가
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-	{
-		Subsystem->AddMappingContext(mPlayerInputDataAsset->mDefaultMappingContext, 0);
-	}
-
-	// EnhancedInputComponent 사용
-	UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent);
-	if (EnhancedInput == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] InputComponent Is nullptr"), __LINE__);
-		return;
-	}
-
-	if (mPlayerInputDataAsset)
-	{
-		EnhancedInput->BindAction(mPlayerInputDataAsset->mAButtonAction, ETriggerEvent::Started, this, &AFQPlayerController_InGame::HandlePickButton);
-		EnhancedInput->BindAction(mPlayerInputDataAsset->mBButtonAction, ETriggerEvent::Started, this, &AFQPlayerController_InGame::HandleCancelButton);
-		EnhancedInput->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Triggered, this, &AFQPlayerController_InGame::HandleMoveTriggered);
-		EnhancedInput->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Completed, this, &AFQPlayerController_InGame::HandleMoveCompleted);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame %d] mPlayerInputDataAsset Is Not Vaild!!"), __LINE__);
-	}
-}
-
 
 
 void AFQPlayerController_InGame::CreatePlayerCharacterByClass(TSubclassOf<AFQPlayerBase> CharacterClass, const FTransform& SpawnTransform)
@@ -238,6 +304,13 @@ void AFQPlayerController_InGame::CreatePlayerCharacterByClass(TSubclassOf<AFQPla
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame &d] AFQGameMode_InGame Is Not Vailed!!"), __LINE__);
+		}
+
+		// Head UI 캐릭터 등록
+		if (mPlayerOverheadUIActor)
+		{
+			// 컨트롤러가 붙은 Pawn을 따라가도록 설정
+			mPlayerOverheadUIActor->AttachToActor(GetPawn(), FAttachmentTransformRules::KeepWorldTransform);
 		}
 	}
 }
@@ -263,8 +336,16 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 		{
 			UE_LOG(LogTemp, Error, TEXT("[AFQPlayerController_InGame &d] AFQGameMode_InGame Is Not Vailed!!"), __LINE__);
 		}
+
+		// Head UI 캐릭터 등록
+		if (mPlayerOverheadUIActor)
+		{
+			// 컨트롤러가 붙은 Pawn을 따라가도록 설정
+			mPlayerOverheadUIActor->AttachToActor(GetPawn(), FAttachmentTransformRules::KeepWorldTransform);
+		}
 	}
 }
+
 
 void AFQPlayerController_InGame::HandlePickButton()
 {

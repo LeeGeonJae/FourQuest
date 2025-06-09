@@ -17,7 +17,7 @@ class FQUI_API UFQSoulGaugeWidget : public UFQUserWidget
 public:
 	UFQSoulGaugeWidget();
 
-	void SetChargeGaugeValueSet(float InValue);
+	void UpdateChargeGaugeValue(float InValue);
 
 protected:
 	// Widget 게이지

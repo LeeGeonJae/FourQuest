@@ -20,6 +20,7 @@ public:
 
     void UpdateArmourSkill(EArmourType InArmourType);
     void UpdateSoulGauge(float GaugeValue);
+    void UpdateHpValue(float HpValue);
 
 protected:
     virtual void NativeConstruct() override;
@@ -27,6 +28,7 @@ protected:
 
 private:
     void PlaySoulBurningAnimation(float DeltaTime);
+    void UpdateHpDecraceValue(float DeltaTime);
     void LoadingSoulBurningTexture(FString Path, FString FileName, uint32 TextureSize, TArray<TObjectPtr<UTexture2D>>& SoulTextureContainer);
     void UpdateSoulBurningAnimation(TArray<UTexture2D*> SoulAnimationKey);
 
@@ -63,6 +65,9 @@ private:
     uint8 mCurrentFrameIndex;
     ESoulType mSoulType;
 
+    float mHpPercent;
+    float mHpDecrasePercent;
+
     // SoulBurning
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<class UImage> mSoulBurning;
@@ -80,4 +85,10 @@ private:
     TObjectPtr<class UImage> mSkill_A;
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<class UImage> mSkill_R;
+
+    // Hp
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<class UProgressBar> mHp;
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<class UProgressBar> mHpDecrase;
 };

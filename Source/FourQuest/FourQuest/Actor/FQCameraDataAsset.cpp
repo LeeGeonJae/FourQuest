@@ -5,6 +5,9 @@
 
 UFQCameraDataAsset::UFQCameraDataAsset()
 {
+    // 디버그 렌더링
+    mbIsDebugRendering = false;
+
     // 카메라 줌인 줌아웃
     mCameraZoomMin = 2000.f;
     mCameraZoomMax = 3500.f;

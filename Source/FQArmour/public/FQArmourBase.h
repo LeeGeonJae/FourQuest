@@ -38,5 +38,4 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class UFQWidgetComponent> mArmourWidget;
-
 };
