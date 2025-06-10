@@ -3,16 +3,19 @@
 
 #include "FQMonsterBase.h"
 #include "FQMonsterManager.h"
+#include "FQMonsterAIController.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
 
+
 // Sets default values
 AFQMonsterBase::AFQMonsterBase()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	mAttackMontage = nullptr;
 	mTargetActor = nullptr;
@@ -47,7 +50,14 @@ void AFQMonsterBase::BeginPlay()
 			It->RegisterGroup(mGroupID, this);
 		break;
 	}
-	
+	if (USkeletalMeshComponent* SkelMesh = GetMesh())
+	{
+		if (UAnimInstance* AnimInstance = SkelMesh->GetAnimInstance())
+		{
+			AnimInstance->OnMontageEnded.AddDynamic(this, &AFQMonsterBase::OnHitMontageEnded);
+			UE_LOG(LogTemp, Warning, TEXT("Delegate 등록"))
+		}
+	}
 }
 
 // Called every frame
@@ -69,14 +79,12 @@ void AFQMonsterBase::Attack(AActor* Actor)
 	if (mAttackMontage)
 	{
 		FName SectionName = GetRandomSectionName();
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *SectionName.ToString());
 		PlayAnimMontage(mAttackMontage, 1.0f, SectionName);
 	}
 }
 
 void AFQMonsterBase::ManagerSetTargetActor(AActor* Actor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Attack"));
 	if (!mTargetActor)
 	{
 		mTargetActor = Actor;
@@ -102,7 +110,6 @@ void AFQMonsterBase::ApplyDamageToTarget()
 		if (Target && Target != this)
 		{
 			UGameplayStatics::ApplyDamage(Target, mMonsterDataAsset->mAttackPower, GetController(), this, UDamageType::StaticClass());
-			UE_LOG(LogTemp, Warning, TEXT("Attack"));
 		}
 	}
 	
@@ -118,8 +125,41 @@ void AFQMonsterBase::SetCollisionEnabled(bool CollisionEnabled)
 
 float AFQMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	return 0.0f;
+	if (AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(GetController()))
+	{
+		AIC->ChangeState(EMonsterState::Hit);
+		Hit();
+		AIC->ChangeTargetActor(DamageCauser);
+	}
+
+	return DamageAmount;
+}
+
+void AFQMonsterBase::Hit()
+{
+	if (mHitMontage)
+	{
+		const TArray<FName> Sections = { TEXT("Hit1"), TEXT("Hit2") };
+		int32 Index = FMath::RandRange(0, Sections.Num() - 1);
+		UE_LOG(LogTemp, Warning, TEXT("Hit Animation"))
+		PlayAnimMontage(mHitMontage,1.0f, Sections[Index]);
+	}
+}
+
+void AFQMonsterBase::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Hit Animation 종료"))
+	if (Montage == mHitMontage)
+	{
+		AFQMonsterAIController* AIC = GetController<AFQMonsterAIController>();
+		if (AIC)
+		{
+			AIC->ChangeState(EMonsterState::Chase);
+			UE_LOG(LogTemp, Warning, TEXT("Hit Animation 종료"))
+		}
+	}
 }
 
 void AFQMonsterBase::TakeDamageByPlayer(AActor* Target, float Damage)

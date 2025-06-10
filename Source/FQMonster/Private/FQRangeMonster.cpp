@@ -7,19 +7,24 @@
 void AFQRangeMonster::Attack(AActor* Target)
 {
     
-       if (!Target || !mProjectile) return;
+       
+}
 
-       FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 50.f); // 약간 위로
-       FRotator SpawnRotation = (Target->GetActorLocation() - SpawnLocation).Rotation();
+void AFQRangeMonster::ProjectileAttack()
+{
+    if (!mTargetActor || !mProjectile) return;
 
-       FActorSpawnParameters Params;
-       Params.Instigator = this;
-       Params.Owner = this;
+    FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 50.f); // 약간 위로
+    FRotator SpawnRotation = (mTargetActor->GetActorLocation() - SpawnLocation).Rotation();
 
-       AFQRangeMonsterProjectile* Projectile = GetWorld()->SpawnActor<AFQRangeMonsterProjectile>(mProjectile, SpawnLocation, SpawnRotation, Params);
-       if (Projectile)
-       {
-           if(mMonsterDataAsset)
-           Projectile->SetDamage(mMonsterDataAsset->mAttackPower); // 예시 데미지
-       }
+    FActorSpawnParameters Params;
+    Params.Instigator = this;
+    Params.Owner = this;
+
+    AFQRangeMonsterProjectile* Projectile = GetWorld()->SpawnActor<AFQRangeMonsterProjectile>(mProjectile, SpawnLocation, SpawnRotation, Params);
+    if (Projectile)
+    {
+        if (mMonsterDataAsset)
+            Projectile->SetDamage(mMonsterDataAsset->mAttackPower); // 예시 데미지
+    }
 }

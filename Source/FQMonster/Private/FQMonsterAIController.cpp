@@ -3,6 +3,7 @@
 
 #include "FQMonsterAIController.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Perception/AISenseConfig_Damage.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
 
@@ -46,6 +47,16 @@ void AFQMonsterAIController::ChangeState(EMonsterState State)
     }
 }
 
+void AFQMonsterAIController::ChangeTargetActor(AActor* Actor)
+{
+    AFQMonsterBase* Monster = Cast<AFQMonsterBase>(GetPawn());
+    if (Monster)
+    {
+        Monster->mTargetActor = Actor;
+        GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
+    }
+}
+
 void AFQMonsterAIController::BeginPlay()
 {
     Super::BeginPlay();
@@ -68,15 +79,30 @@ void AFQMonsterAIController::OnPossess(APawn* InPawn)
 
 void AFQMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-    if (Stimulus.WasSuccessfullySensed())
+    if (Actor->Tags.Contains(FName("Player")))
     {
-        if(!GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")))
+        if (Stimulus.WasSuccessfullySensed())
         {
-            if(!Actor->IsA(AFQMonsterBase::StaticClass()))
+            if (!GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")))
             {
-                // 감지 성공 시
-                AFQMonsterBase* Monster = Cast<AFQMonsterBase>(GetPawn());
-                Monster->ManagerSetTargetActor(Actor);
+                if (!Actor->IsA(AFQMonsterBase::StaticClass()))
+                {
+                    // 감지 성공 시
+                    AFQMonsterBase* Monster = Cast<AFQMonsterBase>(GetPawn());
+                    Monster->ManagerSetTargetActor(Actor);
+                }
+            }
+        }
+        if (Stimulus.Type == UAISense_Damage::GetSenseID(UAISense_Damage::StaticClass()))
+        {
+            AFQMonsterBase* Monster = Cast<AFQMonsterBase>(GetPawn());
+            if(Monster)
+            {
+                UE_LOG(LogTemp,Warning,TEXT("Damage Config"))
+                ChangeState(EMonsterState::Hit);
+                Monster->Hit();
+                Monster->mTargetActor = Actor;
+                GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
             }
         }
     }
