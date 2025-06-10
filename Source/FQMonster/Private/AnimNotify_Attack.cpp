@@ -2,13 +2,13 @@
 
 
 #include "AnimNotify_Attack.h"
-#include "FQMonsterBase.h"
+#include "FQRangeMonster.h"
 
 void UAnimNotify_Attack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-	AFQMonsterBase* Monster = Cast<AFQMonsterBase>(MeshComp->GetOwner());
+	AFQRangeMonster* Monster = Cast<AFQRangeMonster>(MeshComp->GetOwner());
 	if (Monster)
 	{
-		Monster->ApplyDamageToTarget();
+		Monster->ProjectileAttack();
 	}
 }

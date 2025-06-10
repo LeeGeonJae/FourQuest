@@ -19,6 +19,7 @@ class FQMONSTER_API AFQRangeMonster : public AFQMonsterBase
 public:
 	virtual void Attack(AActor* Target)override;
 
+	void ProjectileAttack();
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 	TSubclassOf<AFQRangeMonsterProjectile> mProjectile;

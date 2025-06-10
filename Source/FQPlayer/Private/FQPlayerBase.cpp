@@ -45,6 +45,8 @@ AFQPlayerBase::AFQPlayerBase()
 
 	mbIsPressedX = false;
 	mbIsPressedA = false;
+
+	Tags.Add(FName("Player"));
 }
 
 void AFQPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

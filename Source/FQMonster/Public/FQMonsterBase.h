@@ -18,6 +18,7 @@ enum class EMonsterState : uint8
 	Patrol UMETA(DisplayName = "Patrol"),
 	Chase UMETA(DisplayName = "Chase"),
 	Attack UMETA(DisplayName = "Attack"),
+	Hit UMETA(DisplayName = "Hit"),
 	Death UMETA(DisplayName = "Death")
 };
 
@@ -52,6 +53,11 @@ public:
 	void SetCollisionEnabled(bool CollisionEnabled);
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
+
+	void Hit();
+
+	UFUNCTION()
+	void OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Stat")
 	float mCurrentHP;
@@ -72,6 +78,9 @@ public:
 	UAnimMontage* mAttackMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AnimationMontage")
+	UAnimMontage* mHitMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	AActor* mTargetActor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")

@@ -22,6 +22,8 @@ public:
 
 	void ChangeState(EMonsterState State);
 
+	void ChangeTargetActor(AActor* Actor);
+
 protected:
 	virtual void BeginPlay() override;
 
