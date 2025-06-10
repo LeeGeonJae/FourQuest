@@ -20,6 +20,7 @@ public:
 	virtual void SetNearestArmour(bool IsTrue) override;
 	virtual EArmourType GetArmourType() const override;
 	virtual FTransform GetActorTransform() const override;
+	virtual int32 GetArmourHp() const override { return mArmourHp; }
 
 protected:
 	// Parent Class Funtion
@@ -29,7 +30,6 @@ protected:
 protected:
 	UPROPERTY(EditAnywhere, Category = FQBox)
 	TObjectPtr<class UBoxComponent> mTrigger;
-
 	UPROPERTY(EditAnywhere, Category = FQBox)
 	TObjectPtr<class UStaticMeshComponent> mMesh;
 
@@ -38,4 +38,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class UFQWidgetComponent> mArmourWidget;
+
+	UPROPERTY(EditAnywhere, Category = FQArmourStat)
+	int32 mArmourHp;
 };

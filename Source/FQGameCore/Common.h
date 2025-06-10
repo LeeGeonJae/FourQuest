@@ -89,6 +89,7 @@ namespace FQ_PlayerStateDelegate
 	DECLARE_MULTICAST_DELEGATE_OneParam(FQArmourTypeChangeDelegate, EArmourType /*NewArmourType*/);				// PlayerState의 ArmourType 변경 델리게이트
 	DECLARE_MULTICAST_DELEGATE_OneParam(FQSoulGaugeSettingDelegate, float /*GaugeValue*/);						// PlayerState의 SoulGauge 변경 델리게이트
 	DECLARE_MULTICAST_DELEGATE_OneParam(FQPlayerHpUpdateDelegate, float /*HpValue*/);							// PlayerState의 Hp 변경 델리게이트
+	DECLARE_MULTICAST_DELEGATE_OneParam(FQPlayerDeadDelegate, bool /*bIsDead*/);								// PlayerState의 Dead 호출 델리게이트
 }
 
 namespace FQ_UIDelegate

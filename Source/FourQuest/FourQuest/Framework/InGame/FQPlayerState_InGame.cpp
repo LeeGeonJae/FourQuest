@@ -53,6 +53,7 @@ void AFQPlayerState_InGame::SetHp(const int32 NewValue)
 	{
 		mCurrentHp = 0;
 		mPlayerHpDelegate.Broadcast(0);
+		mPlayerDeadDelegate.Broadcast(true);
 		return;
 	}
 	else if (mCurrentHp > mMaxHp)
@@ -62,6 +63,7 @@ void AFQPlayerState_InGame::SetHp(const int32 NewValue)
 
 	float Value = (float)mCurrentHp / (float)mMaxHp;
 	mPlayerHpDelegate.Broadcast(Value);
+	mPlayerDeadDelegate.Broadcast(false);
 	UE_LOG(LogTemp, Log, TEXT("[AFQPlayerState_InGame %d] SetHp 함수 실행 (MaxHp : %d, CurrentHp : %d, HpValue : %f)"), __LINE__, mMaxHp, mCurrentHp, Value);
 }
 
@@ -72,6 +74,7 @@ void AFQPlayerState_InGame::AddHp(const int32 AddValue)
 	{
 		mCurrentHp = 0;
 		mPlayerHpDelegate.Broadcast(0);
+		mPlayerDeadDelegate.Broadcast(true);
 		return;
 	}
 	else if (mCurrentHp > mMaxHp)
@@ -81,5 +84,6 @@ void AFQPlayerState_InGame::AddHp(const int32 AddValue)
 
 	float Value = (float)mCurrentHp / (float)mMaxHp;
 	mPlayerHpDelegate.Broadcast(Value);
+	mPlayerDeadDelegate.Broadcast(false);
 	UE_LOG(LogTemp, Log, TEXT("[AFQPlayerState_InGame %d] AddHp 함수 실행 (MaxHp : %d, CurrentHp : %d, HpValue : %f)"), __LINE__, mMaxHp, mCurrentHp, Value);
 }

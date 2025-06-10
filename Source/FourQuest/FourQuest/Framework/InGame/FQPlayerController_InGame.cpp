@@ -144,6 +144,14 @@ void AFQPlayerController_InGame::SpawnPlayerUIActor()
 						mPlayerOverheadUIActor->UpdateArmourType(NewArmourType);
 					}
 				});
+			FQPlayerState->mPlayerDeadDelegate.AddLambda([&](bool bIsDead)
+				{
+					if (bIsDead)
+					{
+						ChangeToSoul();
+						mPlayerOverheadUIActor->UpdateArmourType(EArmourType::End);
+					}
+				});
 		}
 		else
 		{

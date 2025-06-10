@@ -13,6 +13,7 @@
 
 // Sets default values
 AFQArmourBase::AFQArmourBase()
+	:mArmourHp(100)
 {
 	PrimaryActorTick.bCanEverTick = true; // Tick 함수가 실행되기 위한 bool형 타입 변수
 	mArmourType = EArmourType::Knight;

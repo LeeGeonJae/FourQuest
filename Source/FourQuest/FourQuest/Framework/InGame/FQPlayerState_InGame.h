@@ -21,6 +21,7 @@ public:
     FQ_PlayerStateDelegate::FQArmourTypeChangeDelegate mArmourChangeDelegate;
     FQ_PlayerStateDelegate::FQSoulGaugeSettingDelegate mSoulGaugeDelegate;
     FQ_PlayerStateDelegate::FQPlayerHpUpdateDelegate mPlayerHpDelegate;
+    FQ_PlayerStateDelegate::FQPlayerDeadDelegate mPlayerDeadDelegate;
 
     // 인터페이스 가상 함수
     virtual ESoulType GetSoulType() const override { return mSoulType; }
