@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerInput.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerStart.h"
 
 #include "FQ_GameInstance_InGame.h"
 #include "FQPlayerState_InGame.h"
@@ -61,6 +62,21 @@ void AFQGameMode_InGame::CreatePlayer()
         UE_LOG(LogTemp, Error, TEXT("[AFQGameMode_InGame %d] UFQ_GameInstance_InGame Is Not Vaild!!"), __LINE__);
         return;
     }
+
+    // PlayerStart 찾기
+    TArray<AActor*> FoundStarts;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), FoundStarts);
+
+    APlayerStart* StartActor = Cast<APlayerStart>(FoundStarts[0]);
+    if (!StartActor)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to cast to APlayerStart"));
+        return;
+    }
+
+    // 위치 및 회전 가져오기
+    FVector SpawnLocation = StartActor->GetActorLocation();
+    FRotator SpawnRotation = StartActor->GetActorRotation();
 
     auto PlayerInfomations = GameInstance->GetLocalMultiPlayerInfomation();
 
@@ -129,9 +145,7 @@ void AFQGameMode_InGame::CreatePlayer()
             }
 
             // 새로운 캐릭터 생성
-            FVector SpawnLocation = FVector(0.f, 100.f * ControllerId, 0.f); // 위치 조정 가능
-            FRotator SpawnRotation = FRotator::ZeroRotator;
-            AFQSoulBase* NewPawn = GetWorld()->SpawnActor<AFQSoulBase>(mSoulPlayersType[PlayerInfomation.mSoulType], SpawnLocation, SpawnRotation);
+            AFQSoulBase* NewPawn = GetWorld()->SpawnActor<AFQSoulBase>(mSoulPlayersType[PlayerInfomation.mSoulType], SpawnLocation + FVector(100 * ControllerId), SpawnRotation);
             if (!NewPawn)
             {
                 UE_LOG(LogTemp, Error, TEXT("[FQGameMode_InGame %d]Failed to spawn Pawn for ControllerId %d"), __LINE__, ControllerId);

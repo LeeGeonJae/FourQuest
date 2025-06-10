@@ -137,9 +137,9 @@ void AFQMainCenterCamera::CameraMoveControl(float DeltaTime)
     // 카메라 위치 조정 (블렌더 처리)
     FVector CenterLocation = Count > 0 ? (Sum / Count) : FVector::ZeroVector;
 
-    FVector TargetLocation = FVector(CenterLocation.X, CenterLocation.Y, mCurrentCameraLocation.Z); // Z는 유지
+    FVector TargetLocation = CenterLocation;
     FVector NewLocation = FMath::VInterpTo(mCurrentCameraLocation, TargetLocation, DeltaTime, mCameraDataAsset->mCameraBlendValue);
-    SetActorLocation(FVector(NewLocation.X, NewLocation.Y, mCurrentCameraLocation.Z));
+    SetActorLocation(TargetLocation);
     mCurrentCameraLocation = NewLocation;
 }
 
