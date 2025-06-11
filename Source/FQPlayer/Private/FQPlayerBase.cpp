@@ -72,7 +72,7 @@ float AFQPlayerBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		return 0.f;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Take Damage"));
+	UE_LOG(LogTemp, Warning, TEXT("[Player] TakeDamage"));
 
 	mHitState = EHitState::HitReacting;
 	ProcessHitInterrupt();

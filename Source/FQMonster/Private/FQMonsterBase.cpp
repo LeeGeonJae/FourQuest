@@ -131,6 +131,8 @@ float AFQMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 
 	if (AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(GetController()))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[Monster] TakeDamage"));
+
 		AIC->ChangeState(EMonsterState::Hit);
 		Hit();
 		AIC->ChangeTargetActor(DamageCauser);

@@ -22,7 +22,7 @@ public:
 	float mDefaultSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default, meta = (ToolTip = "체력"))
-	float mHealth;
+	float mMaxHp;
 
 	// Projectile Attack
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 쿨타임"))
@@ -46,6 +46,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 밀어내는 힘"))
 	float mProjectileStrength;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 투사체 데미지"))
+	float mProjectileDamageAmount;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X,meta = (ToolTip = "[X] 피격 대상 타입"))
 	TArray<TEnumAsByte<ECollisionChannel>> mProjectileAttackableTypes;
 
@@ -64,6 +67,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 마법진 최소 크기"))
 	float mMinScale;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 데미지"))
+	float mExplosionDamageAmount;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 피격 대상 타입"))
 	TArray<TEnumAsByte<ECollisionChannel>> mExplosionAttackableTypes;

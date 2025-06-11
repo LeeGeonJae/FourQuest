@@ -164,11 +164,6 @@ void AFQKnightPlayer::SetInputMappingContext()
 
 bool AFQKnightPlayer::CanMove()
 {
-	if (mHitState == EHitState::HitReacting)
-	{
-		return false;
-	}
-
 	switch (mSwordAttackState)
 	{
 	case EKnightSwordAttackState::Attack1 :

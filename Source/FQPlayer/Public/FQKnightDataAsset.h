@@ -22,7 +22,7 @@ public:
 	float mDefaultSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default, meta = (ToolTip = "체력"))
-	float mHealth;
+	float mMaxHp;
 
 	// Bash
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 속도"))

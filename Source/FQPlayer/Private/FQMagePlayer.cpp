@@ -212,11 +212,6 @@ void AFQMagePlayer::SetInputMappingContext()
 
 bool AFQMagePlayer::CanMove()
 {
-	if (mHitState == EHitState::HitReacting)
-	{
-		return false;
-	}
-
 	// Projectile Attack 
 	switch (mProjectileAttackState)
 	{
@@ -653,7 +648,7 @@ void AFQMagePlayer::ProcessExplosion()
 			continue;
 		}
 
-		// TODO : 해당 액터에 데미지 입히기
+		ApplyDamageToTarget(mMageDataAsset->mExplosionDamageAmount, Actor);
 	}
 
 	// 애니메이션 재생
@@ -794,6 +789,8 @@ void AFQMagePlayer::UpdateLaser()
 		TraceParams
 	);
 
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 3.0f);
+
 	if (bHit && HitResult.GetActor())
 	{
 		FVector ImpactPoint = HitResult.ImpactPoint;
@@ -804,6 +801,7 @@ void AFQMagePlayer::UpdateLaser()
 		{
 			mCurrentLaserTarget = HitResult.GetActor();
 
+			ApplyLaserDamage();
 			GetWorld()->GetTimerManager().ClearTimer(mLaserDamageTimer);
 			GetWorld()->GetTimerManager().SetTimer(mLaserDamageTimer, this, &AFQMagePlayer::ApplyLaserDamage, mMageDataAsset->mLaserDamageTime, true);
 		}
@@ -834,6 +832,8 @@ bool AFQMagePlayer::ApplyPush(AActor* AttackableActor)
 	Forward.Normalize();
 
 	PlayerAttackableInterface->TakePushByPlayer(AttackableActor, Forward, mMageDataAsset->mProjectileStrength);
+
+	ApplyDamageToTarget(mMageDataAsset->mProjectileDamageAmount, AttackableActor);
 
 	return true;
 }
