@@ -25,7 +25,7 @@ protected:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	UFUNCTION(BlueprintCallable)
-	void SetHitReacting(bool HitReacting);
+	void EndHit();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
 	TObjectPtr<class AFQPlayerBase> mOwner;

@@ -7,11 +7,13 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/BoxComponent.h"
+#include "NiagaraComponent.h"
 
 #include "FQPlayer/Public/FQMageDataAsset.h" 
 #include "FQPlayer/Public/FQMageProjectile.h" 
 #include "FQPlayer/Public/FQMageCircle.h" 
 #include "FQGameCore/Player/FQPlayerAttackableInterface.h"
+#include "FQPlayer/Public/FQMageStaff.h"
 
 AFQMagePlayer::AFQMagePlayer()
 {
@@ -20,6 +22,13 @@ AFQMagePlayer::AFQMagePlayer()
 
 	mLookAtDirection = FVector::ZeroVector;
 	mLookAtRotation = FRotator::ZeroRotator;
+
+	mProjectileAttackState = EMageProjectileAttackState::None;
+	mProjectileAttackComboState = EComboState::None;
+	mExplosionState = EMageExplosionState::None;
+	mLaserState = EMageLaserState::None;
+
+	mbLaserCoolDown = false;
 }
 
 void AFQMagePlayer::Tick(float DeltaSeconds)
@@ -62,6 +71,16 @@ void AFQMagePlayer::Tick(float DeltaSeconds)
 	}
 	break;
 	}
+
+	if (mLaserState == EMageLaserState::Enabled)
+	{
+		// 각도 설정
+		FRotator CurrentRotation = GetActorRotation();
+		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, mLaserRotation, DeltaSeconds, mMageDataAsset->mLaserRotationSpeed);
+		SetActorRotation(NewRotation);
+
+		UpdateLaser();
+	}
 }
 
 void AFQMagePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -78,8 +97,13 @@ void AFQMagePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	// Explosion (A)
 	EnhancedInputComponent->BindAction(mExplosionAction, ETriggerEvent::Started, this, &AFQMagePlayer::StartExplosion);
-	EnhancedInputComponent->BindAction(mExplosionAction, ETriggerEvent::Triggered, this, &AFQMagePlayer::ProcessExplosion);
+	EnhancedInputComponent->BindAction(mExplosionAction, ETriggerEvent::Triggered, this, &AFQMagePlayer::PressedExplosion);
 	EnhancedInputComponent->BindAction(mExplosionAction, ETriggerEvent::Completed, this, &AFQMagePlayer::EndExplosion);
+
+	// Laser (R)
+	EnhancedInputComponent->BindAction(mLaserAction, ETriggerEvent::Started, this, &AFQMagePlayer::StartLaser);
+	EnhancedInputComponent->BindAction(mLaserAction, ETriggerEvent::Triggered, this, &AFQMagePlayer::PressedLaser);
+	EnhancedInputComponent->BindAction(mLaserAction, ETriggerEvent::Completed, this, &AFQMagePlayer::EndLaser);
 }
 
 void AFQMagePlayer::ProcessNextSection()
@@ -98,6 +122,16 @@ void AFQMagePlayer::ProcessNextSection()
 bool AFQMagePlayer::IsEnabledExplosionCircle()
 {
 	if (mExplosionState == EMageExplosionState::Preparing || mExplosionState == EMageExplosionState::Enabled)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool AFQMagePlayer::IsEnabledLaser()
+{
+	if (mLaserState == EMageLaserState::Enabled)
 	{
 		return true;
 	}
@@ -148,6 +182,16 @@ void AFQMagePlayer::BeginPlay()
 		return;
 	}
 	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQMagePlayer::OnAnimMontageEnded);
+
+	// Staff Actor 
+	if (mStaffClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Owner = this;
+		mStaff = GetWorld()->SpawnActor<AFQMageStaff>(mStaffClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		mStaff->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("Mage_Staff")));
+	}
 }
 
 void AFQMagePlayer::SetInputMappingContext()
@@ -168,6 +212,11 @@ void AFQMagePlayer::SetInputMappingContext()
 
 bool AFQMagePlayer::CanMove()
 {
+	if (mHitState == EHitState::HitReacting)
+	{
+		return false;
+	}
+
 	// Projectile Attack 
 	switch (mProjectileAttackState)
 	{
@@ -221,6 +270,12 @@ bool AFQMagePlayer::CanMove()
 		return false;
 	}
 
+	// Laser
+	if (mLaserState == EMageLaserState::Preparing || mLaserState == EMageLaserState::Enabled)
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -264,7 +319,7 @@ void AFQMagePlayer::ProcessInputMovement()
 void AFQMagePlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	// Projectile Attack
-	if (Montage == mProjectileAttackAnim1)
+	if (Montage == mProjectileAttackAnim1 && !bInterrupted)
 	{
 		if (mHitState == EHitState::HitReacting)
 		{
@@ -294,7 +349,7 @@ void AFQMagePlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 			GetWorld()->GetTimerManager().SetTimer(mProjectileAttackComboTimer, this, &AFQMagePlayer::ResetProjectileAttackCombo, mMageDataAsset->mProjectileAttackWaitTime1, false);
 		}
 	}
-	else if (Montage == mProjectileAttackAnim2)
+	else if (Montage == mProjectileAttackAnim2 && !bInterrupted)
 	{
 		if (mHitState == EHitState::HitReacting)
 		{
@@ -330,7 +385,8 @@ void AFQMagePlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 		}
 	}
 
-	if (Montage == mExplosionStartAnim)
+	// Explosion
+	if (Montage == mExplosionStartAnim && !bInterrupted)
 	{
 		// 마법진 생성
 		if (!mExplosionCircleClass)
@@ -351,8 +407,7 @@ void AFQMagePlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 		}
 	}
 
-	// Explosion
-	if (Montage == mExplosionEndAnim)
+	if (Montage == mExplosionEndAnim && !bInterrupted)
 	{
 		// 쿨타임 설정
 		mExplosionState = EMageExplosionState::CoolDown;
@@ -364,6 +419,25 @@ void AFQMagePlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 		// 이펙트 재생
 		mExplosionCircle->ActivateEffect();
 		mExplosionCircle = nullptr;
+	}
+
+	// Laser
+	if (Montage == mLaserStartAnim && !bInterrupted)
+	{
+		mLaserState = EMageLaserState::Enabled;
+
+		// 최소 지속 시간 타이머 설정
+		GetWorld()->GetTimerManager().ClearTimer(mLaserDurationTimer);
+
+		FTimerDelegate TimerDel;
+		TimerDel.BindLambda([this]() { mbLaserCoolDown = true; });
+		GetWorld()->GetTimerManager().SetTimer(mLaserDurationTimer, TimerDel, mMageDataAsset->mLaserMinDuration, false);
+	}
+
+	if (Montage == mLaserEndAnim && !bInterrupted)
+	{
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		mStaff->DeactivateLaserEffect();
 	}
 }
 
@@ -410,7 +484,7 @@ void AFQMagePlayer::StartProjectileAttack()
 
 		switch (mProjectileAttackState)
 		{
-		case EMageProjectileAttackState::Attack1 :
+		case EMageProjectileAttackState::Attack1:
 		{
 			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 			if (!AnimInstance)
@@ -523,7 +597,7 @@ void AFQMagePlayer::StartExplosion()
 	mbIsPressedA = true;
 }
 
-void AFQMagePlayer::ProcessExplosion()
+void AFQMagePlayer::PressedExplosion()
 {
 	if (mExplosionState != EMageExplosionState::Enabled)
 	{
@@ -533,7 +607,7 @@ void AFQMagePlayer::ProcessExplosion()
 	if (mHitState == EHitState::HitReacting)
 	{
 		// 피격 상태일 때 즉시 마법진 공격 실행
-		Explosion();
+		ProcessExplosion();
 	}
 }
 
@@ -544,10 +618,10 @@ void AFQMagePlayer::EndExplosion()
 		return;
 	}
 
-	Explosion();
+	ProcessExplosion();
 }
 
-void AFQMagePlayer::Explosion()
+void AFQMagePlayer::ProcessExplosion()
 {
 	TArray<AActor*> OverlappedActors;
 	mExplosionCircle->mVolume->GetOverlappingActors(OverlappedActors);
@@ -600,6 +674,153 @@ void AFQMagePlayer::Explosion()
 	mbIsPressedA = false;
 }
 
+void AFQMagePlayer::StartLaser(const FInputActionValue& Value)
+{
+	if (mLaserState == EMageLaserState::CoolDown)
+	{
+		return;
+	}
+
+	if (mHitState == EHitState::HitReacting)
+	{
+		return;
+	}
+
+	// 상태 설정
+	mLaserState = EMageLaserState::InputReceived;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+}
+
+void AFQMagePlayer::PressedLaser(const FInputActionValue& Value)
+{
+	// 레이저 방향 설정
+	FVector2D MovementVector = Value.Get<FVector2D>();
+	FVector2D NormalizedVector = MovementVector.GetSafeNormal();
+	NormalizedVector.X *= -1.0f;
+
+	float PlayerAngle = FMath::Atan2(NormalizedVector.Y, NormalizedVector.X) * (180.0f / PI);
+	mLaserRotation = FRotator(0.0f, PlayerAngle, 0.0f);
+
+	// 시전 애니메이션 재생
+	if (mLaserState == EMageLaserState::InputReceived)
+	{
+		SetActorRotation(mLaserRotation);
+
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (!AnimInstance)
+		{
+			return;
+		}
+
+		if (AnimInstance->Montage_IsPlaying(mLaserStartAnim))
+		{
+			return;
+		}
+
+		AnimInstance->Montage_Play(mLaserStartAnim);
+
+		mLaserState = EMageLaserState::Preparing;
+	}
+}
+
+void AFQMagePlayer::EndLaser()
+{
+	if (mLaserState != EMageLaserState::Enabled)
+	{
+		return;
+	}
+
+	// 애니메이션 재생
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+	{
+		return;
+	}
+
+	if (AnimInstance->Montage_IsPlaying(mLaserEndAnim))
+	{
+		return;
+	}
+
+	AnimInstance->Montage_Play(mLaserEndAnim);
+
+	mStaff->DeactivateLaserEffect();
+	mStaff->DeactivateHitEffect();
+
+	mCurrentLaserTarget = nullptr;
+
+	GetWorld()->GetTimerManager().ClearTimer(mLaserDamageTimer);
+	GetWorld()->GetTimerManager().ClearTimer(mLaserDurationTimer);
+
+	if (mbLaserCoolDown)
+	{
+		mbLaserCoolDown = false;
+		mLaserState = EMageLaserState::CoolDown;
+
+		GetWorld()->GetTimerManager().ClearTimer(mLaserCoolTimer);
+
+		FTimerDelegate TimerDel;
+		TimerDel.BindLambda([this]() { mLaserState = EMageLaserState::None;  });
+		GetWorld()->GetTimerManager().SetTimer(mLaserCoolTimer, TimerDel, mMageDataAsset->mLaserCoolTime, false);
+	}
+	else
+	{
+		mLaserState = EMageLaserState::None;
+	}
+}
+
+void AFQMagePlayer::ApplyLaserDamage()
+{
+	if (mCurrentLaserTarget)
+	{
+		ApplyDamageToTarget(mMageDataAsset->mLaserDamageAmount, mCurrentLaserTarget);
+	}
+}
+
+void AFQMagePlayer::UpdateLaser()
+{
+	FHitResult HitResult;
+	FVector TraceStart = GetActorLocation();
+	FVector TraceEnd = TraceStart + GetActorForwardVector() * 500.0f;
+
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		TraceStart,
+		TraceEnd,
+		ECC_GameTraceChannel3,
+		TraceParams
+	);
+
+	if (bHit && HitResult.GetActor())
+	{
+		FVector ImpactPoint = HitResult.ImpactPoint;
+		mStaff->ActivateLaserEffect(ImpactPoint);
+		mStaff->ActivateHitEffect(ImpactPoint);
+
+		if (mCurrentLaserTarget != HitResult.GetActor())
+		{
+			mCurrentLaserTarget = HitResult.GetActor();
+
+			GetWorld()->GetTimerManager().ClearTimer(mLaserDamageTimer);
+			GetWorld()->GetTimerManager().SetTimer(mLaserDamageTimer, this, &AFQMagePlayer::ApplyLaserDamage, mMageDataAsset->mLaserDamageTime, true);
+		}
+	}
+	else
+	{
+		FVector EffectEnd = mStaff->GetLaserEffectLocation();
+		EffectEnd.Z += 5.0f;
+		mStaff->ActivateLaserEffect(EffectEnd);
+		mStaff->DeactivateHitEffect();
+
+		mCurrentLaserTarget = nullptr;
+
+		GetWorld()->GetTimerManager().ClearTimer(mLaserDamageTimer);
+	}
+}
+
 bool AFQMagePlayer::ApplyPush(AActor* AttackableActor)
 {
 	IFQPlayerAttackableInterface* PlayerAttackableInterface = Cast<IFQPlayerAttackableInterface>(AttackableActor);
@@ -617,6 +838,29 @@ bool AFQMagePlayer::ApplyPush(AActor* AttackableActor)
 	return true;
 }
 
+void AFQMagePlayer::ProcessHitInterrupt()
+{
+	// TODO : 피격 상태일 때
+
+	// R 공격 도중 피격 상태로 전환
+	if (mbLaserCoolDown)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(mLaserCoolTimer);
+		GetWorld()->GetTimerManager().ClearTimer(mLaserDamageTimer);
+		GetWorld()->GetTimerManager().ClearTimer(mLaserDurationTimer);
+
+		mLaserState = EMageLaserState::CoolDown;
+
+		FTimerDelegate TimerDel;
+		TimerDel.BindLambda([this]() { mLaserState = EMageLaserState::None; });
+		GetWorld()->GetTimerManager().SetTimer(mLaserCoolTimer, TimerDel, mMageDataAsset->mLaserCoolTime, false);
+	}
+	else
+	{
+		mLaserState = EMageLaserState::None;
+	}
+}
+
 void AFQMagePlayer::ProcessProjectileAttack()
 {
 	if (!mProjectileClass)
@@ -630,7 +874,7 @@ void AFQMagePlayer::ProcessProjectileAttack()
 	SpawnParams.Owner = this;
 
 	AFQMageProjectile* Projectile = GetWorld()->SpawnActor<AFQMageProjectile>(mProjectileClass, GetActorLocation(), GetActorRotation(), SpawnParams);
-	
+
 	if (Projectile)
 	{
 		// 투사체 초기화 및 발사
@@ -656,7 +900,7 @@ void AFQMagePlayer::CheckProjectileAttackVolume()
 	{
 		mLookAtDirection = mMoveDirection;
 	}
-	
+
 	mLookAtRotation = mLookAtDirection.Rotation();
 
 	float Distance = TNumericLimits<float>::Max();
@@ -696,7 +940,7 @@ void AFQMagePlayer::CheckProjectileAttackVolume()
 		{
 			continue;
 		}
-		 
+
 		Distance = NewDistance;
 		mLookAtDirection = (Actor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 		mLookAtDirection.Z = 0.0f;

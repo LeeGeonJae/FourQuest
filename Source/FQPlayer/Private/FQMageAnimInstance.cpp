@@ -30,4 +30,5 @@ void UFQMageAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 	mbIsEnabledCircle = Player->IsEnabledExplosionCircle();
+	mbIsEnabledLaser = Player->IsEnabledLaser();
 }

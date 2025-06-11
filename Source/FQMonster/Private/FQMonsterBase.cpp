@@ -28,6 +28,8 @@ AFQMonsterBase::AFQMonsterBase()
 	mAttackBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("MonsterCollision"));
+
+	GetMesh()->bReceivesDecals = false;
 }
 
 // Called when the game starts or when spawned

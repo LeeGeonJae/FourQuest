@@ -68,4 +68,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 피격 대상 타입"))
 	TArray<TEnumAsByte<ECollisionChannel>> mExplosionAttackableTypes;
 
+	// Laser
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R, meta = (ToolTip = "[R] 회전 속도"))
+	float mLaserRotationSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R, meta = (ToolTip = "[R] 데미지 틱 주기"))
+	float mLaserDamageTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R, meta = (ToolTip = "[R] 데미지"))
+	float mLaserDamageAmount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R, meta = (ToolTip = "[R] 최소 지속 시간"))
+	float mLaserMinDuration;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R, meta = (ToolTip = "[R] 쿨타임"))
+	float mLaserCoolTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R, meta = (ToolTip = "[R] 피격 대상 타입"))
+	TArray<TEnumAsByte<ECollisionChannel>> mLaserAttackableTypes;
+
 };
