@@ -17,6 +17,7 @@ class FQUI_API UFQMonsterHpWidget : public UFQUserWidget
 public:
 	UFQMonsterHpWidget();
 
+	UFUNCTION(BlueprintCallable, Category = "FQUpdateWidget")
 	void UpdateHp(float HpValue);
 
 private:
