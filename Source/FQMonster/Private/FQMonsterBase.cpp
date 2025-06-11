@@ -25,6 +25,8 @@ AFQMonsterBase::AFQMonsterBase()
 	mAttackBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("MonsterCollision"));
+
+	GetMesh()->bReceivesDecals = false;
 }
 
 // Called when the game starts or when spawned
@@ -118,6 +120,8 @@ void AFQMonsterBase::SetCollisionEnabled(bool CollisionEnabled)
 
 float AFQMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	UE_LOG(LogTemp, Log, TEXT("[%s::TakeDamage] 받은 데미지 : %f"), *GetName(), DamageAmount);
+
 	return 0.0f;
 }
 

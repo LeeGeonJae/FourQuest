@@ -26,6 +26,7 @@ public:
 	virtual void ProcessNextSection() override;
 
 	bool IsEnabledExplosionCircle();
+	bool IsEnabledLaser();
 
 	// Projectile Attack
 	virtual void EnableAttackVolume() override;
@@ -34,6 +35,8 @@ public:
 	void CheckProjectileAttackVolume();
 	void ProcessProjectileAttack();
 	bool ApplyPush(class AActor* AttackableActor);
+
+	virtual void ProcessHitInterrupt() override;
 
 protected:
 	// Default
@@ -48,6 +51,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data)
 	TObjectPtr<class UFQMageDataAsset> mMageDataAsset;
 
+	// Input
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputMappingContext> mMageMappingContext;
 
@@ -76,6 +80,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> mExplosionEndAnim;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UAnimMontage> mLaserStartAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UAnimMontage> mLaserEndAnim;
+
 	// State
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
 	EMageProjectileAttackState mProjectileAttackState;
@@ -85,6 +95,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
 	EMageExplosionState mExplosionState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
+	EMageLaserState mLaserState;
 
 	// Projectile Attack
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
@@ -97,15 +110,22 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AFQMageCircle> mExplosionCircleClass;
 
+	// Laser
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class AFQMageStaff> mStaffClass;
+
+	TObjectPtr<class AFQMageStaff> mStaff;
+
 private:
+	FVector mLookAtDirection;
+	FRotator mLookAtRotation;
+	FRotator mLaserRotation;
+
 	// Animation
 	UFUNCTION()
 	void OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	// Projectile Attack
-	FVector mLookAtDirection;
-	FRotator mLookAtRotation;
-
 	FTimerHandle mProjectileAttackComboTimer;
 	FTimerHandle mProjectileAttackCoolTimer;
 
@@ -123,7 +143,23 @@ private:
 	FTimerHandle mExplosionCoolTimer;
 
 	void StartExplosion();
-	void ProcessExplosion();
+	void PressedExplosion();
 	void EndExplosion();
-	void Explosion();
+	void ProcessExplosion();
+
+	// Laser
+	uint8 mbLaserCoolDown : 1;
+
+	FTimerHandle mLaserDamageTimer;
+	FTimerHandle mLaserCoolTimer;
+	FTimerHandle mLaserDurationTimer;
+
+	UPROPERTY()
+	TObjectPtr<AActor> mCurrentLaserTarget;
+
+	void StartLaser(const FInputActionValue& Value);
+	void PressedLaser(const FInputActionValue& Value);
+	void EndLaser();
+	void ApplyLaserDamage();
+	void UpdateLaser();
 };

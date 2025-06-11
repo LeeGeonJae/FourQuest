@@ -25,8 +25,6 @@ public:
 	// Input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void SetHitReacting(bool HitReacting);
-
 	virtual void SetAnimInstance() PURE_VIRTUAL(AFQPlayerBase::SetAnimInstance, );
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
@@ -36,6 +34,10 @@ public:
 	virtual void ProcessNextSection() PURE_VIRTUAL(AFQPlayerBase::ProcessNextSection, );
 	virtual void EnableAttackVolume() PURE_VIRTUAL(AFQPlayerBase::EnableAttackVolume, );
 	virtual void DisableAttackVolume() PURE_VIRTUAL(AFQPlayerBase::DisableAttackVolume, );
+	virtual void ProcessHitInterrupt() PURE_VIRTUAL(AFQPlayerBase::ProcessHitInterrupt, );
+
+	bool IsHit();
+	void EndHit();
 
 protected:
 	virtual void BeginPlay() override;
@@ -59,9 +61,9 @@ protected:
 
 	// Effect
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UNiagaraComponent> mEffect;
+	TObjectPtr<class UNiagaraComponent> mSoulEffect;
 
-	// Hit 
+	// State 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
 	EHitState mHitState;
 

@@ -25,6 +25,11 @@ void UFQPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
+	if (!mOwner)
+	{
+		return;
+	}
+
 	if (!mMovement)
 	{
 		return;
@@ -35,16 +40,17 @@ void UFQPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	mGroundSpeed = mVelocity.Size2D();
 	mNormalizedSpeed = mGroundSpeed / mMovement->GetMaxSpeed();
 	mbIsIdle = mGroundSpeed < mMovingThreshould;
+	mbHitReacting = mOwner->IsHit();
 }
 
-void UFQPlayerAnimInstance::SetHitReacting(bool HitReacting)
+void UFQPlayerAnimInstance::EndHit()
 {
 	if (!mOwner)
 	{
 		return;
 	}
 
-	mbHitReacting = HitReacting;
-	mOwner->SetHitReacting(mbHitReacting);
+	mbHitReacting = false;
+	mOwner->EndHit();
 }
 

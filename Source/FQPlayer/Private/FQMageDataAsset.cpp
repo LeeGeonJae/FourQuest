@@ -13,4 +13,10 @@ UFQMageDataAsset::UFQMageDataAsset()
 	mMinDistance = 200.0f;
 	mMaxDistance = 500.0f;
 	mMinScale = 0.5f;
+
+	mLaserRotationSpeed = 5.0f;
+	mLaserDamageTime = 0.1f;
+	mLaserDamageAmount = 3.0f;
+	mLaserMinDuration = 3.0f;
+	mLaserCoolTime = 2.0f;
 }

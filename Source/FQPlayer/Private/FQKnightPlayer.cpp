@@ -87,7 +87,7 @@ void AFQKnightPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 	// Shield (Right Stick)
 	EnhancedInputComponent->BindAction(mShieldAction, ETriggerEvent::Started, this, &AFQKnightPlayer::StartShieldMove);
-	EnhancedInputComponent->BindAction(mShieldAction, ETriggerEvent::Triggered, this, &AFQKnightPlayer::ShieldMove);
+	EnhancedInputComponent->BindAction(mShieldAction, ETriggerEvent::Triggered, this, &AFQKnightPlayer::PressedShieldMove);
 	EnhancedInputComponent->BindAction(mShieldAction, ETriggerEvent::Completed, this, &AFQKnightPlayer::EndShieldMove);
 }
 
@@ -164,6 +164,11 @@ void AFQKnightPlayer::SetInputMappingContext()
 
 bool AFQKnightPlayer::CanMove()
 {
+	if (mHitState == EHitState::HitReacting)
+	{
+		return false;
+	}
+
 	switch (mSwordAttackState)
 	{
 	case EKnightSwordAttackState::Attack1 :
@@ -242,6 +247,11 @@ void AFQKnightPlayer::ProcessNextSection()
 	UE_LOG(LogTemp, Log, TEXT("[ProcessNextSection] 콤보 상태로 전환"));
 
 	mSwordAttackComboState = EComboState::Combo;
+}
+
+void AFQKnightPlayer::ProcessHitInterrupt()
+{
+	// TODO : 피격 상태일 때
 }
 
 void AFQKnightPlayer::EnableBashVolume()
@@ -504,7 +514,7 @@ void AFQKnightPlayer::StartShieldMove()
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
-void AFQKnightPlayer::ShieldMove(const FInputActionValue& Value)
+void AFQKnightPlayer::PressedShieldMove(const FInputActionValue& Value)
 {
 	if (mShieldState != EKnightShieldState::Shield)
 	{

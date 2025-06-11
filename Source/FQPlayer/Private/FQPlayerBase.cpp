@@ -37,9 +37,9 @@ AFQPlayerBase::AFQPlayerBase()
 	GetMesh()->bReceivesDecals = false;
 
 	// Effect
-	mEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SoulEffect"));
-	mEffect->SetupAttachment(RootComponent);
-	mEffect->SetAutoActivate(true);
+	mSoulEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SoulEffect"));
+	mSoulEffect->SetupAttachment(RootComponent);
+	mSoulEffect->SetAutoActivate(true);
 
 	mHitState = EHitState::None;
 
@@ -56,14 +56,6 @@ void AFQPlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	EnhancedInputComponent->BindAction(mMoveAction, ETriggerEvent::Triggered, this, &AFQPlayerBase::Move);
 }
 
-void AFQPlayerBase::SetHitReacting(bool HitReacting)
-{
-	if (HitReacting)
-	{
-		mHitState = EHitState::HitReacting;
-	}
-}
-
 void AFQPlayerBase::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -77,13 +69,33 @@ float AFQPlayerBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	{
 		return 0.f;
 	}
-	UE_LOG(LogTemp,Warning,TEXT("Take Damage"))
+
+	UE_LOG(LogTemp, Warning, TEXT("Take Damage"));
+
+	mHitState = EHitState::HitReacting;
+	ProcessHitInterrupt();
+
 	return ActualDamage;
 }
 
 void AFQPlayerBase::ApplyDamageToTarget(float DamageAmount, AActor* Target)
 {
 	UGameplayStatics::ApplyDamage(Target, DamageAmount, GetController(), this, UDamageType::StaticClass());
+}
+
+bool AFQPlayerBase::IsHit()
+{
+	if (mHitState == EHitState::HitReacting)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void AFQPlayerBase::EndHit()
+{
+	mHitState = EHitState::None;
 }
 
 void AFQPlayerBase::BeginPlay()

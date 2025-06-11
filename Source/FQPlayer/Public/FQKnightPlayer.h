@@ -40,6 +40,8 @@ public:
 	virtual void SetAnimInstance() override;
 	virtual void ProcessNextSection() override;
 
+	virtual void ProcessHitInterrupt() override;
+
 protected:
 	// Default
 	virtual void BeginPlay() override;
@@ -152,7 +154,7 @@ private:
 	FRotator mShieldRotation;
 
 	void StartShieldMove();
-	void ShieldMove(const FInputActionValue& Value);
+	void PressedShieldMove(const FInputActionValue& Value);
 	void EndShieldMove();
 	void CheckShiedVolume();
 

@@ -23,4 +23,7 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mage")
 	uint8 mbIsEnabledCircle : 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mage")
+	uint8 mbIsEnabledLaser : 1;
 };
