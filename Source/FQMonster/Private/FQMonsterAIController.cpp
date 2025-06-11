@@ -93,6 +93,15 @@ void AFQMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulu
                 }
             }
         }
+        else
+        {
+            AFQMonsterAIController* AIC = GetInstigatorController<AFQMonsterAIController>();
+            if (AIC)
+            {
+                AIC->SetTargetActor(nullptr);
+                AIC->ChangeState(EMonsterState::Idle);
+            }
+        }
         if (Stimulus.Type == UAISense_Damage::GetSenseID(UAISense_Damage::StaticClass()))
         {
             AFQMonsterBase* Monster = Cast<AFQMonsterBase>(GetPawn());
