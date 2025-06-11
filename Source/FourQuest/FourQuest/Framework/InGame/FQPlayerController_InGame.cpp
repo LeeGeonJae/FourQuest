@@ -362,13 +362,6 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 
 void AFQPlayerController_InGame::HandlePickButton()
 {
-	// Player Hp UI 작동 테스트 코드
-	AFQPlayerState_InGame* MyPlayerState = GetPlayerState<AFQPlayerState_InGame>();
-	if (MyPlayerState)
-	{
-		MyPlayerState->AddHp(-10);
-	}
-
 	// 입력 버튼
 	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
