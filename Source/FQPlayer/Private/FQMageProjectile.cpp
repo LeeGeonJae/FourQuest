@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "FQPlayer/Public/FQMagePlayer.h"
 
@@ -42,7 +43,6 @@ void AFQMageProjectile::BeginPlay()
 void AFQMageProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AFQMageProjectile::OnVolumeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -67,12 +67,16 @@ void AFQMageProjectile::OnVolumeBeginOverlap(UPrimitiveComponent* OverlappedComp
 	if (mCount <= 0)
 	{
 		mVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 		Destroy();
+
 		return;
 	}
 
 	if (Player->ApplyPush(OtherActor))
 	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), mHitEffectSystem, GetActorLocation(), GetActorRotation(), FVector(1.0f), true, true);
+
 		mCount--;
 	}
 }
