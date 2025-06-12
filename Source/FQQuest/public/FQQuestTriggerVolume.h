@@ -4,23 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "FQQuestManager.generated.h"
+#include "FQQuestTriggerVolume.generated.h"
 
 UCLASS()
-class FOURQUEST_API AFQQuestManager : public AActor
+class FQQUEST_API AFQQuestTriggerVolume : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
-	AFQQuestManager();
+	AFQQuestTriggerVolume();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 };

@@ -56,6 +56,14 @@
 				"Engine",
 				"UMG"
 			]
+		},
+		{
+			"Name": "FQQuest",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
 		}
 	],
 	"Plugins": [

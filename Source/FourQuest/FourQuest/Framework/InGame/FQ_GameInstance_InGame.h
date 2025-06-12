@@ -37,6 +37,8 @@ public:
 protected:
 	// 부모 가상 함수
 	virtual void Init() override;
+
+	// 일반 함수
 	void SetBGMSoundVolum(float VolumValue);
 	void SetSFXSoundVolum(float VolumValue);
 
