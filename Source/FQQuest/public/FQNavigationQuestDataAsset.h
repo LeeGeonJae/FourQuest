@@ -14,6 +14,11 @@ class FQQUEST_API UFQNavigationQuestDataAsset : public UPrimaryDataAsset
 public:
 	UFQNavigationQuestDataAsset();
 
-	UPROPERTY(EditAnywhere, Category = FQWalk, meta = (ToolTip = "영혼 기본 속도"))
-	int32 mCollisionBoxNumber;
+	UPROPERTY(EditAnywhere, Category = FQQuestCheck, meta = (ToolTip = "퀘스트 클리어 여부"))
+	int8 mQuestClear : 1;
+
+	UPROPERTY(EditAnywhere, Category = FQQuestText, meta = (ToolTip = "UI에 표시될 퀘스트 제목"))
+	FString mTitle;
+	UPROPERTY(EditAnywhere, Category = FQQuestText, meta = (ToolTip = "UI에 표시될 퀘스트 내용"))
+	FString mDescription;
 };

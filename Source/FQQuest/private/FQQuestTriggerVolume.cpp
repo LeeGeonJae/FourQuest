@@ -1,27 +1,36 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "FQQuestTriggerVolume.h"
 
-// Sets default values
+#include "Components/BoxComponent.h"
+
+#include "FQGameCore\Player\FQPlayerCharacterInterface.h"
+
 AFQQuestTriggerVolume::AFQQuestTriggerVolume()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	mTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+	SetRootComponent(mTrigger);
+	mTrigger->SetBoxExtent(FVector(100.f));
+	mTrigger->SetCollisionProfileName(TEXT("Trigger"));
+	mTrigger->SetGenerateOverlapEvents(true);
 }
 
-// Called when the game starts or when spawned
 void AFQQuestTriggerVolume::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (mTrigger)
+	{
+		mTrigger->OnComponentBeginOverlap.AddDynamic(this, &AFQQuestTriggerVolume::OnTriggerBeginOverlap);
+	}
 }
 
-// Called every frame
-void AFQQuestTriggerVolume::Tick(float DeltaTime)
+void AFQQuestTriggerVolume::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Super::Tick(DeltaTime);
-
+	IFQPlayerCharacterInterface* CollisionPlayer = Cast<IFQPlayerCharacterInterface>(OtherActor);
+	if (CollisionPlayer)
+	{
+		for (auto Quest : mQuestTriggerTypeList)
+		{
+			mQuestTriggerDelegate.ExecuteIfBound(Quest.Key, Quest.Value);
+		}
+	}
 }
-

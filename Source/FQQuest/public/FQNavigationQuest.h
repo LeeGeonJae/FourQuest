@@ -14,4 +14,15 @@ class FQQUEST_API AFQNavigationQuest : public AFQQuestBase
 {
 	GENERATED_BODY()
 	
+public:
+	AFQNavigationQuest();
+
+	virtual void Execute() override;
+	virtual void Update(float DeltaTime) override;
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+
 };

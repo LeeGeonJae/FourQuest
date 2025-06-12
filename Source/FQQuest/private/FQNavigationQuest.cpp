@@ -3,3 +3,18 @@
 
 #include "FQNavigationQuest.h"
 
+AFQNavigationQuest::AFQNavigationQuest()
+{
+}
+
+void AFQNavigationQuest::BeginPlay()
+{
+}
+
+void AFQNavigationQuest::Execute()
+{
+}
+
+void AFQNavigationQuest::Update(float DeltaTime)
+{
+}

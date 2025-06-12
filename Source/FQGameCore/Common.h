@@ -1,5 +1,6 @@
 #pragma once
 
+// 플레이어 상태
 UENUM()
 enum class EArmourType : uint8
 {
@@ -18,29 +19,18 @@ enum class ESoulType : uint8
 	End
 };
 
-UENUM()
-enum class EWidgetInputType : uint8
-{
-	None = 0,
-	Left,
-	Right,
-	Up,
-	Down,
-	Select,
-	Cancel,
-	End
-};
 
-UENUM()
-enum class ETitleSettingType : uint8
+namespace FQ_PlayerStateDelegate
 {
-	Title = 0,
-	MainSetting,
-	VideoSetting,
-	AudioSetting,
-	End
-};
+	DECLARE_MULTICAST_DELEGATE_OneParam(FQSoulTypeChangeDelegate, ESoulType /*NewSoulType*/);					// PlayerState의 SoulType 변경 델리게이트
+	DECLARE_MULTICAST_DELEGATE_OneParam(FQArmourTypeChangeDelegate, EArmourType /*NewArmourType*/);				// PlayerState의 ArmourType 변경 델리게이트
+	DECLARE_MULTICAST_DELEGATE_OneParam(FQSoulGaugeSettingDelegate, float /*GaugeValue*/);						// PlayerState의 SoulGauge 변경 델리게이트
+	DECLARE_MULTICAST_DELEGATE_OneParam(FQPlayerHpUpdateDelegate, float /*HpValue*/);							// PlayerState의 Hp 변경 델리게이트
+	DECLARE_MULTICAST_DELEGATE_OneParam(FQPlayerDeadDelegate, bool /*bIsDead*/);								// PlayerState의 Dead 호출 델리게이트
+}
 
+
+// 인 게임 관련 세팅
 namespace FQ_InGameSetting
 {
 	UENUM()
@@ -76,23 +66,53 @@ namespace FQ_InGameSetting
 
 	struct FVideoInfomation
 	{
-		FVideoInfomation() : mbIsFullScreen(false), mCurrentResolutionType(EResolutionType::Resolution_1920x1080){}
+		FVideoInfomation() : mbIsFullScreen(false), mCurrentResolutionType(EResolutionType::Resolution_1920x1080) {}
 
 		uint8 mbIsFullScreen : 1;
 		EResolutionType mCurrentResolutionType;
 	};
 }
 
-namespace FQ_PlayerStateDelegate
+
+// UI
+UENUM()
+enum class EWidgetInputType : uint8
 {
-	DECLARE_MULTICAST_DELEGATE_OneParam(FQSoulTypeChangeDelegate, ESoulType /*NewSoulType*/);					// PlayerState의 SoulType 변경 델리게이트
-	DECLARE_MULTICAST_DELEGATE_OneParam(FQArmourTypeChangeDelegate, EArmourType /*NewArmourType*/);				// PlayerState의 ArmourType 변경 델리게이트
-	DECLARE_MULTICAST_DELEGATE_OneParam(FQSoulGaugeSettingDelegate, float /*GaugeValue*/);						// PlayerState의 SoulGauge 변경 델리게이트
-	DECLARE_MULTICAST_DELEGATE_OneParam(FQPlayerHpUpdateDelegate, float /*HpValue*/);							// PlayerState의 Hp 변경 델리게이트
-	DECLARE_MULTICAST_DELEGATE_OneParam(FQPlayerDeadDelegate, bool /*bIsDead*/);								// PlayerState의 Dead 호출 델리게이트
-}
+	None = 0,
+	Left,
+	Right,
+	Up,
+	Down,
+	Select,
+	Cancel,
+	End
+};
+
+UENUM()
+enum class ETitleSettingType : uint8
+{
+	Title = 0,
+	MainSetting,
+	VideoSetting,
+	AudioSetting,
+	End
+};
 
 namespace FQ_UIDelegate
 {
 	DECLARE_DELEGATE_OneParam(FQTitleSettingDelegate, ETitleSettingType /*TitleSettingType*/);
+}
+
+
+// 퀘스트
+UENUM()
+enum class EQuestTriggerType : uint8
+{
+	QuestStarts,
+	QuestClear,
+};
+
+namespace FQ_QuestDelegate
+{
+	DECLARE_DELEGATE_TwoParams(FQQuestTriggerDelegate, int32 /*QuestID*/, EQuestTriggerType /*QuestTriggerType*/);
 }

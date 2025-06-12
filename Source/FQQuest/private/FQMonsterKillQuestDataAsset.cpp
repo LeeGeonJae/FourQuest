@@ -3,3 +3,6 @@
 
 #include "FQMonsterKillQuestDataAsset.h"
 
+UFQMonsterKillQuestDataAsset::UFQMonsterKillQuestDataAsset()
+{
+}

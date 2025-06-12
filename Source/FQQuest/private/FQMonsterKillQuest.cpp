@@ -3,3 +3,18 @@
 
 #include "FQMonsterKillQuest.h"
 
+AFQMonsterKillQuest::AFQMonsterKillQuest()
+{
+}
+
+void AFQMonsterKillQuest::BeginPlay()
+{
+}
+
+void AFQMonsterKillQuest::Execute()
+{
+}
+
+void AFQMonsterKillQuest::Update(float DeltaTime)
+{
+}

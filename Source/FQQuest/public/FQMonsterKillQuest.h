@@ -14,4 +14,22 @@ class FQQUEST_API AFQMonsterKillQuest : public AFQQuestBase
 {
 	GENERATED_BODY()
 	
+public:
+	AFQMonsterKillQuest();
+
+	virtual void Execute() override;
+	virtual void Update(float DeltaTime) override;
+
+	FORCEINLINE void SetClearMonsterKillNumber(int32 ClearMonsterKillNumber) { mClearMonsterKillNumber = ClearMonsterKillNumber; }
+	FORCEINLINE int32 GetClearMonsterKillNumber() { return mClearMonsterKillNumber; }
+	FORCEINLINE void SetCurrentMonsterKillNumber(int32 CurrentMonsterKillNumber) { mCurrentMonsterKillNumber = CurrentMonsterKillNumber; }
+	FORCEINLINE int32 GetCurrentMonsterKillNumber() { return mCurrentMonsterKillNumber; }
+	FORCEINLINE void AddCurrentMonsterKillNumber(int32 AddMonsterKillNumber) { mCurrentMonsterKillNumber += AddMonsterKillNumber; }
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	int32 mClearMonsterKillNumber;
+	int32 mCurrentMonsterKillNumber;
 };
