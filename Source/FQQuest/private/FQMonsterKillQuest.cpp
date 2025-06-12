@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "FQMonsterKillQuest.h"
 
 AFQMonsterKillQuest::AFQMonsterKillQuest()
@@ -9,6 +6,7 @@ AFQMonsterKillQuest::AFQMonsterKillQuest()
 
 void AFQMonsterKillQuest::BeginPlay()
 {
+	Super::BeginPlay();
 }
 
 void AFQMonsterKillQuest::Execute()
@@ -17,4 +15,7 @@ void AFQMonsterKillQuest::Execute()
 
 void AFQMonsterKillQuest::Update(float DeltaTime)
 {
+	Super::Update(DeltaTime);
+
+
 }

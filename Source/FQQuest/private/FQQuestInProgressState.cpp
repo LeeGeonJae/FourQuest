@@ -7,14 +7,14 @@ UFQQuestInProgressState::UFQQuestInProgressState()
 {
 }
 
-void UFQQuestInProgressState::Enter()
+void UFQQuestInProgressState::StateEnter()
 {
 }
 
-void UFQQuestInProgressState::Update(float DeltaTime)
+void UFQQuestInProgressState::StateUpdate(float DeltaTime)
 {
 }
 
-void UFQQuestInProgressState::Exit()
+void UFQQuestInProgressState::StateExit()
 {
 }

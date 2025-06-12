@@ -24,5 +24,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-
+	UPROPERTY()
+	TObjectPtr<class UObject> mTargetObject;
 };

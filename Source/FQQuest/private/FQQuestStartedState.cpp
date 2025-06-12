@@ -1,20 +1,19 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "FQQuestStartedState.h"
 
 UFQQuestStartedState::UFQQuestStartedState()
+	: mComplatedTime(1.f)
+	, mDurationTime()
 {
 }
 
-void UFQQuestStartedState::Enter()
+void UFQQuestStartedState::StateEnter()
 {
 }
 
-void UFQQuestStartedState::Update(float DeltaTime)
+void UFQQuestStartedState::StateUpdate(float DeltaTime)
 {
 }
 
-void UFQQuestStartedState::Exit()
+void UFQQuestStartedState::StateExit()
 {
 }

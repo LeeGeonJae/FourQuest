@@ -6,9 +6,7 @@
 #include "FQQuestStateBase.h"
 #include "FQQuestCompletedState.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class FQQUEST_API UFQQuestCompletedState : public UFQQuestStateBase
 {
@@ -17,7 +15,10 @@ class FQQUEST_API UFQQuestCompletedState : public UFQQuestStateBase
 public:
 	UFQQuestCompletedState();
 
-	virtual void Enter() override;
-	virtual void Update(float DeltaTime) override;
-	virtual void Exit() override;
+	virtual void StateEnter() override;
+	virtual void StateUpdate(float DeltaTime) override;
+	virtual void StateExit() override;
+
+private:
+
 };

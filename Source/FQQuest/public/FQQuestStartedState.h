@@ -17,9 +17,9 @@ class FQQUEST_API UFQQuestStartedState : public UFQQuestStateBase
 public:
 	UFQQuestStartedState();
 
-	virtual void Enter() override;
-	virtual void Update(float DeltaTime) override;
-	virtual void Exit() override;
+	virtual void StateEnter() override;
+	virtual void StateUpdate(float DeltaTime) override;
+	virtual void StateExit() override;
 
 private:
 	float mComplatedTime;

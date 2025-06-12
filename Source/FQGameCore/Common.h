@@ -4,18 +4,18 @@
 UENUM()
 enum class EArmourType : uint8
 {
-	Knight = 0,
-	Magic,
+	Knight = 0	UMETA(DisplayName = "Knight"),
+	Magic		UMETA(DisplayName = "Magic"),
 	End
 };
 
 UENUM()
 enum class ESoulType : uint8
 {
-	Sword,	// 검 영혼 0
-	Staff,	// 마법 영혼 1
-	Axe,	// 도끼 영혼 2
-	Bow,	// 활 영혼 3
+	Sword	UMETA(DisplayName = "Sword"),	// 검 영혼 0
+	Staff	UMETA(DisplayName = "Staff"),	// 마법 영혼 1
+	Axe		UMETA(DisplayName = "Axe"),		// 도끼 영혼 2
+	Bow		UMETA(DisplayName = "Bow"),		// 활 영혼 3
 	End
 };
 
@@ -36,10 +36,10 @@ namespace FQ_InGameSetting
 	UENUM()
 		enum class EResolutionType : uint8
 	{
-		Resolution_1080x600,
-		Resolution_1280x720,
-		Resolution_1600x900,
-		Resolution_1920x1080,
+		Resolution_1080x600		UMETA(DisplayName = "Resolution_1080x600"),
+		Resolution_1280x720		UMETA(DisplayName = "Resolution_1280x720"),
+		Resolution_1600x900		UMETA(DisplayName = "Resolution_1600x900"),
+		Resolution_1920x1080	UMETA(DisplayName = "Resolution_1920x1080"),
 	};
 
 	struct FQLocalMultiPlayerInfomation
@@ -78,23 +78,23 @@ namespace FQ_InGameSetting
 UENUM()
 enum class EWidgetInputType : uint8
 {
-	None = 0,
-	Left,
-	Right,
-	Up,
-	Down,
-	Select,
-	Cancel,
+	None = 0	UMETA(DisplayName = "None"),
+	Left		UMETA(DisplayName = "Left"),
+	Right		UMETA(DisplayName = "Right"),
+	Up			UMETA(DisplayName = "Up"),
+	Down		UMETA(DisplayName = "Down"),
+	Select		UMETA(DisplayName = "Select"),
+	Cancel		UMETA(DisplayName = "Cancel"),
 	End
 };
 
 UENUM()
 enum class ETitleSettingType : uint8
 {
-	Title = 0,
-	MainSetting,
-	VideoSetting,
-	AudioSetting,
+	Title = 0		UMETA(DisplayName = "Title"),
+	MainSetting		UMETA(DisplayName = "MainSetting"),
+	VideoSetting	UMETA(DisplayName = "VideoSetting"),
+	AudioSetting	UMETA(DisplayName = "AudioSetting"),
 	End
 };
 
@@ -108,11 +108,27 @@ namespace FQ_UIDelegate
 UENUM()
 enum class EQuestTriggerType : uint8
 {
-	QuestStarts,
-	QuestClear,
+	QuestStarts UMETA(DisplayName = "QuestStarts"),
+	QuestClear	UMETA(DisplayName = "QuestClear"),
+};
+
+UENUM()
+enum class EQuestMonsterType : uint8
+{
+	CommonMeleeMonster		UMETA(DisplayName = "CommonMeleeMonster"),
+	CommonRangedMonster		UMETA(DisplayName = "CommonRangedMonster"),
+	CommonSpawnerMonster	UMETA(DisplayName = "CommonSpawnerMonster"),
+};
+
+UENUM()
+enum class EQuestInteractionType : uint8
+{
+	Teleport		UMETA(DisplayName = "Teleport"),
 };
 
 namespace FQ_QuestDelegate
 {
 	DECLARE_DELEGATE_TwoParams(FQQuestTriggerDelegate, int32 /*QuestID*/, EQuestTriggerType /*QuestTriggerType*/);
+	//DECLARE_DELEGATE_OneParam(FQQuestMonsterDelegate, EQuestMonsterType /*QuestMonsterType*/);
+	//DECLARE_DELEGATE_OneParam(FQQuestInteractionDelegate, EQuestInteractionType /*QuestInteractionType*/);
 }

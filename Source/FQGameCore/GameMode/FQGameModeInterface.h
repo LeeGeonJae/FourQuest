@@ -22,11 +22,11 @@ class FQGAMECORE_API IFQGameModeInterface
 
 public:
 	// 
-	virtual void StartGame() abstract;
-	virtual void ExitGame() abstract;
+	virtual void StartGame() PURE_VIRTUAL(IFQGameModeInterface::StartGame, );
+	virtual void ExitGame() PURE_VIRTUAL(IFQGameModeInterface::ExitGame, );
 
-	// Input Funtion
-	virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) abstract;
-	virtual void CancelInteraction(int32 ControllerId) abstract;
-	virtual void SelectInteraction(int32 ControllerId) abstract;
+	// UI Input Funtion
+	virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) PURE_VIRTUAL(IFQGameModeInterface::MoveButton, );
+	virtual void CancelInteraction(int32 ControllerId) PURE_VIRTUAL(IFQGameModeInterface::CancelInteraction, );
+	virtual void SelectInteraction(int32 ControllerId) PURE_VIRTUAL(IFQGameModeInterface::SelectInteraction, );
 };

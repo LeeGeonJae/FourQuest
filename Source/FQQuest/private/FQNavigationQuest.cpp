@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "FQNavigationQuest.h"
 
 AFQNavigationQuest::AFQNavigationQuest()
@@ -9,6 +6,7 @@ AFQNavigationQuest::AFQNavigationQuest()
 
 void AFQNavigationQuest::BeginPlay()
 {
+	Super::BeginPlay();
 }
 
 void AFQNavigationQuest::Execute()
@@ -17,4 +15,7 @@ void AFQNavigationQuest::Execute()
 
 void AFQNavigationQuest::Update(float DeltaTime)
 {
+	Super::Update(DeltaTime);
+
+
 }

@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "FQGameCore/Common.h"
-#include "FQMonsterKillQuestDataAsset.h"
-#include "FQNavigationQuestDataAsset.h"
 #include "FQQuestManager.generated.h"
 
 UCLASS()
