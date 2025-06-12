@@ -74,7 +74,6 @@ void AFQMagePlayer::Tick(float DeltaSeconds)
 
 	if (mLaserState == EMageLaserState::Enabled)
 	{
-		// 각도 설정
 		FRotator CurrentRotation = GetActorRotation();
 		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, mLaserRotation, DeltaSeconds, mMageDataAsset->mLaserRotationSpeed);
 		SetActorRotation(NewRotation);
@@ -770,7 +769,6 @@ void AFQMagePlayer::EndLaser()
 
 	GetWorld()->GetTimerManager().ClearTimer(mLaserDamageTimer);
 	GetWorld()->GetTimerManager().ClearTimer(mLaserDurationTimer);
-
 	if (mbLaserCoolDown)
 	{
 		mbLaserCoolDown = false;
@@ -799,7 +797,7 @@ void AFQMagePlayer::ApplyLaserDamage()
 void AFQMagePlayer::UpdateLaser()
 {
 	FHitResult HitResult;
-	FVector TraceStart = GetActorLocation();
+	FVector TraceStart = GetActorLocation() + GetActorForwardVector() * 100.0f;
 	FVector TraceEnd = TraceStart + GetActorForwardVector() * 500.0f;
 
 	FCollisionQueryParams TraceParams;
@@ -871,6 +869,7 @@ void AFQMagePlayer::ProcessHitInterrupt()
 		GetWorld()->GetTimerManager().ClearTimer(mLaserDamageTimer);
 		GetWorld()->GetTimerManager().ClearTimer(mLaserDurationTimer);
 
+		mbLaserCoolDown = false;
 		mLaserState = EMageLaserState::CoolDown;
 
 		FTimerDelegate TimerDel;
@@ -881,6 +880,9 @@ void AFQMagePlayer::ProcessHitInterrupt()
 	{
 		mLaserState = EMageLaserState::None;
 	}
+
+	mStaff->DeactivateLaserEffect();
+	mStaff->DeactivateHitEffect();
 }
 
 void AFQMagePlayer::ProcessProjectileAttack()

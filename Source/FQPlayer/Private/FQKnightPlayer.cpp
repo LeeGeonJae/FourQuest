@@ -246,7 +246,6 @@ void AFQKnightPlayer::ProcessNextSection()
 
 void AFQKnightPlayer::ProcessHitInterrupt()
 {
-	// TODO : 피격 상태일 때
 }
 
 void AFQKnightPlayer::EnableBashVolume()
