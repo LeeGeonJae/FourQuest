@@ -54,6 +54,7 @@ void AFQMageCircle::ActivateEffect()
 	}
 
 	mEffect->Activate();
+	mDecal->SetVisibility(false);
 }
 
 void AFQMageCircle::SetScale(float ScaleFactor)
