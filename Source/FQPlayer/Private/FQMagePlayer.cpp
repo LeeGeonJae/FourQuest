@@ -438,6 +438,18 @@ void AFQMagePlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 
 void AFQMagePlayer::StartProjectileAttack()
 {
+	// R스킬 실행 중일 때
+	if (!(mLaserState == EMageLaserState::None || mLaserState == EMageLaserState::CoolDown))
+	{
+		return;
+	}
+
+	// A스킬 실행 중일 때
+	if (!(mExplosionState == EMageExplosionState::None || mExplosionState == EMageExplosionState::CoolDown))
+	{
+		return;
+	}
+
 	if (mHitState == EHitState::HitReacting)
 	{
 		return;
@@ -558,6 +570,12 @@ void AFQMagePlayer::ResetProjectileAttackCoolDown()
 
 void AFQMagePlayer::StartExplosion()
 {
+	// R스킬 실행 중일 때
+	if (!(mLaserState == EMageLaserState::None || mLaserState == EMageLaserState::CoolDown))
+	{
+		return;
+	}
+
 	if (mExplosionState == EMageExplosionState::CoolDown)
 	{
 		return;
@@ -671,6 +689,12 @@ void AFQMagePlayer::ProcessExplosion()
 
 void AFQMagePlayer::StartLaser(const FInputActionValue& Value)
 {
+	// A스킬 실행 중일 때
+	if (!(mExplosionState == EMageExplosionState::None || mExplosionState == EMageExplosionState::CoolDown))
+	{ 
+		return;
+	}
+
 	if (mLaserState == EMageLaserState::CoolDown)
 	{
 		return;
@@ -840,8 +864,6 @@ bool AFQMagePlayer::ApplyPush(AActor* AttackableActor)
 
 void AFQMagePlayer::ProcessHitInterrupt()
 {
-	// TODO : 피격 상태일 때
-
 	// R 공격 도중 피격 상태로 전환
 	if (mbLaserCoolDown)
 	{
