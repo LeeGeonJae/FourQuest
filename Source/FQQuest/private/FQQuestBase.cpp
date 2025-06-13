@@ -14,21 +14,21 @@ void AFQQuestBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//mCurrentState = CreateDefaultSubobject<UFQQuestStartedState>(TEXT("StartedState"));
-	//mCurrentState->SetOwnerQuestObject(this);
-	//mCurrentState->Enter();
+	mCurrentState = CreateDefaultSubobject<UFQQuestStartedState>(TEXT("StartedState"));
+	mCurrentState->SetOwnerQuestObject(this);
+	mCurrentState->StateEnter();
 }
 
 
 void AFQQuestBase::Update(float DeltaTime)
 {
-	//mCurrentState->Update(DeltaTime);
+	mCurrentState->StateUpdate(DeltaTime);
 }
 
 void AFQQuestBase::SetNewState(UFQQuestStateBase* NewState)
 {
-	//mCurrentState->Exit();
-	//mCurrentState = NewState;
-	//mCurrentState->SetOwnerQuestObject(this);
-	//mCurrentState->Enter();
+	mCurrentState->StateExit();
+	mCurrentState = NewState;
+	mCurrentState->SetOwnerQuestObject(this);
+	mCurrentState->StateEnter();
 }

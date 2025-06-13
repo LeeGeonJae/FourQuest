@@ -254,21 +254,31 @@ void AFQMainCenterCamera::RaycastFrustumEdges()
         {
             FVector TraceEnd = RayStartPoint + WorldDirection * TraceLength;
 
-            FHitResult HitResult;
+            TArray<FHitResult> HitResults;
             FCollisionQueryParams Params;
             Params.AddIgnoredActor(this);
 
-            if (GetWorld()->LineTraceSingleByChannel(HitResult, RayStartPoint, TraceEnd, ECC_Visibility, Params))
+            if (GetWorld()->LineTraceMultiByChannel(HitResults, RayStartPoint, TraceEnd, ECC_Visibility, Params))
             {
-                UBoxComponent* TargetBox = TargetBoxMap[DirectionType];
-                if (TargetBox)
+                for (auto HitResult : HitResults)
                 {
-                    TargetBox->SetWorldLocation(HitResult.ImpactPoint);
-
-                    // 디버그 충돌
-                    if (mCameraDataAsset->mbIsDebugRendering)
+                    // Actor 또는 Component에 Tag가 붙어 있는지 확인
+                    AActor* HitActor = HitResult.GetActor();
+                    if (!HitActor || !HitActor->ActorHasTag(TEXT("Floor")))
                     {
-                        DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 12.f, 25.f, FColor::White);
+                        return;
+                    }
+
+                    UBoxComponent* TargetBox = TargetBoxMap[DirectionType];
+                    if (TargetBox)
+                    {
+                        TargetBox->SetWorldLocation(HitResult.ImpactPoint);
+
+                        // 디버그 충돌
+                        if (mCameraDataAsset->mbIsDebugRendering)
+                        {
+                            DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 12.f, 25.f, FColor::White);
+                        }
                     }
                 }
             }

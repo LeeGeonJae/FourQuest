@@ -5,4 +5,10 @@
 
 UFQMonsterKillQuestDataAsset::UFQMonsterKillQuestDataAsset()
 {
+	mQuestClear = false;
+
+	mDescription = TEXT("");
+
+	mMonsterType = EQuestMonsterType::None;
+	mMonsterKillNumber = 0;
 }

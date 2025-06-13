@@ -108,6 +108,7 @@ namespace FQ_UIDelegate
 UENUM()
 enum class EQuestTriggerType : uint8
 {
+	None		UMETA(DisplayName = "None"),
 	QuestStarts UMETA(DisplayName = "QuestStarts"),
 	QuestClear	UMETA(DisplayName = "QuestClear"),
 };
@@ -115,20 +116,23 @@ enum class EQuestTriggerType : uint8
 UENUM()
 enum class EQuestMonsterType : uint8
 {
+	None					UMETA(DisplayName = "None"),
 	CommonMeleeMonster		UMETA(DisplayName = "CommonMeleeMonster"),
 	CommonRangedMonster		UMETA(DisplayName = "CommonRangedMonster"),
 	CommonSpawnerMonster	UMETA(DisplayName = "CommonSpawnerMonster"),
+	BossMonster				UMETA(DisplayName = "BossMonster"),
 };
 
 UENUM()
 enum class EQuestInteractionType : uint8
 {
+	None			UMETA(DisplayName = "None"),
 	Teleport		UMETA(DisplayName = "Teleport"),
 };
 
 namespace FQ_QuestDelegate
 {
 	DECLARE_DELEGATE_TwoParams(FQQuestTriggerDelegate, int32 /*QuestID*/, EQuestTriggerType /*QuestTriggerType*/);
-	//DECLARE_DELEGATE_OneParam(FQQuestMonsterDelegate, EQuestMonsterType /*QuestMonsterType*/);
-	//DECLARE_DELEGATE_OneParam(FQQuestInteractionDelegate, EQuestInteractionType /*QuestInteractionType*/);
+	DECLARE_DELEGATE_OneParam(FQQuestMonsterDelegate, EQuestMonsterType /*QuestMonsterType*/);
+	DECLARE_DELEGATE_OneParam(FQQuestInteractionDelegate, EQuestInteractionType /*QuestInteractionType*/);
 }

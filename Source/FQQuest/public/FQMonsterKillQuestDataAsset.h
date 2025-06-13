@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "FQGameCore\Common.h"
 #include "FQMonsterKillQuestDataAsset.generated.h"
 
 UCLASS()
@@ -20,10 +21,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = FQQuestText, meta = (ToolTip = "UI에 표시될 퀘스트 내용"))
 	FString mDescription;
 
-	//UPROPERTY(EditAnywhere, Category = FQQuestConditions, meta = (ToolTip = "퀘스트 클리어 조건 : 특정 몬스터 클래스"))
-	//TSubclassOf<class AFQMonsterBase> mTargetMonsterClass;
+	UPROPERTY(EditAnywhere, Category = FQQuestConditions, meta = (ToolTip = "퀘스트 클리어 조건 : 특정 몬스터 타입"))
+	EQuestMonsterType mMonsterType;
 	UPROPERTY(EditAnywhere, Category = FQQuestConditions, meta = (ToolTip = "퀘스트 클리어 조건 : 몬스터 킬 횟수"))
 	int32 mMonsterKillNumber;
 	UPROPERTY(EditAnywhere, Category = FQQuestConditions, meta = (ToolTip = "퀘스트 클리어 조건 : 조건 퀘스트 아이디"))
 	TArray<int32> mSubQuestList;
+
+	UPROPERTY(EditAnywhere, Category = FQQuestClear, meta = (ToolTip = "퀘스트 클리어 : 다음 퀘스트 생성"))
+	TArray<int32> mNextQuestList;
 };

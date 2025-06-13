@@ -3,20 +3,17 @@
 #include "FQQuestTriggerVolume.h"
 #include "FQMonsterKillQuest.h"
 #include "FQMonsterKillQuestDataAsset.h"
-#include "FQNavigationQuest.h"
-#include "FQNavigationQuestDataAsset.h"
+#include "FQInteractionQuest.h"
+#include "FQInteractionQuestDataAsset.h"
 
 #include "EngineUtils.h"
 
-// Sets default values
 AFQQuestManager::AFQQuestManager()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
-// Called when the game starts or when spawned
 void AFQQuestManager::BeginPlay()
 {
 	Super::BeginPlay();
@@ -31,7 +28,6 @@ void AFQQuestManager::BeginPlay()
     }
 }
 
-// Called every frame
 void AFQQuestManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -45,12 +41,19 @@ void AFQQuestManager::OnTriggerCallbackFunction(int32 QuestID, EQuestTriggerType
     {
         auto QuestObject = CreateDefaultSubobject<AFQMonsterKillQuest>(TEXT("MonsterKillQuest"));
         QuestObject->SetQuestID(QuestID);
+
+        QuestObject->SetQuestDescription((*MonsterKillQuestData)->mDescription);
+        QuestObject->SetMonsterType((*MonsterKillQuestData)->mMonsterType);
+        QuestObject->SetClearMonsterKillNumber((*MonsterKillQuestData)->mMonsterKillNumber);
     }
 
-    UFQNavigationQuestDataAsset** NavigationQuestData = mNavigationQuestDataList.Find(QuestID);
-    if (NavigationQuestData)
+    UFQInteractionQuestDataAsset** InteractionQuestData = mInteractionQuestDataList.Find(QuestID);
+    if (InteractionQuestData)
     {
-        auto QuestObject = CreateDefaultSubobject<AFQNavigationQuest>(TEXT("NavigationQuest"));
+        auto QuestObject = CreateDefaultSubobject<AFQInteractionQuest>(TEXT("InteractionQuest"));
         QuestObject->SetQuestID(QuestID);
+
+        QuestObject->SetQuestDescription((*InteractionQuestData)->mDescription);
+        QuestObject->SetInteractionType((*InteractionQuestData)->mInteractionType);
     }
 }

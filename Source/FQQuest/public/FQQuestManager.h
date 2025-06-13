@@ -27,7 +27,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = FQQuestList)
 	TMap<int32, class UFQMonsterKillQuestDataAsset*> mMonsterKillQuestDataList;
 	UPROPERTY(EditAnywhere, Category = FQQuestList)
-	TMap<int32, class UFQNavigationQuestDataAsset*> mNavigationQuestDataList;
+	TMap<int32, class UFQInteractionQuestDataAsset*> mInteractionQuestDataList;
 	
 	UPROPERTY()
 	TArray<TObjectPtr<class AFQQuestBase>> mQuestList;

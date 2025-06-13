@@ -16,9 +16,9 @@ public:
 	virtual void StateUpdate(float DeltaTime) PURE_VIRTUAL(UFQQuestStateBase::StateUpdate, );
 	virtual void StateExit() PURE_VIRTUAL(UFQQuestStateBase::StateExit, );
 
-	//FORCEINLINE void SetOwnerQuestObject(class AFQQuestBase* OwnerQuestObject) { mOwnerQuestObject = OwnerQuestObject; }
+	FORCEINLINE void SetOwnerQuestObject(class AFQQuestBase* OwnerQuestObject) { mOwnerQuestObject = OwnerQuestObject; }
 
 private:
-	//UPROPERTY()
-	//TObjectPtr<class AFQQuestBase> mOwnerQuestObject;
+	UPROPERTY()
+	TObjectPtr<class AFQQuestBase> mOwnerQuestObject;
 };
