@@ -16,19 +16,34 @@ void AFQQuestBase::BeginPlay()
 
 	mCurrentState = CreateDefaultSubobject<UFQQuestStartedState>(TEXT("StartedState"));
 	mCurrentState->SetOwnerQuestObject(this);
-	mCurrentState->StateEnter();
+	mCurrentState->EnterState();
 }
 
 
-void AFQQuestBase::Update(float DeltaTime)
+void AFQQuestBase::UpdateQuest(float DeltaTime)
 {
-	mCurrentState->StateUpdate(DeltaTime);
+	mCurrentState->UpdateState(DeltaTime);
 }
 
-void AFQQuestBase::SetNewState(UFQQuestStateBase* NewState)
+void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 {
-	mCurrentState->StateExit();
-	mCurrentState = NewState;
-	mCurrentState->SetOwnerQuestObject(this);
-	mCurrentState->StateEnter();
+	switch (NewState)
+	{
+	case EQuestStateType::InPrograss:
+	{
+		mCurrentState->ExitState();
+		mCurrentState = CreateDefaultSubobject<UFQQuestInProgressState>(TEXT("QuestInProgressState"));
+		mCurrentState->SetOwnerQuestObject(this);
+		mCurrentState->EnterState();
+	}
+	break;
+	case EQuestStateType::Exit:
+	{
+		mCurrentState->ExitState();
+		mCurrentState = CreateDefaultSubobject<UFQQuestCompletedState>(TEXT("QuestCompletedState"));
+		mCurrentState->SetOwnerQuestObject(this);
+		mCurrentState->EnterState();
+	}
+	break;
+	}
 }

@@ -3,6 +3,7 @@
 #include "Components/BoxComponent.h"
 
 #include "FQGameCore\Player\FQPlayerCharacterInterface.h"
+#include "FQGameCore\Quest\FQQuestSystem.h"
 
 AFQQuestTriggerVolume::AFQQuestTriggerVolume()
 {
@@ -28,9 +29,16 @@ void AFQQuestTriggerVolume::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 	IFQPlayerCharacterInterface* CollisionPlayer = Cast<IFQPlayerCharacterInterface>(OtherActor);
 	if (CollisionPlayer)
 	{
+		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+		if (!QuestSystem)
+		{
+			UE_LOG(LogTemp, Error, TEXT("[AFQQuestTriggerVolume %d] UFQQuestSystem가 유효하지 않습니다!!"), __LINE__);
+			return;
+		}
+
 		for (auto Quest : mQuestTriggerTypeList)
 		{
-			mQuestTriggerDelegate.ExecuteIfBound(Quest.Key, Quest.Value);
+			QuestSystem->mQuestTriggerDelegate.ExecuteIfBound(Quest.Key, Quest.Value);
 		}
 	}
 }

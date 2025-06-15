@@ -13,10 +13,6 @@ class FQQUEST_API AFQQuestTriggerVolume : public AActor
 public:	
 	AFQQuestTriggerVolume();
 
-public:
-	// 퀘스트 매니저 델리게이트
-	FQ_QuestDelegate::FQQuestTriggerDelegate mQuestTriggerDelegate;
-
 protected:
 	// 부모 가상 함수
 	virtual void BeginPlay() override;

@@ -5,14 +5,14 @@ UFQQuestCompletedState::UFQQuestCompletedState()
 {
 }
 
-void UFQQuestCompletedState::StateEnter()
+void UFQQuestCompletedState::EnterState()
 {
 }
 
-void UFQQuestCompletedState::StateUpdate(float DeltaTime)
+void UFQQuestCompletedState::UpdateState(float DeltaTime)
 {
 }
 
-void UFQQuestCompletedState::StateExit()
+void UFQQuestCompletedState::ExitState()
 {
 }

@@ -12,10 +12,13 @@ class FQQUEST_API UFQQuestStateBase : public UObject
 public:
 	UFQQuestStateBase();
 
-	virtual void StateEnter() PURE_VIRTUAL(UFQQuestStateBase::StateEnter, );
-	virtual void StateUpdate(float DeltaTime) PURE_VIRTUAL(UFQQuestStateBase::StateUpdate, );
-	virtual void StateExit() PURE_VIRTUAL(UFQQuestStateBase::StateExit, );
+	// 가상 함수
+	virtual void EnterState() PURE_VIRTUAL(UFQQuestStateBase::StateEnter, );
+	virtual void UpdateState(float DeltaTime) PURE_VIRTUAL(UFQQuestStateBase::StateUpdate, );
+	virtual void ExitState() PURE_VIRTUAL(UFQQuestStateBase::StateExit, );
 
+	// 겟셋 함수
+	FORCEINLINE const class AFQQuestBase* GetOwnerQuestObject() const { return mOwnerQuestObject; }
 	FORCEINLINE void SetOwnerQuestObject(class AFQQuestBase* OwnerQuestObject) { mOwnerQuestObject = OwnerQuestObject; }
 
 private:

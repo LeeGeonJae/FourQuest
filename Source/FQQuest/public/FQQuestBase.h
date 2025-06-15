@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "FQGameCore\Common.h"
 #include "FQQuestBase.generated.h"
 
 UCLASS()
@@ -14,26 +15,33 @@ class FQQUEST_API AFQQuestBase : public AActor
 public:	
 	AFQQuestBase();
 
+	// 가상 함수
 	virtual void Execute() PURE_VIRTUAL(AFQQuestBase::Execute, );
-	virtual void Update(float DeltaTime);
+	virtual void UpdateQuest(float DeltaTime);
 
-	void SetNewState(class UFQQuestStateBase* NewState);
-	class UFQQuestStateBase* GetCurrentState() const { return mCurrentState; }
+	// 일반 함수
+	void SetNewState(const EQuestStateType NewState);
+
+	// 겟셋 함수
+	FORCEINLINE EQuestStateType GetCurrentState() const { return mCurrentStateType; }
 	FORCEINLINE void SetQuestID(const int32 QuestID) { mQuestID = QuestID; }
 	FORCEINLINE int32 GetQuestID() const { return mQuestID; }
 	FORCEINLINE void SetQuestDescription(const FString Description) { mDescription = Description; }
 	FORCEINLINE FString GetQuestDescription() const { return mDescription; }
 
 protected:
+	// 부모 가상 함수
 	virtual void BeginPlay() override;
 
 private:
 	int32 mQuestID;
 	FString mDescription;
 
+	EQuestStateType mCurrentStateType;
+
 	UPROPERTY()
 	TObjectPtr<class UFQQuestStateBase> mCurrentState;
 
 	UPROPERTY()
-	TObjectPtr<class UFQUserWidget> mQuestWidget;
+	TObjectPtr<class UFQQuestWidget> mQuestWidget;
 };

@@ -1,9 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "FQInteractionQuest.h"
 
+#include "FQGameCore\Quest/FQQuestSystem.h"
+
 AFQInteractionQuest::AFQInteractionQuest()
+    : mInteractionType(EQuestInteractionType::None)
 {
 }
 
@@ -11,7 +11,18 @@ void AFQInteractionQuest::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+	if (QuestSystem)
+	{
+		QuestSystem->mInteractionDelegate.AddUObject(this, &AFQInteractionQuest::TryUpdateQuestState);
+	}
+}
 
+void AFQInteractionQuest::TryUpdateQuestState(EQuestInteractionType InteractionType)
+{
+    if (mInteractionType == InteractionType)
+    {
+    }
 }
 
 
@@ -21,9 +32,9 @@ void AFQInteractionQuest::Execute()
 
 }
 
-void AFQInteractionQuest::Update(float DeltaTime)
+void AFQInteractionQuest::UpdateQuest(float DeltaTime)
 {
-	Super::Update(DeltaTime);
+	Super::UpdateQuest(DeltaTime);
 
 
 }

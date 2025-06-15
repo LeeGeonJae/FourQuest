@@ -19,14 +19,18 @@ public:
 	AFQInteractionQuest();
 	
 	virtual void Execute() override;
-	virtual void Update(float DeltaTime) override;
+	virtual void UpdateQuest(float DeltaTime) override;
 
-	FORCEINLINE void SetInteractionType(const EQuestInteractionType InteractionType) { mInteractionType = InteractionType; }
-	FORCEINLINE EQuestInteractionType GetInteractionType() const { return mInteractionType; }
+	FORCEINLINE void SetQuestInteractionType(const EQuestInteractionType InteractionType) { mInteractionType = InteractionType; }
+	FORCEINLINE EQuestInteractionType GetQuestInteractionType() const { return mInteractionType; }
 
 protected:
 	virtual void BeginPlay() override;
-	
+
+private:
+	// 콜백 함수
+	void TryUpdateQuestState(EQuestInteractionType InteractionType);
+
 private:
 	EQuestInteractionType mInteractionType;
 };

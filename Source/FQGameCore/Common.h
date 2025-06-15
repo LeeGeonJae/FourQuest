@@ -106,6 +106,22 @@ namespace FQ_UIDelegate
 
 // 퀘스트
 UENUM()
+enum class EQuestStateType
+{
+	Started			UMETA(DisplayName = "Started"),
+	InPrograss		UMETA(DisplayName = "InPrograss"),
+	Exit			UMETA(DisplayName = "Exit"),
+};
+
+UENUM()
+enum class EQuestType : uint8
+{
+	None			UMETA(DisplayName = "None"),
+	Interaction		UMETA(DisplayName = "Interaction"),
+	MonsterKill		UMETA(DisplayName = "MonsterKill"),
+};
+
+UENUM()
 enum class EQuestTriggerType : uint8
 {
 	None		UMETA(DisplayName = "None"),
@@ -133,6 +149,6 @@ enum class EQuestInteractionType : uint8
 namespace FQ_QuestDelegate
 {
 	DECLARE_DELEGATE_TwoParams(FQQuestTriggerDelegate, int32 /*QuestID*/, EQuestTriggerType /*QuestTriggerType*/);
-	DECLARE_DELEGATE_OneParam(FQQuestMonsterDelegate, EQuestMonsterType /*QuestMonsterType*/);
-	DECLARE_DELEGATE_OneParam(FQQuestInteractionDelegate, EQuestInteractionType /*QuestInteractionType*/);
+	DECLARE_MULTICAST_DELEGATE_OneParam(FQQuestMonsterDelegate, EQuestMonsterType /*QuestMonsterType*/);
+	DECLARE_MULTICAST_DELEGATE_OneParam(FQQuestInteractionDelegate, EQuestInteractionType /*QuestInteractionType*/);
 }

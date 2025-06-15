@@ -23,12 +23,10 @@ private:
 	// 콜백 함수
 	void OnTriggerCallbackFunction(int32 QuestID, EQuestTriggerType QuestTrigeerType);
 
+	// 일반 함수
+	void CreateQuest(int32 QuestID);
+
 protected:
-	UPROPERTY(EditAnywhere, Category = FQQuestList)
-	TMap<int32, class UFQMonsterKillQuestDataAsset*> mMonsterKillQuestDataList;
-	UPROPERTY(EditAnywhere, Category = FQQuestList)
-	TMap<int32, class UFQInteractionQuestDataAsset*> mInteractionQuestDataList;
-	
 	UPROPERTY()
-	TArray<TObjectPtr<class AFQQuestBase>> mQuestList;
+	TMap<int32, TObjectPtr<class AFQQuestBase>> mQuestList;
 };

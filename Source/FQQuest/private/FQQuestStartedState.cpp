@@ -6,14 +6,14 @@ UFQQuestStartedState::UFQQuestStartedState()
 {
 }
 
-void UFQQuestStartedState::StateEnter()
+void UFQQuestStartedState::EnterState()
 {
 }
 
-void UFQQuestStartedState::StateUpdate(float DeltaTime)
+void UFQQuestStartedState::UpdateState(float DeltaTime)
 {
 }
 
-void UFQQuestStartedState::StateExit()
+void UFQQuestStartedState::ExitState()
 {
 }

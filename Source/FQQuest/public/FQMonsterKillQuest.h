@@ -18,19 +18,26 @@ class FQQUEST_API AFQMonsterKillQuest : public AFQQuestBase
 public:
 	AFQMonsterKillQuest();
 
+	// 부모 가상함수
 	virtual void Execute() override;
-	virtual void Update(float DeltaTime) override;
+	virtual void UpdateQuest(float DeltaTime) override;
 
-	FORCEINLINE void SetMonsterType(const EQuestMonsterType MonsterType) { mMonsterType = MonsterType; }
-	FORCEINLINE EQuestMonsterType GetMonsterType() const { return mMonsterType; }
-	FORCEINLINE void SetClearMonsterKillNumber(int32 ClearMonsterKillNumber) { mClearMonsterKillNumber = ClearMonsterKillNumber; }
-	FORCEINLINE int32 GetClearMonsterKillNumber() { return mClearMonsterKillNumber; }
-	FORCEINLINE void SetCurrentMonsterKillNumber(int32 CurrentMonsterKillNumber) { mCurrentMonsterKillNumber = CurrentMonsterKillNumber; }
-	FORCEINLINE int32 GetCurrentMonsterKillNumber() { return mCurrentMonsterKillNumber; }
-	FORCEINLINE void AddCurrentMonsterKillNumber(int32 AddMonsterKillNumber) { mCurrentMonsterKillNumber += AddMonsterKillNumber; }
+	// 겟셋 함수
+	FORCEINLINE void SetQuestMonsterType(const EQuestMonsterType MonsterType) { mMonsterType = MonsterType; }
+	FORCEINLINE EQuestMonsterType GetQuestMonsterType() const { return mMonsterType; }
+	FORCEINLINE void SetQuestClearMonsterKillNumber(int32 ClearMonsterKillNumber) { mClearMonsterKillNumber = ClearMonsterKillNumber; }
+	FORCEINLINE int32 GetQuestClearMonsterKillNumber() { return mClearMonsterKillNumber; }
+	FORCEINLINE void SetQuestCurrentMonsterKillNumber(int32 CurrentMonsterKillNumber) { mCurrentMonsterKillNumber = CurrentMonsterKillNumber; }
+	FORCEINLINE int32 GetQuestCurrentMonsterKillNumber() { return mCurrentMonsterKillNumber; }
+	FORCEINLINE void AddQuestCurrentMonsterKillNumber(int32 AddMonsterKillNumber) { mCurrentMonsterKillNumber += AddMonsterKillNumber; }
 
 protected:
+	// 부모 가상함수
 	virtual void BeginPlay() override;
+
+private:
+	// 콜백 함수
+	void TryUpdateQuestState(EQuestMonsterType MonsterType);
 
 private:
 	EQuestMonsterType mMonsterType;

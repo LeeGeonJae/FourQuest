@@ -17,9 +17,10 @@ class FQQUEST_API UFQQuestInProgressState : public UFQQuestStateBase
 public:
 	UFQQuestInProgressState();
 
-	virtual void StateEnter() override;
-	virtual void StateUpdate(float DeltaTime) override;
-	virtual void StateExit() override;
+	// 부모 가상 함수
+	virtual void EnterState() override;
+	virtual void UpdateState(float DeltaTime) override;
+	virtual void ExitState() override;
 
 private:
 
