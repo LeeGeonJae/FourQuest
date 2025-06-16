@@ -3,18 +3,28 @@
 #include "FQQuestStartedState.h"
 #include "FQQuestCompletedState.h"
 #include "FQQuestInProgressState.h"
+#include "FQUI\Quest\FQQuestWidget.h"
 
 AFQQuestBase::AFQQuestBase()
 	: mQuestID()
 	, mCurrentState()
 {
+	ConstructorHelpers::FClassFinder<UUserWidget> QuestWidgetRef(TEXT("/Game/Blueprints/Quest/WBP_QuestWidget.WBP_QuestWidget_C"));
+	if (QuestWidgetRef.Class)
+	{
+		mQuestWidget = CreateWidget<UFQQuestWidget>(GetWorld(), QuestWidgetRef.Class);
+	}
 }
 
 void AFQQuestBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	mCurrentState = CreateDefaultSubobject<UFQQuestStartedState>(TEXT("StartedState"));
+	// UI
+	mQuestWidget->SetQuestDescriptionText(mDescription);
+
+	// State
+	mCurrentState = NewObject<UFQQuestStartedState>(this);
 	mCurrentState->SetOwnerQuestObject(this);
 	mCurrentState->EnterState();
 }
@@ -32,7 +42,7 @@ void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 	case EQuestStateType::InPrograss:
 	{
 		mCurrentState->ExitState();
-		mCurrentState = CreateDefaultSubobject<UFQQuestInProgressState>(TEXT("QuestInProgressState"));
+		mCurrentState = NewObject<UFQQuestInProgressState>(this);
 		mCurrentState->SetOwnerQuestObject(this);
 		mCurrentState->EnterState();
 	}
@@ -40,7 +50,7 @@ void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 	case EQuestStateType::Exit:
 	{
 		mCurrentState->ExitState();
-		mCurrentState = CreateDefaultSubobject<UFQQuestCompletedState>(TEXT("QuestCompletedState"));
+		mCurrentState = NewObject<UFQQuestCompletedState>(this);
 		mCurrentState->SetOwnerQuestObject(this);
 		mCurrentState->EnterState();
 	}

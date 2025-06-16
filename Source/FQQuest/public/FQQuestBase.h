@@ -23,6 +23,7 @@ public:
 	void SetNewState(const EQuestStateType NewState);
 
 	// 겟셋 함수
+	FORCEINLINE class UFQQuestWidget* GetQuestWidget() const { return mQuestWidget; }
 	FORCEINLINE EQuestStateType GetCurrentState() const { return mCurrentStateType; }
 	FORCEINLINE void SetQuestID(const int32 QuestID) { mQuestID = QuestID; }
 	FORCEINLINE int32 GetQuestID() const { return mQuestID; }

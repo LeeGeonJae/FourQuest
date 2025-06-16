@@ -16,6 +16,11 @@ void UFQQuestWidget::UpdateQuestState(EQuestStateType QuestStateType)
 		UE_LOG(LogTemp, Error, TEXT("[UFQQuestWidget %d] QuestState Or QuestCheckBox가 유효하지 않습니다!!"), __LINE__);
 		return;
 	}
+	if (!mCurrentStateImage || !mCheckBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UFQQuestWidget %d] mCurrentStateImage Or mCheckBox가 유효하지 않습니다!!"), __LINE__);
+		return;
+	}
 
 	mCurrentStateImage->SetBrushFromTexture(QuestState);
 	mCheckBox->SetBrushFromTexture(QuestCheckBox);
@@ -23,10 +28,16 @@ void UFQQuestWidget::UpdateQuestState(EQuestStateType QuestStateType)
 
 void UFQQuestWidget::SetQuestDescriptionText(FString QuestDescriptionText)
 {
-	mQuestDescriptionText->SetText(FText::FromString(QuestDescriptionText));
+	if (mQuestDescriptionText)
+	{
+		mQuestDescriptionText->SetText(FText::FromString(QuestDescriptionText));
+	}
 }
 
 void UFQQuestWidget::SetQuestConditionText(FString QuestConditionText)
 {
-	mQuestConditionText->SetText(FText::FromString(QuestConditionText));
+	if (mQuestConditionText)
+	{
+		mQuestConditionText->SetText(FText::FromString(QuestConditionText));
+	}
 }

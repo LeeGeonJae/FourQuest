@@ -2,7 +2,6 @@
 
 UFQQuestSystem::UFQQuestSystem()
 {
-
 }
 
 void UFQQuestSystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -10,13 +9,13 @@ void UFQQuestSystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	// DataTable 경로 설정
-	const FString TablePath = TEXT("/Script/Engine.DataTable'/Game/Data/QuestTable.QuestTable'");
+	const FString TablePath = TEXT("/Game/Data/DT_QuestTable.DT_QuestTable");
 
 	// DataTable 로드
 	UDataTable* LoadedTable = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *TablePath));
 	if (!LoadedTable)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[UFQQuestSystem] Failed to load QuestTable from path: %s"), *TablePath);
+		UE_LOG(LogTemp, Error, TEXT("[UFQQuestSystem %d] Failed to load QuestTable from path: %s"), __LINE__, *TablePath);
 		return;
 	}
 

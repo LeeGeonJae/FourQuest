@@ -27,6 +27,12 @@ private:
 	void CreateQuest(int32 QuestID);
 
 protected:
+	// 퀘스트
 	UPROPERTY()
 	TMap<int32, TObjectPtr<class AFQQuestBase>> mQuestList;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQUI)
+	TSubclassOf<class UFQQuestListUI> mQuestListUIClass;
+	UPROPERTY()
+	TObjectPtr<class UFQQuestListUI> mQuestListUI;
 };

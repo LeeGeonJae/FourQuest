@@ -4,6 +4,8 @@
 #include "FQMonsterKillQuest.h"
 #include "FQInteractionQuest.h"
 #include "FQGameCore\Quest\FQQuestSystem.h"
+#include "FQUI/Quest/FQQuestListUI.h"
+#include "FQUI/Quest/FQQuestWidget.h"
 
 #include "EngineUtils.h"
 
@@ -15,6 +17,17 @@ AFQQuestManager::AFQQuestManager()
 void AFQQuestManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+    // UI 생성
+    if (mQuestListUIClass)
+    {
+        mQuestListUI = CreateWidget<UFQQuestListUI>(GetWorld(), mQuestListUIClass);
+        if (mQuestListUI)
+        {
+            mQuestListUI->AddToViewport(); // 화면에 위젯 추가
+            UE_LOG(LogTemp, Log, TEXT("[AFQQuestManager %d] Create HUD Widget And AddViewport"), __LINE__);
+        }
+    }
 	
     // 콜백 함수 등록
     UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
@@ -70,23 +83,41 @@ void AFQQuestManager::CreateQuest(int32 QuestID)
         {
         case EQuestType::MonsterKill:
         {
-            AFQMonsterKillQuest* MonsterKillQuest = CreateDefaultSubobject<AFQMonsterKillQuest>(TEXT("MonsterKillQuest"));
+            AFQMonsterKillQuest* MonsterKillQuest = GetWorld()->SpawnActorDeferred<AFQMonsterKillQuest>(AFQMonsterKillQuest::StaticClass(), FTransform());
             MonsterKillQuest->SetQuestID(QuestData.QuestNumber);
             MonsterKillQuest->SetQuestClearMonsterKillNumber(QuestData.QuestClearConditionsNumber);
             MonsterKillQuest->SetQuestDescription(QuestData.QuestDescription);
             MonsterKillQuest->SetQuestMonsterType(QuestData.QuestMonsterType);
+            MonsterKillQuest->FinishSpawning(FTransform());
             mQuestList.Emplace(QuestData.QuestNumber, *MonsterKillQuest);
+
+            UFQQuestWidget* MyQuestWidget = MonsterKillQuest->GetQuestWidget();
+            if (MyQuestWidget)
+            {
+                mQuestListUI->AddQuestListWidget(MyQuestWidget);
+            }
         }
         break;
         case EQuestType::Interaction:
         {
-            AFQInteractionQuest* InteractionQuest = CreateDefaultSubobject<AFQInteractionQuest>(TEXT("InteractionQuest"));
+            AFQInteractionQuest* InteractionQuest = GetWorld()->SpawnActorDeferred<AFQInteractionQuest>(AFQInteractionQuest::StaticClass(), FTransform());
             InteractionQuest->SetQuestID(QuestData.QuestNumber);
             InteractionQuest->SetQuestInteractionType(QuestData.QuestInteractionType);
             InteractionQuest->SetQuestDescription(QuestData.QuestDescription);
+            InteractionQuest->FinishSpawning(FTransform());
             mQuestList.Emplace(QuestData.QuestNumber, *InteractionQuest);
+
+            UFQQuestWidget* MyQuestWidget = InteractionQuest->GetQuestWidget();
+            if (MyQuestWidget)
+            {
+                mQuestListUI->AddQuestListWidget(MyQuestWidget);
+            }
         }
         break;
         }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("[AFQQuestManager %d] QuestSystem가 유효하지 않습니다!!"), __LINE__);
     }
 }
