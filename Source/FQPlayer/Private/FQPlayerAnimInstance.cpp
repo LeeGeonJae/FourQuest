@@ -50,7 +50,8 @@ void UFQPlayerAnimInstance::EndHit()
 		return;
 	}
 
-	mbHitReacting = false;
 	mOwner->EndHit();
+
+	UE_LOG(LogTemp, Log, TEXT("[Player] EndHit"));
 }
 
