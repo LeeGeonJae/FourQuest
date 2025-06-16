@@ -110,7 +110,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AFQMageCircle> mExplosionCircleClass;
 
-	// Laser
+	// Weapon
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AFQMageStaff> mStaffClass;
 
