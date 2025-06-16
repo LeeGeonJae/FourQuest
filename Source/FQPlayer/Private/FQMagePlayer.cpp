@@ -411,7 +411,7 @@ void AFQMagePlayer::OnMageAnimMontageEnded(UAnimMontage* Montage, bool bInterrup
 		}
 	}
 
-	if (Montage == mExplosionEndAnim && !bInterrupted)
+	if (Montage == mExplosionEndAnim)
 	{
 		// 쿨타임 설정
 		mExplosionState = EMageExplosionState::CoolDown;
@@ -438,7 +438,7 @@ void AFQMagePlayer::OnMageAnimMontageEnded(UAnimMontage* Montage, bool bInterrup
 		GetWorld()->GetTimerManager().SetTimer(mLaserDurationTimer, TimerDel, mMageDataAsset->mLaserMinDuration, false);
 	}
 
-	if (Montage == mLaserEndAnim && !bInterrupted)
+	if (Montage == mLaserEndAnim)
 	{
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		mStaff->DeactivateLaserEffect();
