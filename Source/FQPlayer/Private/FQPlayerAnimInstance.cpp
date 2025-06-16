@@ -43,15 +43,4 @@ void UFQPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	mbHitReacting = mOwner->IsHit();
 }
 
-void UFQPlayerAnimInstance::EndHit()
-{
-	if (!mOwner)
-	{
-		return;
-	}
-
-	mOwner->EndHit();
-
-	UE_LOG(LogTemp, Log, TEXT("[Player] EndHit"));
-}
 

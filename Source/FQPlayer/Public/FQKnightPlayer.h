@@ -112,6 +112,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[R] 충돌 콜리전"))
 	TObjectPtr<class UBoxComponent> mShieldVolume;
 
+	// Effect
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[A] 대쉬 이펙트"))
+	TObjectPtr<class UNiagaraComponent> mBashEffect;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[R] 방패 이펙트"))
+	TObjectPtr<class UNiagaraComponent> mShieldEffect;
+
 private:
 	void ApplyPush(class AActor* AttackableActor, float Strength);
 
@@ -159,7 +166,7 @@ private:
 	void CheckShiedVolume();
 
 	UFUNCTION()
-	void OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	void OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	UFUNCTION()
 	void OnShieldVolumeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

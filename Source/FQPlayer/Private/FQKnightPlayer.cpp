@@ -145,7 +145,7 @@ void AFQKnightPlayer::BeginPlay()
 	{
 		return;
 	}
-	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQKnightPlayer::OnAnimMontageEnded);
+	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQKnightPlayer::OnKnightAnimMontageEnded);
 
 	// PlayerState 최대 체력 설정
 	IFQPlayerStateInterface* PSInterface = Cast<IFQPlayerStateInterface>(GetPlayerState());
@@ -633,7 +633,7 @@ void AFQKnightPlayer::CheckShiedVolume()
 	}
 }
 
-void AFQKnightPlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void AFQKnightPlayer::OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage == mShieldUpAnim)
 	{

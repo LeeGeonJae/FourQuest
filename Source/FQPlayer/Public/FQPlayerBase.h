@@ -37,7 +37,6 @@ public:
 	virtual void ProcessHitInterrupt() PURE_VIRTUAL(AFQPlayerBase::ProcessHitInterrupt, );
 
 	bool IsHit();
-	void EndHit();
 
 protected:
 	virtual void BeginPlay() override;
@@ -58,6 +57,15 @@ protected:
 	float mDefaultSpeed;
 
 	void Move(const FInputActionValue& Value);
+
+	// Animation
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UAnimMontage> mHitAnim;
+
+	void Hit();
+
+	UFUNCTION()
+	void OnHitAnimEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	// Effect
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))

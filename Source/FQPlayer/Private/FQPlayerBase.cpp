@@ -75,7 +75,7 @@ float AFQPlayerBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		return 0.f;
 	}
 
-	mHitState = EHitState::HitReacting;
+	Hit();
 	ProcessHitInterrupt();
 
 	IFQPlayerStateInterface* PSInterface = Cast<IFQPlayerStateInterface>(GetPlayerState());
@@ -104,11 +104,6 @@ bool AFQPlayerBase::IsHit()
 	return false;
 }
 
-void AFQPlayerBase::EndHit()
-{
-	mHitState = EHitState::None;
-}
-
 void AFQPlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -118,6 +113,14 @@ void AFQPlayerBase::BeginPlay()
 
 	// Character Movement 기본 설정 적용
 	SetMovement();
+
+	// Animation MontageEnded 바인딩
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+	{
+		return;
+	}
+	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQPlayerBase::OnHitAnimEnded);
 }
 
 void AFQPlayerBase::Move(const FInputActionValue& Value)
@@ -162,4 +165,25 @@ void AFQPlayerBase::SetMovement()
 	GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
+}
+
+void AFQPlayerBase::Hit()
+{
+	mHitState = EHitState::HitReacting;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+	{
+		return;
+	}
+
+	AnimInstance->Montage_Play(mHitAnim);
+}
+
+void AFQPlayerBase::OnHitAnimEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage == mHitAnim)
+	{
+		mHitState = EHitState::None;
+	}
 }

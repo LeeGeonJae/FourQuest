@@ -123,7 +123,7 @@ private:
 
 	// Animation
 	UFUNCTION()
-	void OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	void OnMageAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	// Projectile Attack
 	FTimerHandle mProjectileAttackComboTimer;

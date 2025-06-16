@@ -183,7 +183,7 @@ void AFQMagePlayer::BeginPlay()
 	{
 		return;
 	}
-	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQMagePlayer::OnAnimMontageEnded);
+	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQMagePlayer::OnMageAnimMontageEnded);
 
 	// Staff Actor 
 	if (mStaffClass)
@@ -320,7 +320,7 @@ void AFQMagePlayer::ProcessInputMovement()
 	}
 }
 
-void AFQMagePlayer::OnAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void AFQMagePlayer::OnMageAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	// Projectile Attack
 	if (Montage == mProjectileAttackAnim1 && !bInterrupted)
@@ -834,7 +834,7 @@ void AFQMagePlayer::UpdateLaser()
 		TraceParams
 	);
 
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 3.0f);
+	//DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 3.0f);
 
 	if (bHit && HitResult.GetActor())
 	{
