@@ -90,15 +90,5 @@ protected:
 	AFQMonsterManager* Manager;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float mPushCoolTime;
-
 	virtual void TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength) override;
-
-private:
-	uint8 mbCanPush : 1;
-
-	FTimerHandle mPushCoolTimer;
-
-
 };

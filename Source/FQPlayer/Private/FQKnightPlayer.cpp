@@ -7,8 +7,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerState.h"
 
 #include "FQGameCore/Player/FQPlayerAttackableInterface.h"
+#include "FQGameCore/Player/FQPlayerStateInterface.h"
 #include "FQPlayer/Public/FQKnightDataAsset.h"
 
 AFQKnightPlayer::AFQKnightPlayer()
@@ -144,6 +146,13 @@ void AFQKnightPlayer::BeginPlay()
 		return;
 	}
 	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQKnightPlayer::OnAnimMontageEnded);
+
+	// PlayerState 최대 체력 설정
+	IFQPlayerStateInterface* PSInterface = Cast<IFQPlayerStateInterface>(GetPlayerState());
+	if (PSInterface)
+	{
+		PSInterface->SetMaxHp(mKnightDataAsset->mMaxHp);
+	}
 }
 
 void AFQKnightPlayer::SetInputMappingContext()
@@ -246,6 +255,19 @@ void AFQKnightPlayer::ProcessNextSection()
 
 void AFQKnightPlayer::ProcessHitInterrupt()
 {
+	if (mShieldState == EKnightShieldState::Shield)
+	{
+		mShieldState = EKnightShieldState::CoolDown;
+
+		DisableShieldVolume();
+
+		GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+
+		FTimerDelegate TimerDel;
+		TimerDel.BindLambda([this]() { mShieldState = EKnightShieldState::None; });
+		GetWorld()->GetTimerManager().SetTimer(mShieldCoolTimer, TimerDel, mKnightDataAsset->mShieldCoolTime, false);
+	}
 }
 
 void AFQKnightPlayer::EnableBashVolume()
@@ -596,6 +618,17 @@ void AFQKnightPlayer::CheckShiedVolume()
 			continue;
 		}
 
+		if (mKnightDataAsset->mShieldAttackableTypes.IsEmpty())
+		{
+			return;
+		}
+
+		if (!mKnightDataAsset->mShieldAttackableTypes.Contains(RootComp->GetCollisionObjectType()))
+		{
+			continue;
+		}
+
+		ApplyDamageToTarget(mKnightDataAsset->mShieldDamage, Actor);
 		ApplyPush(Actor, mKnightDataAsset->mShieldStrength);
 	}
 }
@@ -696,6 +729,17 @@ void AFQKnightPlayer::OnShieldVolumeBeginOverlap(UPrimitiveComponent* Overlapped
 		return;
 	}
 
+	if (mKnightDataAsset->mShieldAttackableTypes.IsEmpty())
+	{
+		return;
+	}
+
+	if (!mKnightDataAsset->mShieldAttackableTypes.Contains(RootComp->GetCollisionObjectType()))
+	{
+		return;
+	}
+
+	ApplyDamageToTarget(mKnightDataAsset->mShieldDamage, OtherActor);
 	ApplyPush(OtherActor, mKnightDataAsset->mShieldStrength);
 }
 
@@ -751,6 +795,17 @@ void AFQKnightPlayer::CheckBashVolume()
 			continue;
 		}
 
+		if (mKnightDataAsset->mBashAttackableTypes.IsEmpty())
+		{
+			return;
+		}
+
+		if (!mKnightDataAsset->mBashAttackableTypes.Contains(RootComp->GetCollisionObjectType()))
+		{
+			continue;
+		}
+
+		ApplyDamageToTarget(mKnightDataAsset->mBashDamage, Actor);
 		ApplyPush(Actor, mKnightDataAsset->mBashStrength);
 	}
 }
@@ -773,6 +828,17 @@ void AFQKnightPlayer::OnBashVolumeBeginOverlap(UPrimitiveComponent* OverlappedCo
 		return;
 	}
 
+	if (mKnightDataAsset->mBashAttackableTypes.IsEmpty())
+	{
+		return;
+	}
+
+	if (!mKnightDataAsset->mBashAttackableTypes.Contains(RootComp->GetCollisionObjectType()))
+	{
+		return;
+	}
+
+	ApplyDamageToTarget(mKnightDataAsset->mBashDamage, OtherActor);
 	ApplyPush(OtherActor, mKnightDataAsset->mBashStrength);
 }
 
@@ -832,11 +898,11 @@ void AFQKnightPlayer::CheckSwordAttackVolume()
 			continue;
 		}
 
-		ApplyDamage(Actor);
+		ApplySwordAttackDamage(Actor);
 	}
 }
 
-void AFQKnightPlayer::ApplyDamage(AActor* AttackableActor)
+void AFQKnightPlayer::ApplySwordAttackDamage(AActor* AttackableActor)
 {
 	UE_LOG(LogTemp, Log, TEXT("[ApplyDamage] Current Type : %s"), *UEnum::GetValueAsString(mSwordAttackState));
 
@@ -860,6 +926,7 @@ void AFQKnightPlayer::ApplyDamage(AActor* AttackableActor)
 	break;
 	case EKnightSwordAttackState::Attack3:
 	{
+		ApplyDamageToTarget(mKnightDataAsset->mSwordAttackDamage3, AttackableActor);
 		ApplyPush(AttackableActor, mKnightDataAsset->mSwordAttackStrength);
 	}
 	break;

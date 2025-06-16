@@ -6,13 +6,16 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerState.h"
 #include "Components/BoxComponent.h"
 #include "NiagaraComponent.h"
+
+#include "FQGameCore/Player/FQPlayerAttackableInterface.h"
+#include "FQGameCore/Player/FQPlayerStateInterface.h"
 
 #include "FQPlayer/Public/FQMageDataAsset.h" 
 #include "FQPlayer/Public/FQMageProjectile.h" 
 #include "FQPlayer/Public/FQMageCircle.h" 
-#include "FQGameCore/Player/FQPlayerAttackableInterface.h"
 #include "FQPlayer/Public/FQMageStaff.h"
 
 AFQMagePlayer::AFQMagePlayer()
@@ -190,6 +193,13 @@ void AFQMagePlayer::BeginPlay()
 		SpawnParams.Owner = this;
 		mStaff = GetWorld()->SpawnActor<AFQMageStaff>(mStaffClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 		mStaff->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("Mage_Staff")));
+	}
+
+	// PlayerState 최대 체력 설정
+	IFQPlayerStateInterface* PSInterface = Cast<IFQPlayerStateInterface>(GetPlayerState());
+	if (PSInterface)
+	{
+		PSInterface->SetMaxHp(mMageDataAsset->mMaxHp);
 	}
 }
 
@@ -769,6 +779,7 @@ void AFQMagePlayer::EndLaser()
 
 	GetWorld()->GetTimerManager().ClearTimer(mLaserDamageTimer);
 	GetWorld()->GetTimerManager().ClearTimer(mLaserDurationTimer);
+
 	if (mbLaserCoolDown)
 	{
 		mbLaserCoolDown = false;
@@ -803,11 +814,23 @@ void AFQMagePlayer::UpdateLaser()
 	FCollisionQueryParams TraceParams;
 	TraceParams.AddIgnoredActor(this);
 
-	bool bHit = GetWorld()->LineTraceSingleByChannel(
+	FCollisionObjectQueryParams ObjectQueryParams;
+
+	if (mMageDataAsset->mLaserAttackableTypes.IsEmpty())
+	{
+		return;
+	}
+
+	for (ECollisionChannel Channel : mMageDataAsset->mLaserAttackableTypes)
+	{
+		ObjectQueryParams.AddObjectTypesToQuery(Channel);
+	}
+
+	bool bHit = GetWorld()->LineTraceSingleByObjectType(
 		HitResult,
 		TraceStart,
 		TraceEnd,
-		ECC_GameTraceChannel3,
+		ObjectQueryParams,
 		TraceParams
 	);
 
@@ -853,9 +876,8 @@ bool AFQMagePlayer::ApplyPush(AActor* AttackableActor)
 	Forward.Z = 0.f;
 	Forward.Normalize();
 
-	PlayerAttackableInterface->TakePushByPlayer(AttackableActor, Forward, mMageDataAsset->mProjectileStrength);
-
 	ApplyDamageToTarget(mMageDataAsset->mProjectileDamageAmount, AttackableActor);
+	PlayerAttackableInterface->TakePushByPlayer(AttackableActor, Forward, mMageDataAsset->mProjectileStrength);
 
 	return true;
 }

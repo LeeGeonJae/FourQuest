@@ -5,11 +5,14 @@
 
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerState.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
+
+#include "FQGameCore/Player/FQPlayerStateInterface.h"
 
 // Sets default values
 AFQPlayerBase::AFQPlayerBase()
@@ -72,11 +75,20 @@ float AFQPlayerBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		return 0.f;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("[Player] TakeDamage"));
+	if (mHitState != EHitState::HitReacting)
+	{
+		mHitState = EHitState::HitReacting;
+		ProcessHitInterrupt();
 
-	mHitState = EHitState::HitReacting;
-	ProcessHitInterrupt();
-
+		IFQPlayerStateInterface* PSInterface = Cast<IFQPlayerStateInterface>(GetPlayerState());
+		if (PSInterface)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[AFQPlayerBase::TakeDamage] Current Hp : %d"), PSInterface->GetHp());
+			PSInterface->SetHp(PSInterface->GetHp() - ActualDamage);
+			UE_LOG(LogTemp, Warning, TEXT("[AFQPlayerBase::TakeDamage] Next Hp : %d"), PSInterface->GetHp());
+		}
+	}
+	
 	return ActualDamage;
 }
 

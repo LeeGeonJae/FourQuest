@@ -25,6 +25,9 @@ public:
 	float mMaxHp;
 
 	// Bash
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 데미지"))
+	float mBashDamage;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 속도"))
 	float mBashSpeed;
 
@@ -39,6 +42,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A,  meta = (ToolTip = "[A] 속도감 그래프"))
 	TObjectPtr<class UCurveFloat> mBashCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 피격 대상 타입"))
+	TArray<TEnumAsByte<ECollisionChannel>> mBashAttackableTypes;
 	
 	// Sword Attack
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X,  meta = (ToolTip = "[X] 쿨타임"))
@@ -56,6 +62,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X,  meta = (ToolTip = "[X] 2타 데미지"))
 	float mSwordAttackDamage2;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 3타 데미지"))
+	float mSwordAttackDamage3;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X,  meta = (ToolTip = "[X] 3타 밀어내는 힘"))
 	float mSwordAttackStrength;
 
@@ -63,6 +72,9 @@ public:
 	TArray<TEnumAsByte<ECollisionChannel>> mSwordAttackableTypes;
 
 	// Shield
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R, meta = (ToolTip = "[R] 데미지"))
+	float mShieldDamage;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R,  meta = (ToolTip = "[R] 이동 속도 감소량"))
 	float mShieldWalkRatio;
 
@@ -74,4 +86,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R,  meta = (ToolTip = "[R] 회전 속도"))
 	float mShieldRotationSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R, meta = (ToolTip = "[R] 피격 대상 타입"))
+	TArray<TEnumAsByte<ECollisionChannel>> mShieldAttackableTypes;
 };

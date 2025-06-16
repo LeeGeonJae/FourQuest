@@ -8,6 +8,7 @@ UFQKnightDataAsset::UFQKnightDataAsset()
 	mDefaultSpeed = 200.0f;
 	mMaxHp = 200.0f;
 
+	mBashDamage = 0.0f;
 	mBashSpeed = 500.0f;
 	mBashDuration = 0.5f;
 	mBashCoolTime = 1.0f;
@@ -18,8 +19,10 @@ UFQKnightDataAsset::UFQKnightDataAsset()
 	mSwordAttackWaitTime2 = 0.0f;
 	mSwordAttackDamage1 = 5.0f;
 	mSwordAttackDamage2 = 10.0f;
+	mSwordAttackDamage3 = 15.0f;
 	mSwordAttackStrength = 200.0f;
 
+	mShieldDamage = 0.0f;
 	mShieldWalkRatio = 50.0f;
 	mShieldStrength = 500.0f;
 	mShieldCoolTime = 0.0f;

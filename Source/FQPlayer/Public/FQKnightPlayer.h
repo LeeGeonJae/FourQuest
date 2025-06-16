@@ -113,7 +113,6 @@ protected:
 	TObjectPtr<class UBoxComponent> mShieldVolume;
 
 private:
-	void ApplyDamage(class AActor* AttackableActor);
 	void ApplyPush(class AActor* AttackableActor, float Strength);
 
 	// Bash
@@ -140,6 +139,7 @@ private:
 	FTimerHandle mSwordAttackComboTimer;
 	FTimerHandle mSwordAttackCoolTimer;
 
+	void ApplySwordAttackDamage(class AActor* AttackableActor);
 	void ResetSwordAttackCombo();
 	void ResetSwordAttackCoolDown();
 	void StartSwordAttack();

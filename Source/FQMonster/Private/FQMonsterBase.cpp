@@ -20,9 +20,6 @@ AFQMonsterBase::AFQMonsterBase()
 	mAttackMontage = nullptr;
 	mTargetActor = nullptr;
 
-	mbCanPush = true;
-	mPushCoolTime = 0.0f;
-
 	mAttackBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Attack Collider"));
 	mAttackBox->SetupAttachment(RootComponent);
 	mAttackBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -178,15 +175,16 @@ void AFQMonsterBase::TakePushByPlayer(AActor* Target, const FVector& Direction, 
 		return;
 	}
 
-	if (!mbCanPush)
+	if (mMonsterState != EMonsterState::Hit)
 	{
-		return;
+		if (AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(GetController()))
+		{
+			AIC->StopMovement();
+			AIC->ChangeState(EMonsterState::Hit);
+			Hit();
+		}
 	}
-
-	// 밀리는 힘이 중복으로 적용되지 않도록 쿨타임 설정
-	mbCanPush = false;
-	GetWorld()->GetTimerManager().SetTimer(mPushCoolTimer, [this]() { mbCanPush = true; }, mPushCoolTime, false);
-
+	
 	LaunchCharacter(Direction * Strength, true, true);
 }
 
