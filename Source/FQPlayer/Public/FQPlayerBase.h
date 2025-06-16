@@ -7,12 +7,13 @@
 #include "InputActionValue.h"
 
 #include "FQGameCore/Player/FQPlayerCharacterInterface.h"
+#include "FQGameCore/Player/FQPlayerAttackableInterface.h"
 #include "FQPlayer/Public/FQPlayerActionState.h"
 
 #include "FQPlayerBase.generated.h"
 
 UCLASS()
-class FQPLAYER_API AFQPlayerBase : public ACharacter, public IFQPlayerCharacterInterface
+class FQPLAYER_API AFQPlayerBase : public ACharacter, public IFQPlayerCharacterInterface, public IFQPlayerAttackableInterface
 {
 	GENERATED_BODY()
 
@@ -37,6 +38,8 @@ public:
 	virtual void ProcessHitInterrupt() PURE_VIRTUAL(AFQPlayerBase::ProcessHitInterrupt, );
 
 	bool IsHit();
+
+	virtual void TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength) override;
 
 protected:
 	virtual void BeginPlay() override;

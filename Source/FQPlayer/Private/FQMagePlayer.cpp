@@ -866,6 +866,16 @@ void AFQMagePlayer::UpdateLaser()
 
 bool AFQMagePlayer::ApplyPush(AActor* AttackableActor)
 {
+	if (mMageDataAsset->mProjectileAttackableTypes.IsEmpty())
+	{
+		return false;
+	}
+
+	if (!mMageDataAsset->mProjectileAttackableTypes.Contains(AttackableActor->GetRootComponent()->GetCollisionObjectType()))
+	{
+		return false;
+	}
+
 	IFQPlayerAttackableInterface* PlayerAttackableInterface = Cast<IFQPlayerAttackableInterface>(AttackableActor);
 	if (!PlayerAttackableInterface)
 	{

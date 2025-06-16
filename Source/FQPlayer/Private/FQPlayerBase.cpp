@@ -104,6 +104,21 @@ bool AFQPlayerBase::IsHit()
 	return false;
 }
 
+void AFQPlayerBase::TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength)
+{
+	if (!Target)
+	{
+		return;
+	}
+
+	if (Target != this)
+	{
+		return;
+	}
+
+	LaunchCharacter(Direction * Strength, true, true);
+}
+
 void AFQPlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
