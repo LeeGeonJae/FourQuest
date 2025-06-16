@@ -585,7 +585,7 @@ void AFQMagePlayer::StartExplosion()
 		return;
 	}
 
-	if (mExplosionState == EMageExplosionState::CoolDown)
+	if (mExplosionState != EMageExplosionState::None)
 	{
 		return;
 	}
