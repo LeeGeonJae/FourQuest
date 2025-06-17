@@ -20,19 +20,26 @@ public:
 
 	// 일반 함수
 	void UpdateQuestState(const EQuestStateType QuestStateType);
+	void UpdateQuestStateAnimation(float Value);
+	void UpdateQuestStateCheckBoxAnimation(float Value);
+	void UpdateQuestCondition(const int32 CurrentConditionNumber, const int32 ClearConditionNumber);
 	void SetQuestDescriptionText(FString QuestDescriptionText);
 	void SetQuestConditionText(FString QuestConditionText);
+
+protected:
+	// 부모 함수
+	virtual void NativeConstruct() override;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQAnimation, Meta = (AllowPrivateAccess = "true"))
 	TMap<EQuestStateType, TObjectPtr<UTexture2D>> mQuestStateTexture;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQAnimation, Meta = (AllowPrivateAccess = "true"))
-	TMap<EQuestStateType, TObjectPtr<UTexture2D>> mQuestStateCheckBoxTexture;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> mCurrentStateImage;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UImage> mCheckBox;
+	TObjectPtr<class UImage> mCheckLeft;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> mCheckRight;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UTextBlock> mQuestDescriptionText;
 	UPROPERTY(meta = (BindWidget))

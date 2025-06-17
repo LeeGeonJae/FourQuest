@@ -18,7 +18,7 @@ public:
 	virtual void ExitState() PURE_VIRTUAL(UFQQuestStateBase::StateExit, );
 
 	// 겟셋 함수
-	FORCEINLINE const class AFQQuestBase* GetOwnerQuestObject() const { return mOwnerQuestObject; }
+	FORCEINLINE class AFQQuestBase* GetOwnerQuestObject() const { return mOwnerQuestObject; }
 	FORCEINLINE void SetOwnerQuestObject(class AFQQuestBase* OwnerQuestObject) { mOwnerQuestObject = OwnerQuestObject; }
 
 private:

@@ -25,3 +25,11 @@ void UFQQuestListUI::AddQuestListWidget(UFQUserWidget* QuestWidget)
         NewSlot->SetVerticalAlignment(VAlign_Top);
     }
 }
+
+void UFQQuestListUI::RemoveQuestWidget(UFQUserWidget* QuestWidget)
+{
+    if (mQuestListBox && QuestWidget)
+    {
+        mQuestListBox->RemoveChild(QuestWidget);
+    }
+}

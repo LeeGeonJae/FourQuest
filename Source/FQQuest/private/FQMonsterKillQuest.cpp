@@ -4,8 +4,6 @@
 
 AFQMonsterKillQuest::AFQMonsterKillQuest()
     : mMonsterType(EQuestMonsterType::None)
-    , mCurrentMonsterKillNumber()
-    , mClearMonsterKillNumber()
 {
 }
 
@@ -24,7 +22,7 @@ void AFQMonsterKillQuest::TryUpdateQuestState(EQuestMonsterType MonsterType)
 {
     if (mMonsterType == MonsterType)
     {
-        mCurrentMonsterKillNumber++;
+		UpdateQuestCondition(1);
     }
 }
 

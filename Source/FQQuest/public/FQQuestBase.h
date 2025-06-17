@@ -21,12 +21,15 @@ public:
 
 	// 일반 함수
 	void SetNewState(const EQuestStateType NewState);
+	void UpdateQuestCondition(int32 AddConditionNumber);
 
 	// 겟셋 함수
 	FORCEINLINE class UFQQuestWidget* GetQuestWidget() const { return mQuestWidget; }
 	FORCEINLINE EQuestStateType GetCurrentState() const { return mCurrentStateType; }
 	FORCEINLINE void SetQuestID(const int32 QuestID) { mQuestID = QuestID; }
 	FORCEINLINE int32 GetQuestID() const { return mQuestID; }
+	FORCEINLINE void SetQuestClearConditionNumber(const int32 QuestClearConditionNumber) { mQuestClearConditionNumber = QuestClearConditionNumber; }
+	FORCEINLINE int32 GetQuestClearConditionNumber() const { return mQuestClearConditionNumber; }
 	FORCEINLINE void SetQuestDescription(const FString Description) { mDescription = Description; }
 	FORCEINLINE FString GetQuestDescription() const { return mDescription; }
 
@@ -37,7 +40,10 @@ protected:
 private:
 	int32 mQuestID;
 	FString mDescription;
+	int32 mQuestClearConditionNumber;
+	int32 mQuestCurrentConditionNumber;
 
+	// 현재 상태
 	EQuestStateType mCurrentStateType;
 
 	UPROPERTY()

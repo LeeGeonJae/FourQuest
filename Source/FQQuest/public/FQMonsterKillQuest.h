@@ -25,11 +25,6 @@ public:
 	// 겟셋 함수
 	FORCEINLINE void SetQuestMonsterType(const EQuestMonsterType MonsterType) { mMonsterType = MonsterType; }
 	FORCEINLINE EQuestMonsterType GetQuestMonsterType() const { return mMonsterType; }
-	FORCEINLINE void SetQuestClearMonsterKillNumber(int32 ClearMonsterKillNumber) { mClearMonsterKillNumber = ClearMonsterKillNumber; }
-	FORCEINLINE int32 GetQuestClearMonsterKillNumber() { return mClearMonsterKillNumber; }
-	FORCEINLINE void SetQuestCurrentMonsterKillNumber(int32 CurrentMonsterKillNumber) { mCurrentMonsterKillNumber = CurrentMonsterKillNumber; }
-	FORCEINLINE int32 GetQuestCurrentMonsterKillNumber() { return mCurrentMonsterKillNumber; }
-	FORCEINLINE void AddQuestCurrentMonsterKillNumber(int32 AddMonsterKillNumber) { mCurrentMonsterKillNumber += AddMonsterKillNumber; }
 
 protected:
 	// 부모 가상함수
@@ -41,7 +36,4 @@ private:
 
 private:
 	EQuestMonsterType mMonsterType;
-
-	int32 mClearMonsterKillNumber;
-	int32 mCurrentMonsterKillNumber;
 };

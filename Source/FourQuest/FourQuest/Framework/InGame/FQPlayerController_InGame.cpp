@@ -23,6 +23,7 @@
 #include "FQGameCore\Player\FQPlayerInputDataAsset.h"
 #include "FourQuest\FourQuest\Actor\FQPlayerUIActor.h"
 #include "FQGameCore\GameInstance\FQGameInstanceInterface.h"
+#include "FQGameCore/Quest/FQQuestSystem.h"
 
 AFQPlayerController_InGame::AFQPlayerController_InGame()
 {
@@ -362,6 +363,15 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 
 void AFQPlayerController_InGame::HandlePickButton()
 {
+	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+	if (QuestSystem)
+	{
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonMeleeMonster);
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonRangedMonster);
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonSpawnerMonster);
+		QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport);
+	}
+
 	// 입력 버튼
 	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)

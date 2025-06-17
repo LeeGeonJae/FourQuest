@@ -28,9 +28,13 @@ private:
 
 protected:
 	// 퀘스트
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQQuest)
+	int32 mQuestStartID;
+
 	UPROPERTY()
 	TMap<int32, TObjectPtr<class AFQQuestBase>> mQuestList;
 
+	// UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQUI)
 	TSubclassOf<class UFQQuestListUI> mQuestListUIClass;
 	UPROPERTY()

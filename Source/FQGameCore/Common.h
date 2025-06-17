@@ -111,6 +111,7 @@ enum class EQuestStateType
 	Started			UMETA(DisplayName = "Started"),
 	InPrograss		UMETA(DisplayName = "InPrograss"),
 	Exit			UMETA(DisplayName = "Exit"),
+	End				UMETA(DisplayName = "End"),
 };
 
 UENUM()

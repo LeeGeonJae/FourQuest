@@ -18,6 +18,7 @@ public:
 	UFQQuestListUI();
 
 	void AddQuestListWidget(UFQUserWidget* QuestWidget);
+	void RemoveQuestWidget(UFQUserWidget* QuestWidget);
 
 private:
 	UPROPERTY(meta = (BindWidget))

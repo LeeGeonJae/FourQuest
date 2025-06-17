@@ -21,8 +21,12 @@ public:
 	virtual void EnterState() override;
 	virtual void UpdateState(float DeltaTime) override;
 	virtual void ExitState() override;
+	
+	// 겟셋 함수
+	FORCEINLINE float GetDurationValue() const { return mValueCutLine > mDurationTime ? 0.f : (mDurationTime - mValueCutLine) / (mComplatedTime - mValueCutLine); }
 
 private:
+	float mValueCutLine;
 	float mComplatedTime;
 	float mDurationTime;
 };

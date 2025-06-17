@@ -44,10 +44,31 @@ void AFQQuestManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    TArray<int32> QuestsToRemove;
     for (auto& MyQuest : mQuestList)
     {
         // 퀘스트 업데이트
         MyQuest.Value->UpdateQuest(DeltaTime);
+
+        // 퀘스트 삭제
+        if (MyQuest.Value->GetCurrentState() == EQuestStateType::End)
+        {
+            QuestsToRemove.Add(MyQuest.Key);
+        }
+    }
+
+    // 퀘스트 삭제
+    for (int32 Key : QuestsToRemove)
+    {
+        // UI 삭제
+        UFQQuestWidget* MyQuestWidget = mQuestList[Key]->GetQuestWidget();
+        if (MyQuestWidget)
+        {
+            mQuestListUI->RemoveQuestWidget(MyQuestWidget);
+        }
+
+        mQuestList[Key]->Destroy();
+        mQuestList.Remove(Key);
     }
 }
 
@@ -75,17 +96,20 @@ void AFQQuestManager::OnTriggerCallbackFunction(int32 QuestID, EQuestTriggerType
 
 void AFQQuestManager::CreateQuest(int32 QuestID)
 {
+    // 퀘스트 시스템 탐색
     UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
     if (QuestSystem)
     {
         FFQQuestTable QuestData = QuestSystem->GetQuestData(QuestID);
+
+        // 퀘스트 생성
         switch (QuestData.QuestType)
         {
         case EQuestType::MonsterKill:
         {
             AFQMonsterKillQuest* MonsterKillQuest = GetWorld()->SpawnActorDeferred<AFQMonsterKillQuest>(AFQMonsterKillQuest::StaticClass(), FTransform());
             MonsterKillQuest->SetQuestID(QuestData.QuestNumber);
-            MonsterKillQuest->SetQuestClearMonsterKillNumber(QuestData.QuestClearConditionsNumber);
+            MonsterKillQuest->SetQuestClearConditionNumber(QuestData.QuestClearConditionsNumber);
             MonsterKillQuest->SetQuestDescription(QuestData.QuestDescription);
             MonsterKillQuest->SetQuestMonsterType(QuestData.QuestMonsterType);
             MonsterKillQuest->FinishSpawning(FTransform());
@@ -102,6 +126,7 @@ void AFQQuestManager::CreateQuest(int32 QuestID)
         {
             AFQInteractionQuest* InteractionQuest = GetWorld()->SpawnActorDeferred<AFQInteractionQuest>(AFQInteractionQuest::StaticClass(), FTransform());
             InteractionQuest->SetQuestID(QuestData.QuestNumber);
+            InteractionQuest->SetQuestClearConditionNumber(QuestData.QuestClearConditionsNumber);
             InteractionQuest->SetQuestInteractionType(QuestData.QuestInteractionType);
             InteractionQuest->SetQuestDescription(QuestData.QuestDescription);
             InteractionQuest->FinishSpawning(FTransform());

@@ -22,6 +22,7 @@ void AFQInteractionQuest::TryUpdateQuestState(EQuestInteractionType InteractionT
 {
     if (mInteractionType == InteractionType)
     {
+		UpdateQuestCondition(1);
     }
 }
 
