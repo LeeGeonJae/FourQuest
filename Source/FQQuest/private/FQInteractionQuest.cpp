@@ -20,6 +20,23 @@ void AFQInteractionQuest::BeginPlay()
 
 void AFQInteractionQuest::TryUpdateQuestState(EQuestInteractionType InteractionType)
 {
+	// 퀘스트 시스템
+	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+	if (QuestSystem)
+	{
+		FFQQuestTable* MyQuestData = QuestSystem->GetQuestData(GetQuestID());
+
+		// 서브 퀘스트 클리어 여부 확인
+		TArray<int32> SubQuestIDData = MyQuestData->SubQuestList;
+		for (auto SubQuestID : SubQuestIDData)
+		{
+			if (!QuestSystem->GetQuestData(SubQuestID)->mbIsQuestClear)
+			{
+				return;
+			}
+		}
+	}
+
     if (mInteractionType == InteractionType)
     {
 		UpdateQuestCondition(1);

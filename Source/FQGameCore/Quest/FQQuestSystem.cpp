@@ -31,12 +31,12 @@ void UFQQuestSystem::Initialize(FSubsystemCollectionBase& Collection)
 	}
 }
 
-FFQQuestTable UFQQuestSystem::GetQuestData(int32 QuestNumber) const
+FFQQuestTable* UFQQuestSystem::GetQuestData(int32 QuestNumber)
 {
 	auto MyQuestData = mQuestTableData.Find(QuestNumber);
 	if (MyQuestData)
 	{
-		return *MyQuestData;
+		return MyQuestData;
 	}
-	return FFQQuestTable();
+	return nullptr;
 }

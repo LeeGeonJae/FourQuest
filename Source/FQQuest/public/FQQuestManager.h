@@ -25,6 +25,7 @@ private:
 
 	// 일반 함수
 	void CreateQuest(int32 QuestID);
+	void ClearQuest(int32 QuestID);
 
 protected:
 	// 퀘스트

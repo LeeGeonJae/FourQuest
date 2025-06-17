@@ -32,23 +32,41 @@ public:
 	FORCEINLINE int32 GetQuestClearConditionNumber() const { return mQuestClearConditionNumber; }
 	FORCEINLINE void SetQuestDescription(const FString Description) { mDescription = Description; }
 	FORCEINLINE FString GetQuestDescription() const { return mDescription; }
+	FORCEINLINE void AddConditionQuestNumber(const int32 ConditionQuest) { mConditionQuests.Emplace(ConditionQuest); }
+	FORCEINLINE const TArray<int32>& GetConditionQuest() { return mConditionQuests; }
 
 protected:
 	// 부모 가상 함수
 	virtual void BeginPlay() override;
 
 private:
+	// 일반 함수
+	void CreateSubQuest(int32 QuestID);
+
+private:
+	// 퀘스트 내용
 	int32 mQuestID;
 	FString mDescription;
+
+	// 퀘스트 클리어 조건
 	int32 mQuestClearConditionNumber;
 	int32 mQuestCurrentConditionNumber;
+
+	// 다음 퀘스트 목록
+	TArray<int32> mConditionQuests;
 
 	// 현재 상태
 	EQuestStateType mCurrentStateType;
 
+	// 현재 퀘스트 상태
 	UPROPERTY()
 	TObjectPtr<class UFQQuestStateBase> mCurrentState;
 
+	// 서브 퀘스트 목록
+	UPROPERTY()
+	TMap<int32, TObjectPtr<class AFQQuestBase>> mSubQuestList;
+
+	// UI
 	UPROPERTY()
 	TObjectPtr<class UFQQuestWidget> mQuestWidget;
 };

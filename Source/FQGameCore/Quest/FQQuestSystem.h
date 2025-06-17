@@ -19,7 +19,7 @@ public:
 	FQ_QuestDelegate::FQQuestMonsterDelegate mMonsterQuestDelegate;
 	FQ_QuestDelegate::FQQuestInteractionDelegate mInteractionDelegate;
 
-	FFQQuestTable GetQuestData(int32 QuestNumber) const;
+	FFQQuestTable* GetQuestData(int32 QuestNumber);
 
 private:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

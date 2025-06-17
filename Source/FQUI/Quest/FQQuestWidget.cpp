@@ -2,6 +2,8 @@
 
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
+#include "Components/VerticalBox.h"
+#include "Components/VerticalBoxSlot.h"
 
 UFQQuestWidget::UFQQuestWidget()
 {
@@ -93,5 +95,32 @@ void UFQQuestWidget::SetQuestConditionText(FString QuestConditionText)
 	if (mQuestConditionText)
 	{
 		mQuestConditionText->SetText(FText::FromString(QuestConditionText));
+	}
+}
+
+void UFQQuestWidget::AddSubQuestListWidget(UFQUserWidget* QuestWidget)
+{
+	if (!QuestWidget || !mSubQuestListBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UFQQuestListUI %d] QuestWidget Or mQuestListBox가 유효하지 않습니다!!"), __LINE__);
+		return;
+	}
+
+	// VerticalBox에 위젯 추가
+	UVerticalBoxSlot* NewSlot = mSubQuestListBox->AddChildToVerticalBox(QuestWidget);
+	if (NewSlot)
+	{
+		// 슬롯 속성 설정
+		NewSlot->SetPadding(FMargin(0.f, 10.f, 0.f, 10.f));
+		NewSlot->SetHorizontalAlignment(HAlign_Left);
+		NewSlot->SetVerticalAlignment(VAlign_Top);
+	}
+}
+
+void UFQQuestWidget::RemoveSubQuestWidget(UFQUserWidget* QuestWidget)
+{
+	if (mSubQuestListBox && QuestWidget)
+	{
+		mSubQuestListBox->RemoveChild(QuestWidget);
 	}
 }

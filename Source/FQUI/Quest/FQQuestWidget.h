@@ -26,6 +26,10 @@ public:
 	void SetQuestDescriptionText(FString QuestDescriptionText);
 	void SetQuestConditionText(FString QuestConditionText);
 
+	// 서브 퀘스트 UI
+	void AddSubQuestListWidget(UFQUserWidget* QuestWidget);
+	void RemoveSubQuestWidget(UFQUserWidget* QuestWidget);
+
 protected:
 	// 부모 함수
 	virtual void NativeConstruct() override;
@@ -44,4 +48,6 @@ private:
 	TObjectPtr<class UTextBlock> mQuestDescriptionText;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UTextBlock> mQuestConditionText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UVerticalBox> mSubQuestListBox;
 };

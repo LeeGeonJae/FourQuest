@@ -47,28 +47,45 @@ void AFQQuestManager::Tick(float DeltaTime)
     TArray<int32> QuestsToRemove;
     for (auto& MyQuest : mQuestList)
     {
+        if (!MyQuest.Value)
+        {
+            QuestsToRemove.Add(MyQuest.Key);
+            return;
+        }
+
         // 퀘스트 업데이트
         MyQuest.Value->UpdateQuest(DeltaTime);
 
         // 퀘스트 삭제
-        if (MyQuest.Value->GetCurrentState() == EQuestStateType::End)
+        EQuestStateType MyStateType = MyQuest.Value->GetCurrentState();
+        if (MyStateType == EQuestStateType::End)
         {
             QuestsToRemove.Add(MyQuest.Key);
+        }
+        else if (MyStateType == EQuestStateType::Exit)
+        {
+            // 퀘스트 시스템
+            UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+            if (QuestSystem)
+            {
+                if (QuestSystem->GetQuestData(MyQuest.Key)->mbIsQuestClear)
+                {
+                    continue;
+                }
+
+                // 다음 퀘스트 생성
+                for (const int32& NextQuestID : QuestSystem->GetQuestData(MyQuest.Key)->NextQuestList)
+                {
+                    CreateQuest(NextQuestID);
+                }
+            }
         }
     }
 
     // 퀘스트 삭제
     for (int32 Key : QuestsToRemove)
     {
-        // UI 삭제
-        UFQQuestWidget* MyQuestWidget = mQuestList[Key]->GetQuestWidget();
-        if (MyQuestWidget)
-        {
-            mQuestListUI->RemoveQuestWidget(MyQuestWidget);
-        }
-
-        mQuestList[Key]->Destroy();
-        mQuestList.Remove(Key);
+        ClearQuest(Key);
     }
 }
 
@@ -100,20 +117,20 @@ void AFQQuestManager::CreateQuest(int32 QuestID)
     UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
     if (QuestSystem)
     {
-        FFQQuestTable QuestData = QuestSystem->GetQuestData(QuestID);
+        FFQQuestTable* QuestData = QuestSystem->GetQuestData(QuestID);
 
         // 퀘스트 생성
-        switch (QuestData.QuestType)
+        switch (QuestData->QuestType)
         {
         case EQuestType::MonsterKill:
         {
             AFQMonsterKillQuest* MonsterKillQuest = GetWorld()->SpawnActorDeferred<AFQMonsterKillQuest>(AFQMonsterKillQuest::StaticClass(), FTransform());
-            MonsterKillQuest->SetQuestID(QuestData.QuestNumber);
-            MonsterKillQuest->SetQuestClearConditionNumber(QuestData.QuestClearConditionsNumber);
-            MonsterKillQuest->SetQuestDescription(QuestData.QuestDescription);
-            MonsterKillQuest->SetQuestMonsterType(QuestData.QuestMonsterType);
+            MonsterKillQuest->SetQuestID(QuestData->QuestNumber);
+            MonsterKillQuest->SetQuestClearConditionNumber(QuestData->QuestClearConditionsNumber);
+            MonsterKillQuest->SetQuestDescription(QuestData->QuestDescription);
+            MonsterKillQuest->SetQuestMonsterType(QuestData->QuestMonsterType);
             MonsterKillQuest->FinishSpawning(FTransform());
-            mQuestList.Emplace(QuestData.QuestNumber, *MonsterKillQuest);
+            mQuestList.Emplace(QuestData->QuestNumber, *MonsterKillQuest);
 
             UFQQuestWidget* MyQuestWidget = MonsterKillQuest->GetQuestWidget();
             if (MyQuestWidget)
@@ -125,12 +142,12 @@ void AFQQuestManager::CreateQuest(int32 QuestID)
         case EQuestType::Interaction:
         {
             AFQInteractionQuest* InteractionQuest = GetWorld()->SpawnActorDeferred<AFQInteractionQuest>(AFQInteractionQuest::StaticClass(), FTransform());
-            InteractionQuest->SetQuestID(QuestData.QuestNumber);
-            InteractionQuest->SetQuestClearConditionNumber(QuestData.QuestClearConditionsNumber);
-            InteractionQuest->SetQuestInteractionType(QuestData.QuestInteractionType);
-            InteractionQuest->SetQuestDescription(QuestData.QuestDescription);
+            InteractionQuest->SetQuestID(QuestData->QuestNumber);
+            InteractionQuest->SetQuestClearConditionNumber(QuestData->QuestClearConditionsNumber);
+            InteractionQuest->SetQuestInteractionType(QuestData->QuestInteractionType);
+            InteractionQuest->SetQuestDescription(QuestData->QuestDescription);
             InteractionQuest->FinishSpawning(FTransform());
-            mQuestList.Emplace(QuestData.QuestNumber, *InteractionQuest);
+            mQuestList.Emplace(QuestData->QuestNumber, *InteractionQuest);
 
             UFQQuestWidget* MyQuestWidget = InteractionQuest->GetQuestWidget();
             if (MyQuestWidget)
@@ -145,4 +162,18 @@ void AFQQuestManager::CreateQuest(int32 QuestID)
     {
         UE_LOG(LogTemp, Error, TEXT("[AFQQuestManager %d] QuestSystem가 유효하지 않습니다!!"), __LINE__);
     }
+}
+
+void AFQQuestManager::ClearQuest(int32 QuestID)
+{
+    // UI 삭제
+    UFQQuestWidget* MyQuestWidget = mQuestList[QuestID]->GetQuestWidget();
+    if (MyQuestWidget)
+    {
+        mQuestListUI->RemoveQuestWidget(MyQuestWidget);
+    }
+
+    // 퀘스트 삭제
+    mQuestList[QuestID]->Destroy();
+    mQuestList.Remove(QuestID);
 }

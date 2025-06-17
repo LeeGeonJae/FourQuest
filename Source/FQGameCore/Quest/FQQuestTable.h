@@ -10,7 +10,7 @@ struct FQGAMECORE_API FFQQuestTable : public FTableRowBase
 {
 	GENERATED_BODY()
 	
-	FFQQuestTable() : QuestNumber(), QuestType(EQuestType::None), QuestDescription(), QuestMonsterType(EQuestMonsterType::None), QuestInteractionType(EQuestInteractionType::None), QuestClearConditionsNumber() {}
+	FFQQuestTable() : QuestNumber(), QuestType(EQuestType::None), QuestDescription(), QuestMonsterType(EQuestMonsterType::None), QuestInteractionType(EQuestInteractionType::None), QuestClearConditionsNumber(), mbIsQuestClear(false) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 QuestNumber;
@@ -33,4 +33,7 @@ struct FQGAMECORE_API FFQQuestTable : public FTableRowBase
 	TArray<int32> SubQuestList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<int32> NextQuestList; 
+
+	// 퀘스트 클리어 여부
+	uint8 mbIsQuestClear : 1;
 };
