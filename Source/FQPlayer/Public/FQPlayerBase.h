@@ -26,8 +26,6 @@ public:
 	// Input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void SetAnimInstance() PURE_VIRTUAL(AFQPlayerBase::SetAnimInstance, );
-
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
 
 	void ApplyDamageToTarget(float DamageAmount, AActor* Target);
@@ -73,6 +71,18 @@ protected:
 	// Effect
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UNiagaraComponent> mSoulEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UNiagaraSystem> mKnightEffectSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UNiagaraSystem> mMageEffectSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UNiagaraSystem> mWarriorEffectSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UNiagaraSystem> mArcherEffectSystem;
 
 	// State 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))

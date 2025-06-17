@@ -13,6 +13,7 @@ UFQKnightDataAsset::UFQKnightDataAsset()
 	mBashDuration = 0.5f;
 	mBashCoolTime = 1.0f;
 	mBashStrength = 500.0f;
+	mBashEffectScaleFactor = 0.5f;
 
 	mSwordAttackCoolTime = 0.0f;
 	mSwordAttackWaitTime1 = 0.0f;
@@ -21,6 +22,9 @@ UFQKnightDataAsset::UFQKnightDataAsset()
 	mSwordAttackDamage2 = 10.0f;
 	mSwordAttackDamage3 = 15.0f;
 	mSwordAttackStrength = 200.0f;
+	mSwordEffectScaleFactor1 = 0.3f;
+	mSwordEffectScaleFactor2 = 0.3f;
+	mSwordEffectScaleFactor3 = 0.3f;
 
 	mShieldDamage = 0.0f;
 	mShieldWalkRatio = 50.0f;

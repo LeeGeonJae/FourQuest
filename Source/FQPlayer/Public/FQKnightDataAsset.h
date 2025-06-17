@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A,  meta = (ToolTip = "[A] 밀어내는 힘"))
 	float mBashStrength;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 이펙트 크기"))
+	float mBashEffectScaleFactor;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A,  meta = (ToolTip = "[A] 속도감 그래프"))
 	TObjectPtr<class UCurveFloat> mBashCurve;
 
@@ -71,6 +74,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X,  meta = (ToolTip = "[X] 피격 대상 타입"))
 	TArray<TEnumAsByte<ECollisionChannel>> mSwordAttackableTypes;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 1타 이펙트 크기"))
+	float mSwordEffectScaleFactor1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 2타 이펙트 크기"))
+	float mSwordEffectScaleFactor2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 3타 이펙트 크기"))
+	float mSwordEffectScaleFactor3;
+
 	// Shield
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R, meta = (ToolTip = "[R] 데미지"))
 	float mShieldDamage;
@@ -89,4 +101,5 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_R, meta = (ToolTip = "[R] 피격 대상 타입"))
 	TArray<TEnumAsByte<ECollisionChannel>> mShieldAttackableTypes;
+	
 };

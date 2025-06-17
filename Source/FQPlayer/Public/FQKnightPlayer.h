@@ -37,7 +37,6 @@ public:
 	bool IsHoldShield();
 
 	// Animation
-	virtual void SetAnimInstance() override;
 	virtual void ProcessNextSection() override;
 
 	virtual void ProcessHitInterrupt() override;
@@ -69,9 +68,6 @@ protected:
 	TObjectPtr<class UInputAction> mShieldAction;
 
 	// Animation
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UAnimInstance> mKnightAnimInstanceClass;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> mSwordAttackAnim1;
 
@@ -113,11 +109,27 @@ protected:
 	TObjectPtr<class UBoxComponent> mShieldVolume;
 
 	// Effect
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[A] 대쉬 이펙트"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[A] 대쉬 이펙트"))
 	TObjectPtr<class UNiagaraComponent> mBashEffect;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[R] 방패 이펙트"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[X] 공격 이펙트 1"))
+	TObjectPtr<class UNiagaraComponent> mSwordEffect1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[X] 공격 이펙트 2"))
+	TObjectPtr<class UNiagaraComponent> mSwordEffect2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[X] 공격 이펙트 3"))
+	TObjectPtr<class UNiagaraComponent> mSwordEffect3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[R] 방패 이펙트"))
 	TObjectPtr<class UNiagaraComponent> mShieldEffect;
+
+	// Weapon Mesh
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> mSwordMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> mShieldMesh;
 
 private:
 	void ApplyPush(class AActor* AttackableActor, float Strength);

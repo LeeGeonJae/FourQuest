@@ -4,7 +4,6 @@
 #include "FQPlayer/Public/FQMageStaff.h"
 #include "Components/StaticMeshComponent.h"
 #include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 AFQMageStaff::AFQMageStaff()

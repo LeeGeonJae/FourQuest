@@ -4,6 +4,8 @@
 #include "FQKnightPlayer.h"
 
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "NiagaraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -34,6 +36,34 @@ AFQKnightPlayer::AFQKnightPlayer()
 	mShieldRotation = FRotator::ZeroRotator;
 	mShieldVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("ShieldVolume"));
 	mShieldVolume->SetupAttachment(RootComponent);
+
+	// Effect
+	mBashEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("BashEffect"));
+	mBashEffect->SetAutoActivate(false);
+	mBashEffect->SetupAttachment(RootComponent);
+
+	mSwordEffect1 = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SwordEffect1"));
+	mSwordEffect1->SetAutoActivate(false);
+	mSwordEffect1->SetupAttachment(RootComponent);
+	
+	mSwordEffect2 = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SwordEffect2"));
+	mSwordEffect2->SetAutoActivate(false);
+	mSwordEffect2->SetupAttachment(RootComponent);
+	
+	mSwordEffect3 = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SwordEffect3"));
+	mSwordEffect3->SetAutoActivate(false);
+	mSwordEffect3->SetupAttachment(RootComponent);
+	
+	mShieldEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ShieldEffect"));
+	mShieldEffect->SetAutoActivate(false);
+	mShieldEffect->SetupAttachment(RootComponent);
+
+	// Weapon Mesh
+	mSwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
+	mSwordMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("Knight_Sword")));
+
+	mShieldMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShieldMesh"));
+	mShieldMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("Knight_Shield")));
 }
 
 void AFQKnightPlayer::Tick(float DeltaSeconds)
@@ -153,6 +183,18 @@ void AFQKnightPlayer::BeginPlay()
 	{
 		PSInterface->SetMaxHp(mKnightDataAsset->mMaxHp);
 	}
+
+	// Effect 설정
+	mBashEffect->SetFloatParameter(FName(TEXT("ScaleFactor")), mKnightDataAsset->mBashEffectScaleFactor);
+
+	mSwordEffect1->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim1->GetPlayLength() * mSwordAttackAnim1->RateScale);
+	mSwordEffect1->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor1);
+
+	mSwordEffect2->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim2->GetPlayLength() * mSwordAttackAnim2->RateScale);
+	mSwordEffect2->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor2);
+
+	mSwordEffect3->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim3->GetPlayLength() * mSwordAttackAnim3->RateScale);
+	mSwordEffect3->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor3);
 }
 
 void AFQKnightPlayer::SetInputMappingContext()
@@ -311,6 +353,8 @@ void AFQKnightPlayer::EnableShieldVolume()
 
 	mShieldVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
+	mShieldEffect->Activate();
+
 	// 이미 Shield Volume에 오버랩된 액터 밀어내기
 	CheckShiedVolume();
 }
@@ -326,6 +370,9 @@ void AFQKnightPlayer::DisableShieldVolume()
 	UE_LOG(LogTemp, Log, TEXT("[DisableShieldVolume]"));
 
 	mShieldVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	mShieldEffect->ResetSystem();
+	mShieldEffect->Deactivate();
 }
 
 float AFQKnightPlayer::GetShieldMoveAngle()
@@ -340,16 +387,6 @@ bool AFQKnightPlayer::IsHoldShield()
 		return true;
 	}
 	return false;
-}
-
-void AFQKnightPlayer::SetAnimInstance()
-{
-	if (!mKnightAnimInstanceClass)
-	{
-		return;
-	}
-
-	GetMesh()->SetAnimInstanceClass(mKnightAnimInstanceClass);
 }
 
 void AFQKnightPlayer::Bash()
@@ -410,6 +447,8 @@ void AFQKnightPlayer::StartSwordAttack()
 		// 공격 상태 설정
 		mSwordAttackState = EKnightSwordAttackState::Attack1;
 
+		mSwordEffect1->Activate();
+
 		// 애니메이션 재생
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (!AnimInstance)
@@ -449,6 +488,8 @@ void AFQKnightPlayer::StartSwordAttack()
 
 			mSwordAttackState = EKnightSwordAttackState::Attack2;
 
+			mSwordEffect2->Activate();
+
 			AnimInstance->Montage_Play(mSwordAttackAnim2);
 
 			GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
@@ -472,6 +513,8 @@ void AFQKnightPlayer::StartSwordAttack()
 			}
 
 			mSwordAttackState = EKnightSwordAttackState::Attack3;
+
+			mSwordEffect3->Activate();
 
 			AnimInstance->Montage_Play(mSwordAttackAnim3);
 
@@ -652,6 +695,9 @@ void AFQKnightPlayer::OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInte
 		if (mSwordAttackComboState == EComboState::Combo)
 		{
 			mSwordAttackState = EKnightSwordAttackState::Attack2;
+
+			mSwordEffect2->Activate();
+
 			mSwordAttackComboState = EComboState::CanBeCombo;
 
 			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -684,6 +730,8 @@ void AFQKnightPlayer::OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInte
 		if (mSwordAttackComboState == EComboState::Combo)
 		{
 			mSwordAttackState = EKnightSwordAttackState::Attack3;
+
+			mSwordEffect3->Activate();
 
 			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 			if (!AnimInstance)
@@ -756,6 +804,8 @@ void AFQKnightPlayer::StartBash()
 
 	GetCharacterMovement()->MaxWalkSpeed = mKnightDataAsset->mBashSpeed;
 	GetCharacterMovement()->MaxAcceleration = 200000.0f;
+
+	mBashEffect->Activate();
 
 	GetWorld()->GetTimerManager().SetTimer(mBashCoolTimer, this, &AFQKnightPlayer::ResetBash, mKnightDataAsset->mBashCoolTime, false);
 }
@@ -917,6 +967,7 @@ void AFQKnightPlayer::ApplySwordAttackDamage(AActor* AttackableActor)
 	case EKnightSwordAttackState::Attack1:
 	{
 		ApplyDamageToTarget(mKnightDataAsset->mSwordAttackDamage1, AttackableActor);
+		
 	}
 	break;
 	case EKnightSwordAttackState::Attack2:

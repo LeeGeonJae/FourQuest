@@ -42,7 +42,7 @@ AFQPlayerBase::AFQPlayerBase()
 	// Effect
 	mSoulEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SoulEffect"));
 	mSoulEffect->SetupAttachment(RootComponent);
-	mSoulEffect->SetAutoActivate(true);
+	mSoulEffect->SetAutoActivate(false);
 
 	mHitState = EHitState::None;
 
@@ -136,6 +136,49 @@ void AFQPlayerBase::BeginPlay()
 		return;
 	}
 	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQPlayerBase::OnHitAnimEnded);
+
+	// 영혼 타입에 따른 이펙트 설정
+	IFQPlayerStateInterface* PSInterface = Cast<IFQPlayerStateInterface>(GetPlayerState());
+	if (PSInterface)
+	{
+		switch(PSInterface->GetSoulType())
+		{
+		case ESoulType::Sword :
+		{
+			if (mKnightEffectSystem)
+			{
+				mSoulEffect->SetAsset(mKnightEffectSystem);
+			}
+		}
+		break;
+		case ESoulType::Staff :
+		{
+			if (mMageEffectSystem)
+			{
+				mSoulEffect->SetAsset(mMageEffectSystem);
+			}
+		}
+		break;
+		case ESoulType::Axe :
+		{
+			if (mWarriorEffectSystem)
+			{
+				mSoulEffect->SetAsset(mWarriorEffectSystem);
+			}
+		}
+		break;
+		case ESoulType::Bow :
+		{
+			if (mArcherEffectSystem)
+			{
+				mSoulEffect->SetAsset(mArcherEffectSystem);
+			}
+		}
+		break;
+		}
+
+		mSoulEffect->Activate();
+	}
 }
 
 void AFQPlayerBase::Move(const FInputActionValue& Value)

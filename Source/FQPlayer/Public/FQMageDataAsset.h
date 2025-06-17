@@ -49,7 +49,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 투사체 데미지"))
 	float mProjectileDamageAmount;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X,meta = (ToolTip = "[X] 피격 대상 타입"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_X, meta = (ToolTip = "[X] 피격 대상 타입"))
 	TArray<TEnumAsByte<ECollisionChannel>> mProjectileAttackableTypes;
 
 	// Explosion

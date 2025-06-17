@@ -65,9 +65,6 @@ protected:
 	TObjectPtr<class UInputAction> mLaserAction;
 
 	// Animation
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation, Meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UAnimInstance> mMageAnimInstanceClass;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> mProjectileAttackAnim1;
 
