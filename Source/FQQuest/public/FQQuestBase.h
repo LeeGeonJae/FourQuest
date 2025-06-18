@@ -22,6 +22,7 @@ public:
 	// 일반 함수
 	void SetNewState(const EQuestStateType NewState);
 	void UpdateQuestCondition(int32 AddConditionNumber);
+	void RemoveSubQuest();
 
 	// 겟셋 함수
 	FORCEINLINE class UFQQuestWidget* GetQuestWidget() const { return mQuestWidget; }

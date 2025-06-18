@@ -67,7 +67,7 @@ void UFQQuestWidget::UpdateQuestStateCheckBoxAnimation(float Value)
 	if (mCheckLeft && mCheckRight)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[UFQQuestWidget %d] UpdateQuestStateCheckBoxAnimation Value : %f"), __LINE__, Value);
-		float BrushSize = FMath::Lerp(100, 15, Value);
+		float BrushSize = FMath::Lerp(30, 15, Value);
 		mCheckLeft->SetBrushSize(FVector2D(BrushSize));
 		mCheckRight->SetBrushSize(FVector2D(BrushSize));
 	}
@@ -123,4 +123,9 @@ void UFQQuestWidget::RemoveSubQuestWidget(UFQUserWidget* QuestWidget)
 	{
 		mSubQuestListBox->RemoveChild(QuestWidget);
 	}
+}
+
+void UFQQuestWidget::RemoveSubQuestWidget()
+{
+	mSubQuestListBox->ClearChildren();
 }

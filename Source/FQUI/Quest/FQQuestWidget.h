@@ -29,6 +29,7 @@ public:
 	// 서브 퀘스트 UI
 	void AddSubQuestListWidget(UFQUserWidget* QuestWidget);
 	void RemoveSubQuestWidget(UFQUserWidget* QuestWidget);
+	void RemoveSubQuestWidget();
 
 protected:
 	// 부모 함수

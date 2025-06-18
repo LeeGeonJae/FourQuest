@@ -50,7 +50,10 @@ void AFQQuestBase::BeginPlay()
 
 void AFQQuestBase::UpdateQuest(float DeltaTime)
 {
-	mCurrentState->UpdateState(DeltaTime);
+	if (mCurrentState)
+	{
+		mCurrentState->UpdateState(DeltaTime);
+	}
 
 	if (!mQuestWidget)
 	{
@@ -83,9 +86,15 @@ void AFQQuestBase::UpdateQuest(float DeltaTime)
 	}
 
 	// 서브 퀘스트 업데이트
-	for (auto mSubQuest : mSubQuestList)
+	if (mCurrentStateType != EQuestStateType::Exit)
 	{
-		mSubQuest.Value->UpdateQuest(DeltaTime);
+		for (auto& SubQuest : mSubQuestList)
+		{
+			if (IsValid(SubQuest.Value))
+			{
+				SubQuest.Value->UpdateQuest(DeltaTime);
+			}
+		}
 	}
 }
 
@@ -112,18 +121,21 @@ void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 		mCurrentState->EnterState();
 
 		UE_LOG(LogTemp, Log, TEXT("[AFQQuestBase %d] 퀘스트 현재 상태 : Exit"), __LINE__);
+
+		RemoveSubQuest();
 	}
 	break;
 	case EQuestStateType::End:
 	{
-		UE_LOG(LogTemp, Log, TEXT("[AFQQuestBase %d] 퀘스트 현재 상태 : End"), __LINE__);
-
 		// 퀘스트 클리어 데이터 저장
 		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
 		if (QuestSystem)
 		{
 			QuestSystem->GetQuestData(GetQuestID())->mbIsQuestClear = true;
 		}
+
+		mCurrentState = nullptr;
+		UE_LOG(LogTemp, Log, TEXT("[AFQQuestBase %d] 퀘스트 현재 상태 : End"), __LINE__);
 	}
 	break;
 	}
@@ -150,6 +162,25 @@ void AFQQuestBase::UpdateQuestCondition(int32 AddConditionNumber)
 	if (mQuestWidget)
 	{
 		mQuestWidget->UpdateQuestCondition(mQuestClearConditionNumber > mQuestCurrentConditionNumber ? mQuestCurrentConditionNumber : mQuestClearConditionNumber, mQuestClearConditionNumber);
+	}
+}
+
+void AFQQuestBase::RemoveSubQuest()
+{
+	for (auto& SubQuest : mSubQuestList)
+	{
+		if (IsValid(SubQuest.Value))
+		{
+			SubQuest.Value->SetActorHiddenInGame(true);
+			SubQuest.Value->SetActorEnableCollision(false);
+			SubQuest.Value->SetLifeSpan(0.1f); // 약간의 지연 후 파괴
+		}
+	}
+	mSubQuestList.Empty();
+
+	if (mQuestWidget)
+	{
+		mQuestWidget->RemoveSubQuestWidget();
 	}
 }
 

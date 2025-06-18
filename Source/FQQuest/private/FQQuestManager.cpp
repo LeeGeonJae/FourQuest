@@ -44,41 +44,29 @@ void AFQQuestManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    TArray<int32> QuestKeys;
+    mQuestList.GetKeys(QuestKeys);
+
     TArray<int32> QuestsToRemove;
-    for (auto& MyQuest : mQuestList)
+    for (auto& QuestKey : QuestKeys)
     {
-        if (!MyQuest.Value)
+        if (!mQuestList.Contains(QuestKey)) continue;
+
+        TObjectPtr<AFQQuestBase> Quest = mQuestList[QuestKey];
+        if (!IsValid(Quest))
         {
-            QuestsToRemove.Add(MyQuest.Key);
-            return;
+            QuestsToRemove.Add(QuestKey);
+            continue;
         }
 
         // 퀘스트 업데이트
-        MyQuest.Value->UpdateQuest(DeltaTime);
+        Quest->UpdateQuest(DeltaTime);
 
         // 퀘스트 삭제
-        EQuestStateType MyStateType = MyQuest.Value->GetCurrentState();
+        EQuestStateType MyStateType = Quest->GetCurrentState();
         if (MyStateType == EQuestStateType::End)
         {
-            QuestsToRemove.Add(MyQuest.Key);
-        }
-        else if (MyStateType == EQuestStateType::Exit)
-        {
-            // 퀘스트 시스템
-            UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
-            if (QuestSystem)
-            {
-                if (QuestSystem->GetQuestData(MyQuest.Key)->mbIsQuestClear)
-                {
-                    continue;
-                }
-
-                // 다음 퀘스트 생성
-                for (const int32& NextQuestID : QuestSystem->GetQuestData(MyQuest.Key)->NextQuestList)
-                {
-                    CreateQuest(NextQuestID);
-                }
-            }
+            QuestsToRemove.Add(QuestKey);
         }
     }
 
@@ -166,14 +154,35 @@ void AFQQuestManager::CreateQuest(int32 QuestID)
 
 void AFQQuestManager::ClearQuest(int32 QuestID)
 {
-    // UI 삭제
-    UFQQuestWidget* MyQuestWidget = mQuestList[QuestID]->GetQuestWidget();
-    if (MyQuestWidget)
+    TObjectPtr<AFQQuestBase> Quest = nullptr;
+
+    // RemoveAndCopyValue는 제거 + 값 추출 (중복 액세스 방지)
+    if (mQuestList.RemoveAndCopyValue(QuestID, Quest) && IsValid(Quest))
     {
-        mQuestListUI->RemoveQuestWidget(MyQuestWidget);
+        if (UFQQuestWidget* MyQuestWidget = Quest->GetQuestWidget())
+        {
+            if (IsValid(mQuestListUI))
+            {
+                mQuestListUI->RemoveQuestWidget(MyQuestWidget);
+            }
+        }
+
+        Quest->Destroy();
     }
 
-    // 퀘스트 삭제
-    mQuestList[QuestID]->Destroy();
-    mQuestList.Remove(QuestID);
+    // 퀘스트 시스템
+    UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+    if (QuestSystem)
+    {
+        // 다음 퀘스트 생성
+        for (const int32& NextQuestID : QuestSystem->GetQuestData(QuestID)->NextQuestList)
+        {
+            if (QuestSystem->GetQuestData(NextQuestID)->mbIsQuestClear)
+            {
+                continue;
+            }
+
+            CreateQuest(NextQuestID);
+        }
+    }
 }

@@ -369,6 +369,7 @@ void AFQPlayerController_InGame::HandlePickButton()
 		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonMeleeMonster);
 		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonRangedMonster);
 		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonSpawnerMonster);
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::BossMonster);
 		QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport);
 	}
 
