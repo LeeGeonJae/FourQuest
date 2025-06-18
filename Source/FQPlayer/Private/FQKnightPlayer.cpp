@@ -60,7 +60,10 @@ AFQKnightPlayer::AFQKnightPlayer()
 
 	// Weapon Mesh
 	mSwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
+	mSwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	mShieldMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShieldMesh"));
+	mShieldMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AFQKnightPlayer::Tick(float DeltaSeconds)
