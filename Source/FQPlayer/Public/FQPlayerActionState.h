@@ -48,7 +48,6 @@ UENUM(BlueprintType)
 enum class EMageExplosionState : uint8
 {
 	None			UMETA(DisplayName = "None"),
-	Preparing		UMETA(DisplayName = "Preparing"),
 	Enabled			UMETA(DisplayName = "Enabled"),
 	Destroy			UMETA(DisplayName = "Destroy"),
 	CoolDown		UMETA(DisplayName = "CoolDown")

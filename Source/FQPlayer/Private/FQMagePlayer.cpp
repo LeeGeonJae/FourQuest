@@ -123,7 +123,7 @@ void AFQMagePlayer::ProcessNextSection()
 
 bool AFQMagePlayer::IsEnabledExplosionCircle()
 {
-	if (mExplosionState == EMageExplosionState::Preparing || mExplosionState == EMageExplosionState::Enabled)
+	if (mExplosionState == EMageExplosionState::Enabled)
 	{
 		return true;
 	}
@@ -268,7 +268,7 @@ bool AFQMagePlayer::CanMove()
 	}
 
 	// Explosion
-	if (mExplosionState == EMageExplosionState::Preparing || mExplosionState == EMageExplosionState::Enabled)
+	if (mExplosionState == EMageExplosionState::Enabled)
 	{
 		return false;
 	}
@@ -385,28 +385,6 @@ void AFQMagePlayer::OnMageAnimMontageEnded(UAnimMontage* Montage, bool bInterrup
 		{
 			GetWorld()->GetTimerManager().ClearTimer(mProjectileAttackComboTimer);
 			ResetProjectileAttackCombo();
-		}
-	}
-
-	// Explosion
-	if (Montage == mExplosionStartAnim && !bInterrupted)
-	{
-		// 마법진 생성
-		if (!mExplosionCircleClass)
-		{
-			return;
-		}
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Owner = this;
-
-		mExplosionCircle = GetWorld()->SpawnActor<AFQMageCircle>(mExplosionCircleClass, GetActorLocation(), GetActorRotation(), SpawnParams);
-
-		// 상태 설정
-		if (mExplosionCircle)
-		{
-			mExplosionState = EMageExplosionState::Enabled;
 		}
 	}
 
@@ -599,6 +577,8 @@ void AFQMagePlayer::StartExplosion()
 		return;
 	}
 
+	mbIsPressedA = true;
+
 	// 애니메이션 재생
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (!AnimInstance)
@@ -613,9 +593,23 @@ void AFQMagePlayer::StartExplosion()
 
 	AnimInstance->Montage_Play(mExplosionStartAnim);
 
+	// 마법진 생성
+	if (!mExplosionCircleClass)
+	{
+		return;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = this;
+
+	mExplosionCircle = GetWorld()->SpawnActor<AFQMageCircle>(mExplosionCircleClass, GetActorLocation(), GetActorRotation(), SpawnParams);
+
 	// 상태 설정
-	mExplosionState = EMageExplosionState::Preparing;
-	mbIsPressedA = true;
+	if (mExplosionCircle)
+	{
+		mExplosionState = EMageExplosionState::Enabled;
+	}
 }
 
 void AFQMagePlayer::PressedExplosion()
