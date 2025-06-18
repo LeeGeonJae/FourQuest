@@ -179,12 +179,11 @@ void AFQMagePlayer::BeginPlay()
 
 	// Animation MontageEnded 바인딩
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (!AnimInstance)
+	if (AnimInstance)
 	{
-		return;
+		AnimInstance->OnMontageEnded.AddDynamic(this, &AFQMagePlayer::OnMageAnimMontageEnded);
 	}
-	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQMagePlayer::OnMageAnimMontageEnded);
-
+	
 	// Staff Actor 
 	if (mStaffClass)
 	{

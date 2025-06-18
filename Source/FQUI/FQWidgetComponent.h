@@ -16,4 +16,7 @@ class FQUI_API UFQWidgetComponent : public UWidgetComponent
 
 protected:
 	virtual void InitWidget() override;
+
+public:
+	virtual void BeginPlay() override;
 };

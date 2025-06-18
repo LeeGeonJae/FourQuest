@@ -77,8 +77,10 @@ void AFQMainCenterCamera::BeginPlay()
     mCurrentCameraZoomValue = mCameraDataAsset->mCameraZoomMin;
     mCameraBoom->TargetArmLength = mCurrentCameraZoomValue;
 
+#if WITH_EDITOR
     mFollowCamera->bDrawFrustumAllowed = true;
     mFollowCamera->OverrideFrustumColor(FColor::Green);
+#endif
 }
 
 void AFQMainCenterCamera::Tick(float DeltaTime)

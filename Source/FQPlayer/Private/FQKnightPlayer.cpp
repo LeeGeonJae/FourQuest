@@ -60,10 +60,7 @@ AFQKnightPlayer::AFQKnightPlayer()
 
 	// Weapon Mesh
 	mSwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
-	mSwordMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("Knight_Sword")));
-
 	mShieldMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShieldMesh"));
-	mShieldMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("Knight_Shield")));
 }
 
 void AFQKnightPlayer::Tick(float DeltaSeconds)
@@ -164,37 +161,66 @@ void AFQKnightPlayer::BeginPlay()
 		mDefaultSpeed = mKnightDataAsset->mDefaultSpeed;
 		GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
 	}
-
+	
 	// Collision BeginOverlap 바인딩
-	mBashVolume->OnComponentBeginOverlap.AddDynamic(this, &AFQKnightPlayer::OnBashVolumeBeginOverlap);
-	mShieldVolume->OnComponentBeginOverlap.AddDynamic(this, &AFQKnightPlayer::OnShieldVolumeBeginOverlap);
-
+	if (mBashVolume)
+	{
+		mBashVolume->OnComponentBeginOverlap.AddDynamic(this, &AFQKnightPlayer::OnBashVolumeBeginOverlap);
+	}
+	
+	if (mShieldVolume)
+	{
+		mShieldVolume->OnComponentBeginOverlap.AddDynamic(this, &AFQKnightPlayer::OnShieldVolumeBeginOverlap);
+	}
+	
 	// Animation MontageEnded 바인딩
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (!AnimInstance)
+	if (AnimInstance)
 	{
-		return;
+		AnimInstance->OnMontageEnded.AddDynamic(this, &AFQKnightPlayer::OnKnightAnimMontageEnded);
 	}
-	AnimInstance->OnMontageEnded.AddDynamic(this, &AFQKnightPlayer::OnKnightAnimMontageEnded);
-
+	
 	// PlayerState 최대 체력 설정
 	IFQPlayerStateInterface* PSInterface = Cast<IFQPlayerStateInterface>(GetPlayerState());
 	if (PSInterface)
 	{
 		PSInterface->SetMaxHp(mKnightDataAsset->mMaxHp);
 	}
-
+	
 	// Effect 설정
-	mBashEffect->SetFloatParameter(FName(TEXT("ScaleFactor")), mKnightDataAsset->mBashEffectScaleFactor);
+	if (mBashEffect)
+	{
+		mBashEffect->SetFloatParameter(FName(TEXT("ScaleFactor")), mKnightDataAsset->mBashEffectScaleFactor);
+	}
+	
+	if (mSwordEffect1)
+	{
+		mSwordEffect1->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim1->GetPlayLength() * mSwordAttackAnim1->RateScale);
+		mSwordEffect1->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor1);
+	}
+	
+	if (mSwordEffect2)
+	{
+		mSwordEffect2->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim2->GetPlayLength() * mSwordAttackAnim2->RateScale);
+		mSwordEffect2->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor2);
+	}
 
-	mSwordEffect1->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim1->GetPlayLength() * mSwordAttackAnim1->RateScale);
-	mSwordEffect1->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor1);
+	if (mSwordEffect3)
+	{
+		mSwordEffect3->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim3->GetPlayLength() * mSwordAttackAnim3->RateScale);
+		mSwordEffect3->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor3);
+	}
 
-	mSwordEffect2->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim2->GetPlayLength() * mSwordAttackAnim2->RateScale);
-	mSwordEffect2->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor2);
+	// Weapon Mesh
+	if (mSwordMesh)
+	{
+		mSwordMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("Knight_Sword")));
+	}
 
-	mSwordEffect3->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim3->GetPlayLength() * mSwordAttackAnim3->RateScale);
-	mSwordEffect3->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor3);
+	if (mShieldMesh)
+	{
+		mShieldMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("Knight_Shield")));
+	}
 }
 
 void AFQKnightPlayer::SetInputMappingContext()

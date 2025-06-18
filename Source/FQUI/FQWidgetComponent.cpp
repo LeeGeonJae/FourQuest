@@ -7,6 +7,11 @@
 void UFQWidgetComponent::InitWidget()
 {
 	Super::InitWidget();
+}
+
+void UFQWidgetComponent::BeginPlay()
+{
+	Super::BeginPlay();
 
 	UFQUserWidget* FQUserWidget = Cast<UFQUserWidget>(GetWidget());
 	if (FQUserWidget)

@@ -31,11 +31,6 @@ AFQArmourBase::AFQArmourBase()
 	mTrigger->SetCollisionProfileName(TEXT("ArmourCollision"));
 
 	// Mesh
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Props/Armour/Item_Amor.Item_Amor'"));
-	if (BoxMeshRef.Object)
-	{
-		mMesh->SetStaticMesh(BoxMeshRef.Object);
-	}
 	mMesh->SetRelativeLocation(FVector(0.0f, -3.5f, 0.0f));
 	mMesh->SetRelativeScale3D(FVector(100.f, 100.f, 100.f));
 	mMesh->SetCollisionProfileName(TEXT("NoCollision"));
