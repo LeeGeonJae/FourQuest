@@ -36,14 +36,22 @@ void AFQQuestBase::BeginPlay()
 	mCurrentState->EnterState();
 	UpdateQuestCondition(0);
 
-	// 서브 퀘스트 생성
+	// 퀘스트 시스템 탐색
 	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
 	if (QuestSystem)
 	{
-		for (int32 SubQuestID : QuestSystem->GetQuestData(GetQuestID())->SubQuestList)
+		// UI 델리게이트 등록
+		QuestSystem->mQuestActiveDelegate.AddUObject(this, &AFQQuestBase::UpdateQuestActive);
+
+		// 서브 퀘스트 생성
+		FFQQuestTable* MyQuestData = QuestSystem->GetQuestData(GetQuestID());
+		for (int32 SubQuestID : MyQuestData->SubQuestList)
 		{
 			CreateSubQuest(SubQuestID);
 		}
+
+		// UI 활성화
+		mQuestWidget->UpdateQuestActive(MyQuestData->mbIsActive);
 	}
 }
 
@@ -122,18 +130,19 @@ void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 
 		UE_LOG(LogTemp, Log, TEXT("[AFQQuestBase %d] 퀘스트 현재 상태 : Exit"), __LINE__);
 
+		// 서브 퀘스트 삭제
 		RemoveSubQuest();
-	}
-	break;
-	case EQuestStateType::End:
-	{
+
 		// 퀘스트 클리어 데이터 저장
 		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
 		if (QuestSystem)
 		{
 			QuestSystem->GetQuestData(GetQuestID())->mbIsQuestClear = true;
 		}
-
+	}
+	break;
+	case EQuestStateType::End:
+	{
 		mCurrentState = nullptr;
 		UE_LOG(LogTemp, Log, TEXT("[AFQQuestBase %d] 퀘스트 현재 상태 : End"), __LINE__);
 	}
@@ -234,5 +243,13 @@ void AFQQuestBase::CreateSubQuest(int32 QuestID)
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("[AFQQuestManager %d] QuestSystem가 유효하지 않습니다!!"), __LINE__);
+	}
+}
+
+void AFQQuestBase::UpdateQuestActive(int32 QuestID, bool bIsQuestActive)
+{
+	if (mQuestID == QuestID)
+	{
+		mQuestWidget->UpdateQuestActive(bIsQuestActive);
 	}
 }

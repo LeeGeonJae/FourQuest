@@ -145,11 +145,18 @@ enum class EQuestInteractionType : uint8
 {
 	None			UMETA(DisplayName = "None"),
 	Teleport		UMETA(DisplayName = "Teleport"),
+	Activate		UMETA(DisplayName = "Activate"),
+	Arrive			UMETA(DisplayName = "Activate"),
+	Escape			UMETA(DisplayName = "Activate"),
+	Capture			UMETA(DisplayName = "Capture"),
 };
+
+#include "Quest\FQQuestTable.h"
 
 namespace FQ_QuestDelegate
 {
 	DECLARE_DELEGATE_TwoParams(FQQuestTriggerDelegate, int32 /*QuestID*/, EQuestTriggerType /*QuestTriggerType*/);
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FQQuestActiveDelegate,int32 /*QuestID*/, bool /*bIsQuestActive*/);
 	DECLARE_MULTICAST_DELEGATE_OneParam(FQQuestMonsterDelegate, EQuestMonsterType /*QuestMonsterType*/);
 	DECLARE_MULTICAST_DELEGATE_OneParam(FQQuestInteractionDelegate, EQuestInteractionType /*QuestInteractionType*/);
 }

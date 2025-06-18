@@ -44,6 +44,9 @@ private:
 	// 일반 함수
 	void CreateSubQuest(int32 QuestID);
 
+	// 콜백 함수
+	void UpdateQuestActive(int32 QuestID, bool bIsQuestActive);
+
 private:
 	// 퀘스트 내용
 	int32 mQuestID;

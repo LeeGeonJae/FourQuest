@@ -1,5 +1,7 @@
 #include "FQQuestWidget.h"
 
+#include "FQGameCore/Quest/FQQuestSystem.h"
+
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 #include "Components/VerticalBox.h"
@@ -11,14 +13,26 @@ UFQQuestWidget::UFQQuestWidget()
 
 void UFQQuestWidget::NativeConstruct()
 {
-	if (!mCheckLeft || !mCheckRight)
+	if (!mCheckLeft || !mCheckRight || !mQuestDescriptionText)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[UFQQuestWidget %d] mCheckLeft Or mCheckRight가 유효하지 않습니다!!"), __LINE__);
+		UE_LOG(LogTemp, Error, TEXT("[UFQQuestWidget %d] mCheckLeft Or mCheckRight Or mQuestDescriptionText가 유효하지 않습니다!!"), __LINE__);
 		return;
 	}
 
 	mCheckLeft->SetVisibility(ESlateVisibility::Hidden);
 	mCheckRight->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UFQQuestWidget::UpdateQuestActive(bool bIsQuestActive)
+{
+	if (bIsQuestActive)
+	{
+		mQuestDescriptionText->SetColorAndOpacity(FColor::White);
+	}
+	else
+	{
+		mQuestDescriptionText->SetColorAndOpacity(FLinearColor(0.4f, 0.4f, 0.4f));
+	}
 }
 
 void UFQQuestWidget::UpdateQuestState(EQuestStateType QuestStateType)

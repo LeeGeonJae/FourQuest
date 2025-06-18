@@ -22,6 +22,7 @@ public:
 	void UpdateQuestState(const EQuestStateType QuestStateType);
 	void UpdateQuestStateAnimation(float Value);
 	void UpdateQuestStateCheckBoxAnimation(float Value);
+	void UpdateQuestActive(bool bIsQuestActive);
 	void UpdateQuestCondition(const int32 CurrentConditionNumber, const int32 ClearConditionNumber);
 	void SetQuestDescriptionText(FString QuestDescriptionText);
 	void SetQuestConditionText(FString QuestConditionText);
@@ -36,9 +37,11 @@ protected:
 	virtual void NativeConstruct() override;
 
 private:
+	// 퀘스트 상태 텍스쳐
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQAnimation, Meta = (AllowPrivateAccess = "true"))
 	TMap<EQuestStateType, TObjectPtr<UTexture2D>> mQuestStateTexture;
 
+	// 위젯 컴포넌트
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> mCurrentStateImage;
 	UPROPERTY(meta = (BindWidget))

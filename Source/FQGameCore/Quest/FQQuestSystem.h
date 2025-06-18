@@ -16,6 +16,7 @@ public:
 
 	// 퀘스트 델리게이트
 	FQ_QuestDelegate::FQQuestTriggerDelegate mQuestTriggerDelegate;
+	FQ_QuestDelegate::FQQuestActiveDelegate mQuestActiveDelegate;
 	FQ_QuestDelegate::FQQuestMonsterDelegate mMonsterQuestDelegate;
 	FQ_QuestDelegate::FQQuestInteractionDelegate mInteractionDelegate;
 

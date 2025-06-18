@@ -24,16 +24,17 @@ void AFQInteractionQuest::TryUpdateQuestState(EQuestInteractionType InteractionT
 	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
 	if (QuestSystem)
 	{
+		// 현재 클리어 상태이면 종료
 		FFQQuestTable* MyQuestData = QuestSystem->GetQuestData(GetQuestID());
+		if (MyQuestData->mbIsQuestClear)
+		{
+			return;
+		}
 
 		// 서브 퀘스트 클리어 여부 확인
-		TArray<int32> SubQuestIDData = MyQuestData->SubQuestList;
-		for (auto SubQuestID : SubQuestIDData)
+		if (!MyQuestData->mbIsActive)
 		{
-			if (!QuestSystem->GetQuestData(SubQuestID)->mbIsQuestClear)
-			{
-				return;
-			}
+			return;
 		}
 	}
 

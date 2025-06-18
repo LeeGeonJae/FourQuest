@@ -106,6 +106,11 @@ void AFQQuestManager::CreateQuest(int32 QuestID)
     if (QuestSystem)
     {
         FFQQuestTable* QuestData = QuestSystem->GetQuestData(QuestID);
+        if (!QuestData)
+        {
+            UE_LOG(LogTemp, Error, TEXT("[AFQQuestManager %d] QuestData가 유효하지 않습니다!!"), __LINE__);
+            return;
+        }
 
         // 퀘스트 생성
         switch (QuestData->QuestType)

@@ -33,10 +33,23 @@ void UFQQuestSystem::Initialize(FSubsystemCollectionBase& Collection)
 
 FFQQuestTable* UFQQuestSystem::GetQuestData(int32 QuestNumber)
 {
-	auto MyQuestData = mQuestTableData.Find(QuestNumber);
-	if (MyQuestData)
+	// 퀘스트 업데이트 체크 및 반환
+	if (FFQQuestTable* QuestData = mQuestTableData.Find(QuestNumber))
 	{
-		return MyQuestData;
+		QuestData->mbIsActive = true;
+		for (int32 SubQusetID : QuestData->SubQuestList)
+		{
+			FFQQuestTable* SubQuestData = mQuestTableData.Find(SubQusetID);
+			if (SubQuestData && !SubQuestData->mbIsQuestClear)
+			{
+				QuestData->mbIsActive = false;
+				break;
+			}
+		}
+		
+		// 퀘스트 활성화 델리게이트 호출
+		mQuestActiveDelegate.Broadcast(QuestNumber, QuestData->mbIsActive);
+		return QuestData;
 	}
 	return nullptr;
 }

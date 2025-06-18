@@ -36,4 +36,5 @@ struct FQGAMECORE_API FFQQuestTable : public FTableRowBase
 
 	// 퀘스트 클리어 여부
 	uint8 mbIsQuestClear : 1;
+	uint8 mbIsActive : 1;
 };

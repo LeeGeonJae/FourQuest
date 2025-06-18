@@ -26,20 +26,18 @@ void AFQMonsterKillQuest::TryUpdateQuestState(EQuestMonsterType MonsterType)
 	if (QuestSystem)
 	{
 		// 현재 클리어 상태이면 종료
-		if (QuestSystem->GetQuestData(GetQuestID())->mbIsQuestClear)
+		FFQQuestTable* MyQuestData = QuestSystem->GetQuestData(GetQuestID());
+		if (MyQuestData->mbIsQuestClear)
 		{
+			UE_LOG(LogTemp, Log, TEXT("[AFQMonsterKillQuest %d] 퀘스트가 클리어가 된 상황입니다!!"), __LINE__);
 			return;
 		}
 
 		// 서브 퀘스트 클리어 여부 확인
-		FFQQuestTable* MyQuestData = QuestSystem->GetQuestData(GetQuestID());
-		TArray<int32> SubQuestIDData = MyQuestData->SubQuestList;
-		for (auto SubQuestID : SubQuestIDData)
+		if (!MyQuestData->mbIsActive)
 		{
-			if (!QuestSystem->GetQuestData(SubQuestID)->mbIsQuestClear)
-			{
-				return;
-			}
+			UE_LOG(LogTemp, Log, TEXT("[AFQMonsterKillQuest %d] 퀘스트가 활성화되지 않았습니다!!"), __LINE__);
+			return;
 		}
 	}
 
