@@ -38,10 +38,6 @@ AFQKnightPlayer::AFQKnightPlayer()
 	mShieldVolume->SetupAttachment(RootComponent);
 
 	// Effect
-	mBashEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("BashEffect"));
-	mBashEffect->SetAutoActivate(false);
-	mBashEffect->SetupAttachment(RootComponent);
-
 	mSwordEffect1 = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SwordEffect1"));
 	mSwordEffect1->SetAutoActivate(false);
 	mSwordEffect1->SetupAttachment(RootComponent);
@@ -191,11 +187,6 @@ void AFQKnightPlayer::BeginPlay()
 	}
 	
 	// Effect 설정
-	if (mBashEffect)
-	{
-		mBashEffect->SetFloatParameter(FName(TEXT("ScaleFactor")), mKnightDataAsset->mBashEffectScaleFactor);
-	}
-	
 	if (mSwordEffect1)
 	{
 		mSwordEffect1->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim1->GetPlayLength() * mSwordAttackAnim1->RateScale);
@@ -833,8 +824,6 @@ void AFQKnightPlayer::StartBash()
 
 	GetCharacterMovement()->MaxWalkSpeed = mKnightDataAsset->mBashSpeed;
 	GetCharacterMovement()->MaxAcceleration = 200000.0f;
-
-	mBashEffect->Activate();
 
 	GetWorld()->GetTimerManager().SetTimer(mBashCoolTimer, this, &AFQKnightPlayer::ResetBash, mKnightDataAsset->mBashCoolTime, false);
 }

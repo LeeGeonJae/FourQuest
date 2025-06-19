@@ -23,21 +23,23 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
-	// Input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
-
-	void ApplyDamageToTarget(float DamageAmount, AActor* Target);
-
 	virtual void ProcessNextSection() PURE_VIRTUAL(AFQPlayerBase::ProcessNextSection, );
 	virtual void EnableAttackVolume() PURE_VIRTUAL(AFQPlayerBase::EnableAttackVolume, );
 	virtual void DisableAttackVolume() PURE_VIRTUAL(AFQPlayerBase::DisableAttackVolume, );
 	virtual void ProcessHitInterrupt() PURE_VIRTUAL(AFQPlayerBase::ProcessHitInterrupt, );
 
-	bool IsHit();
+	// Input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// GameplayStatics
+	void ApplyDamageToTarget(float DamageAmount, AActor* Target);
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
+	
+	// IFQPlayerAttackableInterface
 	virtual void TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength) override;
+
+	// Animation
+	bool IsHit();
 
 protected:
 	virtual void BeginPlay() override;

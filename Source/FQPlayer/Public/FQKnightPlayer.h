@@ -109,9 +109,6 @@ protected:
 	TObjectPtr<class UBoxComponent> mShieldVolume;
 
 	// Effect
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[A] 대쉬 이펙트"))
-	TObjectPtr<class UNiagaraComponent> mBashEffect;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[X] 공격 이펙트 1"))
 	TObjectPtr<class UNiagaraComponent> mSwordEffect1;
 
