@@ -252,6 +252,7 @@ void AFQQuestBase::CreateSubQuest(int32 QuestID)
 			MonsterKillQuest->SetQuestClearConditionNumber(QuestData->QuestClearConditionsNumber);
 			MonsterKillQuest->SetQuestDescription(QuestData->QuestDescription);
 			MonsterKillQuest->SetQuestMonsterType(QuestData->QuestMonsterType);
+			MonsterKillQuest->SetMonsterGroupID(QuestData->QuestMonsterGroupName);
 			MonsterKillQuest->SetOwnerQuest(this);
 			MonsterKillQuest->FinishSpawning(FTransform());
 			mSubQuestList.Emplace(QuestData->QuestNumber, *MonsterKillQuest);
@@ -268,8 +269,8 @@ void AFQQuestBase::CreateSubQuest(int32 QuestID)
 			AFQInteractionQuest* InteractionQuest = GetWorld()->SpawnActorDeferred<AFQInteractionQuest>(AFQInteractionQuest::StaticClass(), FTransform());
 			InteractionQuest->SetQuestID(QuestData->QuestNumber);
 			InteractionQuest->SetQuestClearConditionNumber(QuestData->QuestClearConditionsNumber);
-			InteractionQuest->SetQuestInteractionType(QuestData->QuestInteractionType);
 			InteractionQuest->SetQuestDescription(QuestData->QuestDescription);
+			InteractionQuest->SetQuestInteractionType(QuestData->QuestInteractionType);
 			InteractionQuest->SetOwnerQuest(this);
 			InteractionQuest->FinishSpawning(FTransform());
 			mSubQuestList.Emplace(QuestData->QuestNumber, *InteractionQuest);

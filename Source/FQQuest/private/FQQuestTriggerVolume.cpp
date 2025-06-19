@@ -38,6 +38,7 @@ void AFQQuestTriggerVolume::Tick(float DeltaTime)
 			return;
 		}
 		mDurationTime = 0.f;
+		UE_LOG(LogTemp, Log, TEXT("[AFQQuestTriggerVolume %d] 캡쳐 퀘스트 호출!!"), __LINE__);
 
 		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
 		if (QuestSystem)
@@ -52,6 +53,7 @@ void AFQQuestTriggerVolume::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 	IFQPlayerCharacterInterface* CollisionPlayer = Cast<IFQPlayerCharacterInterface>(OtherActor);
 	if (CollisionPlayer)
 	{
+		UE_LOG(LogTemp, Log, TEXT("[AFQQuestTriggerVolume %d] 플레이어 비긴 오버랩!!"), __LINE__);
 		mPlayerNumber++;
 	}
 }
@@ -61,6 +63,7 @@ void AFQQuestTriggerVolume::OnTriggerEndOverlap(UPrimitiveComponent* OverlappedC
 	IFQPlayerCharacterInterface* CollisionPlayer = Cast<IFQPlayerCharacterInterface>(OtherActor);
 	if (CollisionPlayer)
 	{
+		UE_LOG(LogTemp, Log, TEXT("[AFQQuestTriggerVolume %d] 플레이어 앤드 오버랩!!"), __LINE__);
 		mPlayerNumber--;
 	}
 }

@@ -25,6 +25,8 @@ public:
 	// 겟셋 함수
 	FORCEINLINE void SetQuestMonsterType(const EQuestMonsterType MonsterType) { mMonsterType = MonsterType; }
 	FORCEINLINE EQuestMonsterType GetQuestMonsterType() const { return mMonsterType; }
+	FORCEINLINE void SetMonsterGroupID(const FName MonsterGroupID) { mMonsterGroupID = MonsterGroupID; }
+	FORCEINLINE FName GetMonsterGroupID() const { return mMonsterGroupID; }
 
 protected:
 	// 부모 가상함수
@@ -32,8 +34,9 @@ protected:
 
 private:
 	// 콜백 함수
-	void TryUpdateQuestState(EQuestMonsterType MonsterType);
+	void TryUpdateQuestState(EQuestMonsterType MonsterType, FName MonsterGroupID);
 
 private:
 	EQuestMonsterType mMonsterType;
+	FName mMonsterGroupID;
 };

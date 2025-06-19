@@ -31,6 +31,8 @@ protected:
 	// 퀘스트
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQQuest)
 	int32 mQuestStartID;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQQuest)
+	TMap<int32, TObjectPtr<class UFQQuestRewardDataAsset>> mQuestRewardList;
 
 	UPROPERTY()
 	TMap<int32, TObjectPtr<class AFQQuestBase>> mQuestList;

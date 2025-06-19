@@ -6,8 +6,11 @@
 #include "FQGameCore\Quest\FQQuestSystem.h"
 #include "FQUI/Quest/FQQuestListUI.h"
 #include "FQUI/Quest/FQQuestWidget.h"
+#include "FQQuestRewardDataAsset.h"
+#include "FQQuestPoint.h"
 
 #include "EngineUtils.h"
+#include <Kismet\GameplayStatics.h>
 
 AFQQuestManager::AFQQuestManager()
 {
@@ -122,6 +125,7 @@ void AFQQuestManager::CreateQuest(int32 QuestID)
             MonsterKillQuest->SetQuestClearConditionNumber(QuestData->QuestClearConditionsNumber);
             MonsterKillQuest->SetQuestDescription(QuestData->QuestDescription);
             MonsterKillQuest->SetQuestMonsterType(QuestData->QuestMonsterType);
+            MonsterKillQuest->SetMonsterGroupID(QuestData->QuestMonsterGroupName);
             MonsterKillQuest->FinishSpawning(FTransform());
             mQuestList.Emplace(QuestData->QuestNumber, *MonsterKillQuest);
 
@@ -188,6 +192,30 @@ void AFQQuestManager::ClearQuest(int32 QuestID)
             }
 
             CreateQuest(NextQuestID);
+        }
+    }
+
+    // 퀘스트 보상
+    auto QuestReward = mQuestRewardList.Find(QuestID);
+    if (QuestReward)
+    {
+        FTransform SpwanTransform;
+        TArray<AActor*> FoundActors;
+        UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFQQuestPoint::StaticClass(), FoundActors);
+        for (auto Actor : FoundActors)
+        {
+            AFQQuestPoint* QuestPoint = Cast<AFQQuestPoint>(Actor);
+            if (QuestPoint && QuestPoint->GetQuestID() == (*QuestReward)->mNextQuestID)
+            {
+                SpwanTransform = QuestPoint->GetTransform();
+                break;
+            }
+        }
+
+        // 액터 생성
+        for (auto SpawnActor : (*QuestReward)->mRewordSpawnActor)
+        {
+            GetWorld()->SpawnActor<AActor>(SpawnActor, SpwanTransform);
         }
     }
 }

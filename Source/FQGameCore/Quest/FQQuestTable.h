@@ -25,6 +25,8 @@ struct FQGAMECORE_API FFQQuestTable : public FTableRowBase
 	EQuestMonsterType QuestMonsterType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EQuestInteractionType QuestInteractionType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName QuestMonsterGroupName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 QuestClearConditionsNumber;

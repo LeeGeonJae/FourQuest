@@ -3,3 +3,6 @@
 
 #include "FQQuestRewardDataAsset.h"
 
+UFQQuestRewardDataAsset::UFQQuestRewardDataAsset()
+{
+}

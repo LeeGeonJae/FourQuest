@@ -19,7 +19,7 @@ void AFQMonsterKillQuest::BeginPlay()
 	}
 }
 
-void AFQMonsterKillQuest::TryUpdateQuestState(EQuestMonsterType MonsterType)
+void AFQMonsterKillQuest::TryUpdateQuestState(EQuestMonsterType MonsterType, FName MonsterGroupID)
 {
 	// 퀘스트 시스템
 	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
@@ -43,7 +43,14 @@ void AFQMonsterKillQuest::TryUpdateQuestState(EQuestMonsterType MonsterType)
 		// 퀘스트 조건 갱신
 		if (mMonsterType == MonsterType)
 		{
-			UpdateQuestCondition(1);
+			if (mMonsterType == EQuestMonsterType::MonsterGroup && mMonsterGroupID == MonsterGroupID)
+			{
+				UpdateQuestCondition(1);
+			}
+			else
+			{
+				UpdateQuestCondition(1);
+			}
 		}
 
 		// 부모 퀘스트 액티브

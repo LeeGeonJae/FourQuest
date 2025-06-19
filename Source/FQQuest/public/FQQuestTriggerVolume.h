@@ -38,7 +38,7 @@ protected:
 	// 충돌 박스
 	UPROPERTY(EditAnywhere, Category = FQBox, Category = FQBox)
 	TObjectPtr<class UBoxComponent> mTrigger;
-
+	
 private:
 	int8 mPlayerNumber;
 	float mDurationTime;

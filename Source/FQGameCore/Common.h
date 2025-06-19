@@ -139,16 +139,7 @@ enum class EQuestMonsterType : uint8
 	CommonSpawnerMonster	UMETA(DisplayName = "CommonSpawnerMonster"),
 	BossMonster				UMETA(DisplayName = "BossMonster"),
 
-	MonsterGroup_1			UMETA(DisplayName = "MonsterGroup_1"),
-	MonsterGroup_2			UMETA(DisplayName = "MonsterGroup_2"),
-	MonsterGroup_3			UMETA(DisplayName = "MonsterGroup_3"),
-	MonsterGroup_4			UMETA(DisplayName = "MonsterGroup_4"),
-	MonsterGroup_5			UMETA(DisplayName = "MonsterGroup_5"),
-	MonsterGroup_6			UMETA(DisplayName = "MonsterGroup_6"),
-	MonsterGroup_7			UMETA(DisplayName = "MonsterGroup_7"),
-	MonsterGroup_8			UMETA(DisplayName = "MonsterGroup_8"),
-	MonsterGroup_9			UMETA(DisplayName = "MonsterGroup_9"),
-	MonsterGroup_10			UMETA(DisplayName = "MonsterGroup_10"),
+	MonsterGroup			UMETA(DisplayName = "MonsterGroup"),
 };
 
 UENUM()
@@ -168,6 +159,6 @@ namespace FQ_QuestDelegate
 {
 	DECLARE_DELEGATE_TwoParams(FQQuestTriggerDelegate, int32 /*QuestID*/, EQuestTriggerType /*QuestTriggerType*/);
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FQQuestActiveDelegate,int32 /*QuestID*/, bool /*bIsQuestActive*/);
-	DECLARE_MULTICAST_DELEGATE_OneParam(FQQuestMonsterDelegate, EQuestMonsterType /*QuestMonsterType*/);
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FQQuestMonsterDelegate, EQuestMonsterType /*QuestMonsterType*/, FName /*MonsterGroupName*/);
 	DECLARE_MULTICAST_DELEGATE_OneParam(FQQuestInteractionDelegate, EQuestInteractionType /*QuestInteractionType*/);
 }

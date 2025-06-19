@@ -368,10 +368,10 @@ void AFQPlayerController_InGame::HandlePickButton()
 	if (QuestSystem)
 	{
 		QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport);
-		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonMeleeMonster);
-		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonRangedMonster);
-		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonSpawnerMonster);
-		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::BossMonster);
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonMeleeMonster, TEXT(""));
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonRangedMonster, TEXT(""));
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonSpawnerMonster, TEXT(""));
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::BossMonster, TEXT(""));
 	}
 
 	// 입력 버튼
