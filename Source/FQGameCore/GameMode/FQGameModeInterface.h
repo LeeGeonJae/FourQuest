@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "InputActionValue.h"
 #include "FQGameModeInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
@@ -21,12 +20,5 @@ class FQGAMECORE_API IFQGameModeInterface
 	GENERATED_BODY()
 
 public:
-	// 
-	virtual void StartGame() PURE_VIRTUAL(IFQGameModeInterface::StartGame, );
-	virtual void ExitGame() PURE_VIRTUAL(IFQGameModeInterface::ExitGame, );
-
-	// UI Input Funtion
-	virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) PURE_VIRTUAL(IFQGameModeInterface::MoveButton, );
-	virtual void CancelInteraction(int32 ControllerId) PURE_VIRTUAL(IFQGameModeInterface::CancelInteraction, );
-	virtual void SelectInteraction(int32 ControllerId) PURE_VIRTUAL(IFQGameModeInterface::SelectInteraction, );
+	virtual FTransform GetMainCameraTransform() const abstract;
 };

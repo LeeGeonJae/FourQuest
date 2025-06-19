@@ -1,6 +1,7 @@
 #include "FQQuestPointWidget.h"
 
 #include "FQGameCore\Quest\FQQuestSystem.h"
+#include "FQGameCore/GameInstance/FQGameInstanceInterface.h"
 
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
@@ -17,9 +18,11 @@ UFQQuestPointWidget::UFQQuestPointWidget()
 void UFQQuestPointWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	
 }
 
-void UFQQuestPointWidget::UpdateQuestPosition(FVector2D NormalDirection)
+void UFQQuestPointWidget::UpdateQuestPosition(FVector2D DirectionDistance)
 {
 	if (!GEngine || !GEngine->GameViewport || !mSignBox)
 	{
@@ -27,33 +30,46 @@ void UFQQuestPointWidget::UpdateQuestPosition(FVector2D NormalDirection)
 		return;
 	}
 
-	// 1. 화면 크기 가져오기
-	FVector2D ViewportSize;
-	GEngine->GameViewport->GetViewportSize(ViewportSize);
+	// 가까우면 UI 종료
+	if (DirectionDistance.Length() < 500.f)
+	{
+		mSignBox->SetVisibility(ESlateVisibility::Hidden);
+		return;
+	}
+	else
+	{
+		mSignBox->SetVisibility(ESlateVisibility::Visible);
+	}
 
-	// 2. 방향 벡터 정규화 (안정성 보장)
-	if (!NormalDirection.Normalize())
+	// 거리 텍스트 수정
+	FString DistanceText = FString::FromInt(DirectionDistance.Length() / 100) + TEXT("m");
+	mDistanceText->SetText(FText::FromString(DistanceText));
+
+	// 방향 벡터 정규화 (안정성 보장)
+	if (!DirectionDistance.Normalize())
 	{
 		UE_LOG(LogTemp, Error, TEXT("[UFQQuestPointWidget %d] NormalDirection 정규화가 되지 않았습니다!!"), __LINE__);
 		return;
 	}
 
-	// 3. 화면 중앙
-	const FVector2D ScreenCenter = ViewportSize * 0.5f;
+	// 화면 크기 가져오기
+	FVector2D ViewportSize = (FVector2D(1920.f, 1000.f) - 100.f) * 0.5f;
+	float ScreenRatio = ViewportSize.Length() / (ViewportSize.X + ViewportSize.Y);
 
-	// 4. 방향을 화면 반 사이즈까지 확장
-	FVector2D ScaledDirection = NormalDirection * ScreenCenter;
+	// 스냅 처리
+	if (FMath::Abs(DirectionDistance.X) >= ScreenRatio)
+	{
+		DirectionDistance.X = DirectionDistance.X > 0 ? 1.f : -1.f;
+	}
+	if (FMath::Abs(DirectionDistance.Y) >= ScreenRatio)
+	{
+		DirectionDistance.Y = DirectionDistance.Y > 0 ? 1.f : -1.f;
+	}
 
-	// 5. 화면 경계 넘지 않도록 클리핑 (비율로 줄이기)
-	float XRatio = ScreenCenter.X / FMath::Max(FMath::Abs(ScaledDirection.X), 1.0f);
-	float YRatio = ScreenCenter.Y / FMath::Max(FMath::Abs(ScaledDirection.Y), 1.0f);
-	float FinalRatio = FMath::Min(XRatio, YRatio);
-	ScaledDirection *= FinalRatio;
+	// 최종 위치
+	FVector2D FinalScreenPosition = FVector2D(DirectionDistance.Y * ViewportSize.X, -DirectionDistance.X * ViewportSize.Y );
 
-	// 6. 최종 위치 = 중앙 + 스케일된 방향
-	FVector2D FinalScreenPosition = ScreenCenter + ScaledDirection;
-
-	// 7. VerticalBox의 Slot이 CanvasPanelSlot이면 위치 설정
+	// VerticalBox의 Slot이 CanvasPanelSlot이면 위치 설정
 	if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(mSignBox->Slot))
 	{
 		// 필요 시 Anchor 또는 Alignment도 조정 가능
@@ -65,10 +81,16 @@ void UFQQuestPointWidget::UpdateQuestActive(bool bIsActive)
 {
 	if (bIsActive)
 	{
-		mSign->SetBrushFromTexture(mQuestActiveSignTexture[mQuestSignType]);
+		if (auto FoundIcon = mQuestActiveSignTexture.Find(mQuestSignType))
+		{
+			mSign->SetBrushFromTexture(*FoundIcon);
+		}
 	}
 	else
 	{
-		mSign->SetBrushFromTexture(mQuestInactiveSignTexture[mQuestSignType]);
+		if (auto FoundIcon = mQuestInactiveSignTexture.Find(mQuestSignType))
+		{
+			mSign->SetBrushFromTexture(*FoundIcon);
+		}
 	}
 }

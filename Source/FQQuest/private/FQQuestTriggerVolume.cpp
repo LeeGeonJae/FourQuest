@@ -6,12 +6,15 @@
 #include "FQGameCore\Quest\FQQuestSystem.h"
 
 AFQQuestTriggerVolume::AFQQuestTriggerVolume()
+	: mPlayerNumber()
 {
 	mTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
 	SetRootComponent(mTrigger);
 	mTrigger->SetBoxExtent(FVector(100.f));
 	mTrigger->SetCollisionProfileName(TEXT("Trigger"));
 	mTrigger->SetGenerateOverlapEvents(true);
+
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AFQQuestTriggerVolume::BeginPlay()
@@ -21,6 +24,26 @@ void AFQQuestTriggerVolume::BeginPlay()
 	if (mTrigger)
 	{
 		mTrigger->OnComponentBeginOverlap.AddDynamic(this, &AFQQuestTriggerVolume::OnTriggerBeginOverlap);
+		mTrigger->OnComponentEndOverlap.AddDynamic(this, &AFQQuestTriggerVolume::OnTriggerEndOverlap);
+	}
+}
+
+void AFQQuestTriggerVolume::Tick(float DeltaTime)
+{
+	if (mPlayerNumber > 0)
+	{
+		mDurationTime += DeltaTime;
+		if (mDurationTime < 1.f)
+		{
+			return;
+		}
+		mDurationTime = 0.f;
+
+		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+		if (QuestSystem)
+		{
+			QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Capture);
+		}
 	}
 }
 
@@ -29,16 +52,15 @@ void AFQQuestTriggerVolume::OnTriggerBeginOverlap(UPrimitiveComponent* Overlappe
 	IFQPlayerCharacterInterface* CollisionPlayer = Cast<IFQPlayerCharacterInterface>(OtherActor);
 	if (CollisionPlayer)
 	{
-		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
-		if (!QuestSystem)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[AFQQuestTriggerVolume %d] UFQQuestSystem가 유효하지 않습니다!!"), __LINE__);
-			return;
-		}
+		mPlayerNumber++;
+	}
+}
 
-		for (auto Quest : mQuestTriggerTypeList)
-		{
-			QuestSystem->mQuestTriggerDelegate.ExecuteIfBound(Quest.Key, Quest.Value);
-		}
+void AFQQuestTriggerVolume::OnTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	IFQPlayerCharacterInterface* CollisionPlayer = Cast<IFQPlayerCharacterInterface>(OtherActor);
+	if (CollisionPlayer)
+	{
+		mPlayerNumber--;
 	}
 }

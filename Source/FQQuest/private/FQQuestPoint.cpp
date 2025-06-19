@@ -1,12 +1,15 @@
 #include "FQQuestPoint.h"
 
-#include "FQUI/Quest/FQQuestPointWidget.h"
 #include "FQGameCore\Quest\FQQuestSystem.h"
+#include "FQGameCore\GameMode\FQGameModeInterface.h"
+
+#include "GameFramework/GameModeBase.h"
 
 AFQQuestPoint::AFQQuestPoint()
+    : mQuestID(1)
+    , mbIsQuestActive(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 void AFQQuestPoint::BeginPlay()
@@ -20,7 +23,8 @@ void AFQQuestPoint::BeginPlay()
         if (mQuestPointWidget)
         {
             mQuestPointWidget->AddToViewport(); // 화면에 위젯 추가
-            UE_LOG(LogTemp, Log, TEXT("[AFQQuestManager %d] Create HUD Widget And AddViewport"), __LINE__);
+            mQuestPointWidget->SetQuestSignType(mQuestSignType);
+            mQuestPointWidget->SetVisibility(ESlateVisibility::Hidden);
         }
     }
 
@@ -29,28 +33,49 @@ void AFQQuestPoint::BeginPlay()
     if (QuestSystem)
     {
         QuestSystem->mQuestActiveDelegate.AddUObject(this, &AFQQuestPoint::UpdateQuestActive);
-
-        // UI
-        mQuestPointWidget->UpdateQuestActive(QuestSystem->GetQuestData(mQuestID)->mbIsActive);
+        FFQQuestTable* MyQuestData = QuestSystem->GetQuestData(mQuestID);
+        if (MyQuestData)
+        {
+            mbIsQuestActive = MyQuestData->mbIsActive;
+        }
     }
-
-    mQuestPointWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void AFQQuestPoint::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    if (mQuestPointWidget->GetVisibility() == ESlateVisibility::Visible)
+    if (mQuestPointWidget && mQuestPointWidget->GetVisibility() == ESlateVisibility::Visible)
     {
+        IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
+        if (MyGameMode)
+        {
+            FVector MyLocation = GetTransform().GetLocation();
+            FVector CameraLocation = MyGameMode->GetMainCameraTransform().GetLocation();
 
+            // 방향 벡터 계산 (Z축 무시)
+            FVector Direction3D = (MyLocation - CameraLocation);
+            Direction3D.Z = 0; // 수평 방향만 고려
+
+            // 2D 방향 벡터로 변환
+            FVector2D Direction2D(Direction3D.X, Direction3D.Y);
+
+            mQuestPointWidget->UpdateQuestPosition(Direction2D);
+        }
     }
 }
 
-void AFQQuestPoint::SetVisibleWidget(bool IsVisible)
+void AFQQuestPoint::SetVisible(bool IsVisible)
 {
+    if (!mQuestPointWidget)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[AFQQuestPoint %d] mQuestPointWidget가 유효하지 않습니다!!"), __LINE__);
+        return;
+    }
+
     if (IsVisible)
     {
         mQuestPointWidget->SetVisibility(ESlateVisibility::Visible);
+        mQuestPointWidget->UpdateQuestActive(mbIsQuestActive);
     }
     else
     {
@@ -60,8 +85,9 @@ void AFQQuestPoint::SetVisibleWidget(bool IsVisible)
 
 void AFQQuestPoint::UpdateQuestActive(int32 QuestID, bool bIsQuestActive)
 {
-    if (mQuestID == QuestID)
+    if (mQuestPointWidget && mQuestID == QuestID)
     {
+        mbIsQuestActive = bIsQuestActive;
         mQuestPointWidget->UpdateQuestActive(bIsQuestActive);
     }
 }

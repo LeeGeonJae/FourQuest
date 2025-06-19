@@ -5,18 +5,22 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "FQGameCore\Common.h"
+#include "FQGameCore\GameMode\FQGameModeInterface.h"
 #include "FQGameMode_InGame.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FOURQUEST_API AFQGameMode_InGame : public AGameModeBase
+class FOURQUEST_API AFQGameMode_InGame : public AGameModeBase, public IFQGameModeInterface
 {
 	GENERATED_BODY()
 	
 public:
 	AFQGameMode_InGame();
+
+    // 인터페이스 함수
+    virtual FTransform GetMainCameraTransform() const override;
     
     // 겟셋 함수
     FORCEINLINE class AFQPlayerHUDManager* GetPlayerHUDManager() const { return mPlayerHUDManager; }

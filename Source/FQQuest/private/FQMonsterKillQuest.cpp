@@ -39,13 +39,19 @@ void AFQMonsterKillQuest::TryUpdateQuestState(EQuestMonsterType MonsterType)
 			UE_LOG(LogTemp, Log, TEXT("[AFQMonsterKillQuest %d] 퀘스트가 활성화되지 않았습니다!!"), __LINE__);
 			return;
 		}
-	}
 
-	// 퀘스트 조건 갱신
-    if (mMonsterType == MonsterType)
-    {
-		UpdateQuestCondition(1);
-    }
+		// 퀘스트 조건 갱신
+		if (mMonsterType == MonsterType)
+		{
+			UpdateQuestCondition(1);
+		}
+
+		// 부모 퀘스트 액티브
+		if (mOwnerQuest.IsValid())
+		{
+			QuestSystem->GetQuestData(mOwnerQuest.Get()->GetQuestID());
+		}
+	}
 }
 
 void AFQMonsterKillQuest::Execute()

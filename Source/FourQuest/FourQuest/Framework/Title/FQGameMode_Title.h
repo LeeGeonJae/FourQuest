@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "FQGameCore\GameMode\FQGameModeInterface.h"
+#include "FQGameCore\GameMode\FQGameModeUIInputInterface.h"
 #include "FQGameMode_Title.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FOURQUEST_API AFQGameMode_Title : public AGameModeBase, public IFQGameModeInterface
+class FOURQUEST_API AFQGameMode_Title : public AGameModeBase, public IFQGameModeUIInputInterface
 {
 	GENERATED_BODY()
 	

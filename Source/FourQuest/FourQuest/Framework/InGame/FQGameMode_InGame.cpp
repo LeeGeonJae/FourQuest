@@ -169,3 +169,12 @@ void AFQGameMode_InGame::CreatePlayer()
         }
     }
 }
+
+FTransform AFQGameMode_InGame::GetMainCameraTransform() const
+{
+    if (mMainCamera)
+    {
+        return mMainCamera->GetTransform();
+    }
+    return FTransform();
+}

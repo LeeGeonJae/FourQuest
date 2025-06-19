@@ -16,6 +16,7 @@ public:
 protected:
 	// 부모 가상 함수
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 private:
 	UFUNCTION()
@@ -27,14 +28,18 @@ private:
 		bool bFromSweep,
 		const FHitResult& SweepResult);
 
-protected:
-	// 퀘스트 트리거 타입
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQQuestTriggerType)
-	TMap<int32, EQuestTriggerType> mQuestTriggerTypeList;
+	UFUNCTION()
+	void OnTriggerEndOverlap(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex);
 
+protected:
 	// 충돌 박스
 	UPROPERTY(EditAnywhere, Category = FQBox, Category = FQBox)
 	TObjectPtr<class UBoxComponent> mTrigger;
 
 private:
+	int8 mPlayerNumber;
+	float mDurationTime;
 };

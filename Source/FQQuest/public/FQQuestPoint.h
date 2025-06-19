@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "FQUI/Quest/FQQuestPointWidget.h"
 #include "FQQuestPoint.generated.h"
 
 UCLASS()
@@ -14,17 +15,18 @@ class FQQUEST_API AFQQuestPoint : public AActor
 public:	
 	AFQQuestPoint();
 
-protected:
-	// 부모 가상 함수
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
-
 	// 일반 함수
-	void SetVisibleWidget(bool IsVisible);
+	void SetVisible(bool IsVisible);
 
 	// 겟셋 함수
 	FORCEINLINE class UFQQuestPointWidget* GetQuestPointWidget() const { return mQuestPointWidget; }
 	FORCEINLINE int32 GetQuestID() const { return mQuestID; }
+	FORCEINLINE void SetQuestActive(bool QuestActive) { mbIsQuestActive = QuestActive; }
+
+protected:
+	// 부모 가상 함수
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 private:
 	// 콜백 함수
@@ -34,6 +36,8 @@ protected:
 	// 퀘스트 아이디
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQQuest)
 	int32 mQuestID;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQQuest)
+	EQuestSignType mQuestSignType;
 
 	// UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQUI)

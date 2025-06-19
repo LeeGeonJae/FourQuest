@@ -37,6 +37,8 @@ protected:
 	virtual void NativeConstruct() override;
 
 private:
+	EQuestStateType mCurrentStateType;
+
 	// 퀘스트 상태 텍스쳐
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQAnimation, Meta = (AllowPrivateAccess = "true"))
 	TMap<EQuestStateType, TObjectPtr<UTexture2D>> mQuestStateTexture;

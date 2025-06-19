@@ -27,6 +27,7 @@ public:
 	// 겟셋 함수
 	FORCEINLINE class UFQQuestWidget* GetQuestWidget() const { return mQuestWidget; }
 	FORCEINLINE EQuestStateType GetCurrentState() const { return mCurrentStateType; }
+	FORCEINLINE void SetOwnerQuest(AFQQuestBase* OwnerQuest) { mOwnerQuest = OwnerQuest; }
 	FORCEINLINE void SetQuestID(const int32 QuestID) { mQuestID = QuestID; }
 	FORCEINLINE int32 GetQuestID() const { return mQuestID; }
 	FORCEINLINE void SetQuestClearConditionNumber(const int32 QuestClearConditionNumber) { mQuestClearConditionNumber = QuestClearConditionNumber; }
@@ -47,7 +48,7 @@ private:
 	// 콜백 함수
 	void UpdateQuestActive(int32 QuestID, bool bIsQuestActive);
 
-private:
+protected:
 	// 퀘스트 내용
 	int32 mQuestID;
 	FString mDescription;
@@ -68,7 +69,13 @@ private:
 
 	// 서브 퀘스트 목록
 	UPROPERTY()
-	TMap<int32, TObjectPtr<class AFQQuestBase>> mSubQuestList;
+	TMap<int32, TObjectPtr<AFQQuestBase>> mSubQuestList;
+	UPROPERTY()
+	TWeakObjectPtr<AFQQuestBase> mOwnerQuest;
+
+	// 퀘스트 포인터
+	UPROPERTY()
+	TObjectPtr<class AFQQuestPoint> mQuestPointer;
 
 	// UI
 	UPROPERTY()

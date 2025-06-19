@@ -8,6 +8,7 @@
 #include "Components/VerticalBoxSlot.h"
 
 UFQQuestWidget::UFQQuestWidget()
+	: mCurrentStateType(EQuestStateType::Started)
 {
 }
 
@@ -25,18 +26,23 @@ void UFQQuestWidget::NativeConstruct()
 
 void UFQQuestWidget::UpdateQuestActive(bool bIsQuestActive)
 {
-	if (bIsQuestActive)
+	if (bIsQuestActive && (mCurrentStateType == EQuestStateType::Exit || mCurrentStateType == EQuestStateType::End))
+	{
+		mQuestDescriptionText->SetColorAndOpacity(FColor::Green);
+	}
+	else if (bIsQuestActive)
 	{
 		mQuestDescriptionText->SetColorAndOpacity(FColor::White);
 	}
 	else
 	{
-		mQuestDescriptionText->SetColorAndOpacity(FLinearColor(0.4f, 0.4f, 0.4f));
+		mQuestDescriptionText->SetColorAndOpacity(FLinearColor(0.6f, 0.6f, 0.6f));
 	}
 }
 
 void UFQQuestWidget::UpdateQuestState(EQuestStateType QuestStateType)
 {
+	mCurrentStateType = QuestStateType;
 	if (QuestStateType == EQuestStateType::End)
 	{
 		return;
@@ -44,7 +50,7 @@ void UFQQuestWidget::UpdateQuestState(EQuestStateType QuestStateType)
 
 	if (auto FoundTexture = mQuestStateTexture.Find(QuestStateType))
 	{
-		if (mCurrentStateImage)
+		if (mCurrentStateImage && mCurrentStateType != EQuestStateType::InPrograss)
 		{
 			mCurrentStateImage->SetBrushFromTexture(*FoundTexture);
 		}
@@ -62,6 +68,7 @@ void UFQQuestWidget::UpdateQuestState(EQuestStateType QuestStateType)
 			return;
 		}
 
+		mQuestDescriptionText->SetColorAndOpacity(FColor::Green);
 		mCheckLeft->SetVisibility(ESlateVisibility::Visible);
 		mCheckRight->SetVisibility(ESlateVisibility::Visible);
 	}
@@ -71,7 +78,6 @@ void UFQQuestWidget::UpdateQuestStateAnimation(float Value)
 {
 	if (mCurrentStateImage)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[UFQQuestWidget %d] UpdateQuestStateAnimation Value : %f"), __LINE__, Value);
 		mCurrentStateImage->SetBrushTintColor(FLinearColor(1.f, 1.f, 1.f, 1 - Value));
 	}
 }
@@ -80,8 +86,7 @@ void UFQQuestWidget::UpdateQuestStateCheckBoxAnimation(float Value)
 {
 	if (mCheckLeft && mCheckRight)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[UFQQuestWidget %d] UpdateQuestStateCheckBoxAnimation Value : %f"), __LINE__, Value);
-		float BrushSize = FMath::Lerp(30, 15, Value);
+		float BrushSize = FMath::Lerp(40, 25, Value);
 		mCheckLeft->SetBrushSize(FVector2D(BrushSize));
 		mCheckRight->SetBrushSize(FVector2D(BrushSize));
 	}
@@ -125,7 +130,7 @@ void UFQQuestWidget::AddSubQuestListWidget(UFQUserWidget* QuestWidget)
 	if (NewSlot)
 	{
 		// 슬롯 속성 설정
-		NewSlot->SetPadding(FMargin(0.f, 10.f, 0.f, 10.f));
+		NewSlot->SetPadding(FMargin(0.f, 0.f, 0.f, -10.f));
 		NewSlot->SetHorizontalAlignment(HAlign_Left);
 		NewSlot->SetVerticalAlignment(VAlign_Top);
 	}

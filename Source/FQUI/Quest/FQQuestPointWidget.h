@@ -24,10 +24,11 @@ public:
 	UFQQuestPointWidget();
 
 	// 일반 함수
-	void UpdateQuestPosition(FVector2D NormalDirection);
+	void UpdateQuestPosition(FVector2D DirectionDistance);
 	void UpdateQuestActive(bool bIsActive);
 
 	// 겟셋 함수
+	FORCEINLINE void SetQuestSignType(EQuestSignType QuestSignType) { mQuestSignType = QuestSignType; }
 	FORCEINLINE void SetQuestSignActive(const bool bIsSignActive) { mbIsQuestSignActive = bIsSignActive; }
 	FORCEINLINE bool GetQuestSignActive() { return mbIsQuestSignActive; }
 	FORCEINLINE void SetQuestID(const int32 QuestID) { mQuestID = QuestID; }

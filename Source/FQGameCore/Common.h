@@ -66,7 +66,7 @@ namespace FQ_InGameSetting
 
 	struct FVideoInfomation
 	{
-		FVideoInfomation() : mbIsFullScreen(false), mCurrentResolutionType(EResolutionType::Resolution_1920x1080) {}
+		FVideoInfomation() : mbIsFullScreen(false), mCurrentResolutionType(EResolutionType::Resolution_1600x900) {}
 
 		uint8 mbIsFullScreen : 1;
 		EResolutionType mCurrentResolutionType;
@@ -138,6 +138,17 @@ enum class EQuestMonsterType : uint8
 	CommonRangedMonster		UMETA(DisplayName = "CommonRangedMonster"),
 	CommonSpawnerMonster	UMETA(DisplayName = "CommonSpawnerMonster"),
 	BossMonster				UMETA(DisplayName = "BossMonster"),
+
+	MonsterGroup_1			UMETA(DisplayName = "MonsterGroup_1"),
+	MonsterGroup_2			UMETA(DisplayName = "MonsterGroup_2"),
+	MonsterGroup_3			UMETA(DisplayName = "MonsterGroup_3"),
+	MonsterGroup_4			UMETA(DisplayName = "MonsterGroup_4"),
+	MonsterGroup_5			UMETA(DisplayName = "MonsterGroup_5"),
+	MonsterGroup_6			UMETA(DisplayName = "MonsterGroup_6"),
+	MonsterGroup_7			UMETA(DisplayName = "MonsterGroup_7"),
+	MonsterGroup_8			UMETA(DisplayName = "MonsterGroup_8"),
+	MonsterGroup_9			UMETA(DisplayName = "MonsterGroup_9"),
+	MonsterGroup_10			UMETA(DisplayName = "MonsterGroup_10"),
 };
 
 UENUM()
@@ -146,8 +157,8 @@ enum class EQuestInteractionType : uint8
 	None			UMETA(DisplayName = "None"),
 	Teleport		UMETA(DisplayName = "Teleport"),
 	Activate		UMETA(DisplayName = "Activate"),
-	Arrive			UMETA(DisplayName = "Activate"),
-	Escape			UMETA(DisplayName = "Activate"),
+	Arrive			UMETA(DisplayName = "Arrive"),
+	Escape			UMETA(DisplayName = "Escape"),
 	Capture			UMETA(DisplayName = "Capture"),
 };
 

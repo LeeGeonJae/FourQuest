@@ -5,9 +5,12 @@
 #include "FQQuestInProgressState.h"
 #include "FQUI\Quest\FQQuestWidget.h"
 #include "FQGameCore\Quest\FQQuestSystem.h"
-
 #include "FQMonsterKillQuest.h"
 #include "FQInteractionQuest.h"
+#include "FQQuestPoint.h"
+
+#include "Kismet\GameplayStatics.h"
+#include "GameFramework/GameModeBase.h"
 
 AFQQuestBase::AFQQuestBase()
 	: mQuestID()
@@ -53,44 +56,28 @@ void AFQQuestBase::BeginPlay()
 		// UI 활성화
 		mQuestWidget->UpdateQuestActive(MyQuestData->mbIsActive);
 	}
+
+	// 퀘스트 포인트 찾아서 표시하기
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFQQuestPoint::StaticClass(), FoundActors);
+	for (auto Actor : FoundActors)
+	{
+		AFQQuestPoint* QuestPoint = Cast<AFQQuestPoint>(Actor);
+		if (QuestPoint && QuestPoint->GetQuestID() == GetQuestID())
+		{
+			QuestPoint->SetVisible(true);
+			break;
+		}
+	}
 }
 
 
 void AFQQuestBase::UpdateQuest(float DeltaTime)
 {
+	// 퀘스트 상태 업데이트
 	if (mCurrentState)
 	{
 		mCurrentState->UpdateState(DeltaTime);
-	}
-
-	if (!mQuestWidget)
-	{
-		return;
-	}
-
-	switch (mCurrentStateType)
-	{
-	case EQuestStateType::Started:
-	{
-		UFQQuestStartedState* MyState = Cast<UFQQuestStartedState>(mCurrentState);
-		if (MyState)
-		{
-			mQuestWidget->UpdateQuestStateAnimation(MyState->GetDurationValue());
-		}
-	}
-	break;
-	case EQuestStateType::InPrograss:
-		break;
-	case EQuestStateType::Exit:
-	{
-		UFQQuestCompletedState* MyState = Cast<UFQQuestCompletedState>(mCurrentState);
-		if (MyState)
-		{
-			mQuestWidget->UpdateQuestStateAnimation(MyState->GetDurationValue());
-			mQuestWidget->UpdateQuestStateCheckBoxAnimation(MyState->GetDurationValue());
-		}
-	}
-	break;
 	}
 
 	// 서브 퀘스트 업데이트
@@ -104,6 +91,45 @@ void AFQQuestBase::UpdateQuest(float DeltaTime)
 			}
 		}
 	}
+
+	// UI 업데이트
+	switch (mCurrentStateType)
+	{
+	case EQuestStateType::Started:
+	{
+		// 퀘스트 포인트 찾아서 표시하기
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFQQuestPoint::StaticClass(), FoundActors);
+		for (auto Actor : FoundActors)
+		{
+			AFQQuestPoint* QuestPoint = Cast<AFQQuestPoint>(Actor);
+			if (QuestPoint && QuestPoint->GetQuestID() == GetQuestID())
+			{
+				QuestPoint->SetVisible(true);
+				break;
+			}
+		}
+
+		// 퀘스트 UI 업데이트
+		UFQQuestStartedState* MyState = Cast<UFQQuestStartedState>(mCurrentState);
+		if (MyState)
+		{
+			mQuestWidget->UpdateQuestStateAnimation(MyState->GetDurationValue());
+		}
+	}
+	break;
+	case EQuestStateType::Exit:
+	{
+		// 퀘스트 UI 업데이트
+		UFQQuestCompletedState* MyState = Cast<UFQQuestCompletedState>(mCurrentState);
+		if (MyState)
+		{
+			mQuestWidget->UpdateQuestStateAnimation(MyState->GetDurationValue());
+			mQuestWidget->UpdateQuestStateCheckBoxAnimation(MyState->GetDurationValue());
+		}
+	}
+	break;
+	}
 }
 
 void AFQQuestBase::SetNewState(const EQuestStateType NewState)
@@ -111,24 +137,27 @@ void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 	mCurrentStateType = NewState;
 	switch (mCurrentStateType)
 	{
+	case EQuestStateType::Started:
+	{
+
+	}
+	break;
 	case EQuestStateType::InPrograss:
 	{
+		// 상태 업데이트
 		mCurrentState->ExitState();
 		mCurrentState = NewObject<UFQQuestInProgressState>(this);
 		mCurrentState->SetOwnerQuestObject(this);
 		mCurrentState->EnterState();
-
-		UE_LOG(LogTemp, Log, TEXT("[AFQQuestBase %d] 퀘스트 현재 상태 : InPrograss"), __LINE__);
 	}
 	break;
 	case EQuestStateType::Exit:
 	{
+		// 상태 업데이트
 		mCurrentState->ExitState();
 		mCurrentState = NewObject<UFQQuestCompletedState>(this);
 		mCurrentState->SetOwnerQuestObject(this);
 		mCurrentState->EnterState();
-
-		UE_LOG(LogTemp, Log, TEXT("[AFQQuestBase %d] 퀘스트 현재 상태 : Exit"), __LINE__);
 
 		// 서브 퀘스트 삭제
 		RemoveSubQuest();
@@ -139,12 +168,24 @@ void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 		{
 			QuestSystem->GetQuestData(GetQuestID())->mbIsQuestClear = true;
 		}
+
+		// 퀘스트 포인트 Off
+		TArray<AActor*> FoundActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFQQuestPoint::StaticClass(), FoundActors);
+		for (auto Actor : FoundActors)
+		{
+			AFQQuestPoint* QuestPoint = Cast<AFQQuestPoint>(Actor);
+			if (QuestPoint && QuestPoint->GetQuestID() == GetQuestID())
+			{
+				QuestPoint->SetVisible(false);
+				break;
+			}
+		}
 	}
 	break;
 	case EQuestStateType::End:
 	{
 		mCurrentState = nullptr;
-		UE_LOG(LogTemp, Log, TEXT("[AFQQuestBase %d] 퀘스트 현재 상태 : End"), __LINE__);
 	}
 	break;
 	}
@@ -211,6 +252,7 @@ void AFQQuestBase::CreateSubQuest(int32 QuestID)
 			MonsterKillQuest->SetQuestClearConditionNumber(QuestData->QuestClearConditionsNumber);
 			MonsterKillQuest->SetQuestDescription(QuestData->QuestDescription);
 			MonsterKillQuest->SetQuestMonsterType(QuestData->QuestMonsterType);
+			MonsterKillQuest->SetOwnerQuest(this);
 			MonsterKillQuest->FinishSpawning(FTransform());
 			mSubQuestList.Emplace(QuestData->QuestNumber, *MonsterKillQuest);
 
@@ -228,6 +270,7 @@ void AFQQuestBase::CreateSubQuest(int32 QuestID)
 			InteractionQuest->SetQuestClearConditionNumber(QuestData->QuestClearConditionsNumber);
 			InteractionQuest->SetQuestInteractionType(QuestData->QuestInteractionType);
 			InteractionQuest->SetQuestDescription(QuestData->QuestDescription);
+			InteractionQuest->SetOwnerQuest(this);
 			InteractionQuest->FinishSpawning(FTransform());
 			mSubQuestList.Emplace(QuestData->QuestNumber, *InteractionQuest);
 
