@@ -14,4 +14,10 @@ class FQMONSTER_API AFQMeleeMonster : public AFQMonsterBase
 {
 	GENERATED_BODY()
 	
+public:
+	virtual void BeginPlay()override;
+
+	void Hit();
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
 };

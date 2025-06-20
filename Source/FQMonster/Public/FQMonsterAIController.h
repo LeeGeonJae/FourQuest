@@ -24,6 +24,8 @@ public:
 
 	void ChangeTargetActor(AActor* Actor);
 
+	void PickRandomTarget();
+
 protected:
 	virtual void BeginPlay() override;
 
