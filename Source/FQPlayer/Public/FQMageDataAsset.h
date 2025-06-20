@@ -65,6 +65,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 마법진 크기가 최솟값이 되는 거리"))
 	float mMaxDistance;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 마법진 최대 크기"))
+	float mMaxScale;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Skill_A, meta = (ToolTip = "[A] 마법진 최소 크기"))
 	float mMinScale;
 

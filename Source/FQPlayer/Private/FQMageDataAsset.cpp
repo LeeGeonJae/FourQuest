@@ -21,6 +21,7 @@ UFQMageDataAsset::UFQMageDataAsset()
 	mExplosionCircleSpeed = 200.0f;
 	mMinDistance = 200.0f;
 	mMaxDistance = 500.0f;
+	mMaxScale = 1.0f;
 	mMinScale = 0.5f;
 	mExplosionDamageAmount = 5.0f;
 

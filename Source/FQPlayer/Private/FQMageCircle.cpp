@@ -45,6 +45,15 @@ void AFQMageCircle::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AFQMagePlayer* Player = Cast<AFQMagePlayer>(GetOwner());
+	if (!Player)
+	{
+		return;
+	}
+
+	SetScale(Player->GetCircleMaxScale());
+	UpdateComponentTransforms();
+
 	mVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	mEffect->OnSystemFinished.AddDynamic(this, &AFQMageCircle::OnEffectFinished);
 

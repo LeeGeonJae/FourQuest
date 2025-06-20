@@ -38,6 +38,8 @@ public:
 
 	virtual void ProcessHitInterrupt() override;
 
+	float GetCircleMaxScale();
+
 protected:
 	// Default
 	virtual void BeginPlay() override;

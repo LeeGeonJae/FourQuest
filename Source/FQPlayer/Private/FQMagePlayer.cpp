@@ -309,13 +309,13 @@ void AFQMagePlayer::ProcessInputMovement()
 		float MaxExcess = mMageDataAsset->mMaxDistance - mMageDataAsset->mMinDistance;
 
 		float Alpha = FMath::Clamp(ExcessDistance / MaxExcess, 0.0f, 1.0f);
-		float NewScaleFactor = FMath::Lerp(1.0f, mMageDataAsset->mMinScale, Alpha);
+		float NewScaleFactor = FMath::Lerp(mMageDataAsset->mMaxScale, mMageDataAsset->mMinScale, Alpha);
 
 		mExplosionCircle->SetScale(NewScaleFactor);
 	}
 	else
 	{
-		mExplosionCircle->SetScale(1.0f);
+		mExplosionCircle->SetScale(mMageDataAsset->mMaxScale);
 	}
 }
 
@@ -917,6 +917,16 @@ void AFQMagePlayer::ProcessHitInterrupt()
 	mStaff->DeactivateLaserEffect();
 	mStaff->DeactivateHitEffect();
 	mStaff->StopLaserAudio();
+}
+
+float AFQMagePlayer::GetCircleMaxScale()
+{
+	if (!mMageDataAsset)
+	{
+		return 1.0f;
+	}
+
+	return mMageDataAsset->mMaxScale;
 }
 
 void AFQMagePlayer::ProcessProjectileAttack()
