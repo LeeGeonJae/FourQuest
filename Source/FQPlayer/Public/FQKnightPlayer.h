@@ -41,6 +41,8 @@ public:
 
 	virtual void ProcessHitInterrupt() override;
 
+	void ProcessSwordAttack();
+
 protected:
 	// Default
 	virtual void BeginPlay() override;
@@ -109,15 +111,6 @@ protected:
 	TObjectPtr<class UBoxComponent> mShieldVolume;
 
 	// Effect
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[X] 공격 이펙트 1"))
-	TObjectPtr<class UNiagaraComponent> mSwordEffect1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[X] 공격 이펙트 2"))
-	TObjectPtr<class UNiagaraComponent> mSwordEffect2;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[X] 공격 이펙트 3"))
-	TObjectPtr<class UNiagaraComponent> mSwordEffect3;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[R] 방패 이펙트"))
 	TObjectPtr<class UNiagaraComponent> mShieldEffect;
 
@@ -127,6 +120,22 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UStaticMeshComponent> mShieldMesh;
+
+	// Sound
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> mBashHitAudio;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> mShieldAudio;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sound, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USoundBase> mSwordAttackAudio1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sound, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USoundBase> mSwordAttackAudio2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sound, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USoundBase> mSwordAttackAudio3;
 
 private:
 	void ApplyPush(class AActor* AttackableActor, float Strength);
@@ -161,7 +170,6 @@ private:
 	void StartSwordAttack();
 	void EndSwordAttack();
 	void PressedSwordAttack();
-	void CheckSwordAttackVolume();
 
 	// Shield
 	uint8 mbIsShielding : 1;

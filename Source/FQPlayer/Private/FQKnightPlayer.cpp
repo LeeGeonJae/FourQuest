@@ -5,11 +5,13 @@
 
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/AudioComponent.h"
 #include "NiagaraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "FQGameCore/Player/FQPlayerAttackableInterface.h"
 #include "FQGameCore/Player/FQPlayerStateInterface.h"
@@ -38,18 +40,6 @@ AFQKnightPlayer::AFQKnightPlayer()
 	mShieldVolume->SetupAttachment(RootComponent);
 
 	// Effect
-	mSwordEffect1 = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SwordEffect1"));
-	mSwordEffect1->SetAutoActivate(false);
-	mSwordEffect1->SetupAttachment(RootComponent);
-	
-	mSwordEffect2 = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SwordEffect2"));
-	mSwordEffect2->SetAutoActivate(false);
-	mSwordEffect2->SetupAttachment(RootComponent);
-	
-	mSwordEffect3 = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SwordEffect3"));
-	mSwordEffect3->SetAutoActivate(false);
-	mSwordEffect3->SetupAttachment(RootComponent);
-	
 	mShieldEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ShieldEffect"));
 	mShieldEffect->SetAutoActivate(false);
 	mShieldEffect->SetupAttachment(RootComponent);
@@ -60,6 +50,15 @@ AFQKnightPlayer::AFQKnightPlayer()
 
 	mShieldMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShieldMesh"));
 	mShieldMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Sound
+	mBashHitAudio = CreateDefaultSubobject<UAudioComponent>(TEXT("BashAttackAudio"));
+	mBashHitAudio->SetupAttachment(RootComponent);
+	mBashHitAudio->SetAutoActivate(false);
+
+	mShieldAudio = CreateDefaultSubobject<UAudioComponent>(TEXT("ShieldAudio"));
+	mShieldAudio->SetupAttachment(RootComponent);
+	mShieldAudio->SetAutoActivate(false);
 }
 
 void AFQKnightPlayer::Tick(float DeltaSeconds)
@@ -142,8 +141,6 @@ void AFQKnightPlayer::DisableAttackVolume()
 	// Debug
 	UE_LOG(LogTemp, Log, TEXT("[DisableSwordAttackVolume]"));
 
-	CheckSwordAttackVolume();
-
 	mSwordAttackVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
@@ -185,25 +182,6 @@ void AFQKnightPlayer::BeginPlay()
 	{
 		PSInterface->SetMaxHp(mKnightDataAsset->mMaxHp);
 	}
-	
-	// Effect 설정
-	if (mSwordEffect1)
-	{
-		mSwordEffect1->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim1->GetPlayLength() * mSwordAttackAnim1->RateScale);
-		mSwordEffect1->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor1);
-	}
-	
-	if (mSwordEffect2)
-	{
-		mSwordEffect2->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim2->GetPlayLength() * mSwordAttackAnim2->RateScale);
-		mSwordEffect2->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor2);
-	}
-
-	if (mSwordEffect3)
-	{
-		mSwordEffect3->SetFloatParameter(FName(TEXT("Overall_LifeTime")), mSwordAttackAnim3->GetPlayLength() * mSwordAttackAnim3->RateScale);
-		mSwordEffect3->SetFloatParameter(FName(TEXT("Overall_Scale")), mKnightDataAsset->mSwordEffectScaleFactor3);
-	}
 
 	// Weapon Mesh
 	if (mSwordMesh)
@@ -215,6 +193,10 @@ void AFQKnightPlayer::BeginPlay()
 	{
 		mShieldMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("Knight_Shield")));
 	}
+
+	// Sound
+	mBashHitAudio->RegisterComponent();
+	mShieldAudio->RegisterComponent();
 }
 
 void AFQKnightPlayer::SetInputMappingContext()
@@ -332,6 +314,42 @@ void AFQKnightPlayer::ProcessHitInterrupt()
 	}
 }
 
+void AFQKnightPlayer::ProcessSwordAttack()
+{
+	TArray<AActor*> OverlappedActors;
+	mSwordAttackVolume->GetOverlappingActors(OverlappedActors);
+	for (AActor* Actor : OverlappedActors)
+	{
+		if (!Actor)
+		{
+			return;
+		}
+
+		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+		if (!RootComp)
+		{
+			return;
+		}
+
+		if (RootComp == GetRootComponent())
+		{
+			continue;
+		}
+
+		if (mKnightDataAsset->mSwordAttackableTypes.IsEmpty())
+		{
+			return;
+		}
+
+		if (!mKnightDataAsset->mSwordAttackableTypes.Contains(RootComp->GetCollisionObjectType()))
+		{
+			continue;
+		}
+
+		ApplySwordAttackDamage(Actor);
+	}
+}
+
 void AFQKnightPlayer::EnableBashVolume()
 {
 	if (!mBashVolume)
@@ -377,6 +395,11 @@ void AFQKnightPlayer::EnableShieldVolume()
 
 	// 이미 Shield Volume에 오버랩된 액터 밀어내기
 	CheckShiedVolume();
+
+	if (!mShieldAudio->IsPlaying())
+	{
+		mShieldAudio->Play();
+	}
 }
 
 void AFQKnightPlayer::DisableShieldVolume()
@@ -393,6 +416,8 @@ void AFQKnightPlayer::DisableShieldVolume()
 
 	mShieldEffect->ResetSystem();
 	mShieldEffect->Deactivate();
+
+	mShieldAudio->Stop();
 }
 
 float AFQKnightPlayer::GetShieldMoveAngle()
@@ -467,8 +492,6 @@ void AFQKnightPlayer::StartSwordAttack()
 		// 공격 상태 설정
 		mSwordAttackState = EKnightSwordAttackState::Attack1;
 
-		mSwordEffect1->Activate();
-
 		// 애니메이션 재생
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (!AnimInstance)
@@ -508,8 +531,6 @@ void AFQKnightPlayer::StartSwordAttack()
 
 			mSwordAttackState = EKnightSwordAttackState::Attack2;
 
-			mSwordEffect2->Activate();
-
 			AnimInstance->Montage_Play(mSwordAttackAnim2);
 
 			GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
@@ -533,8 +554,6 @@ void AFQKnightPlayer::StartSwordAttack()
 			}
 
 			mSwordAttackState = EKnightSwordAttackState::Attack3;
-
-			mSwordEffect3->Activate();
 
 			AnimInstance->Montage_Play(mSwordAttackAnim3);
 
@@ -716,8 +735,6 @@ void AFQKnightPlayer::OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInte
 		{
 			mSwordAttackState = EKnightSwordAttackState::Attack2;
 
-			mSwordEffect2->Activate();
-
 			mSwordAttackComboState = EComboState::CanBeCombo;
 
 			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -750,8 +767,6 @@ void AFQKnightPlayer::OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInte
 		if (mSwordAttackComboState == EComboState::Combo)
 		{
 			mSwordAttackState = EKnightSwordAttackState::Attack3;
-
-			mSwordEffect3->Activate();
 
 			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 			if (!AnimInstance)
@@ -875,6 +890,11 @@ void AFQKnightPlayer::CheckBashVolume()
 
 		ApplyDamageToTarget(mKnightDataAsset->mBashDamage, Actor);
 		ApplyPush(Actor, mKnightDataAsset->mBashStrength);
+
+		if (!mBashHitAudio->IsPlaying())
+		{
+			mBashHitAudio->Play();
+		}
 	}
 }
 
@@ -908,6 +928,11 @@ void AFQKnightPlayer::OnBashVolumeBeginOverlap(UPrimitiveComponent* OverlappedCo
 
 	ApplyDamageToTarget(mKnightDataAsset->mBashDamage, OtherActor);
 	ApplyPush(OtherActor, mKnightDataAsset->mBashStrength);
+
+	if (!mBashHitAudio->IsPlaying())
+	{
+		mBashHitAudio->Play();
+	}
 }
 
 void AFQKnightPlayer::ResetSwordAttackCombo()
@@ -934,42 +959,6 @@ void AFQKnightPlayer::PressedSwordAttack()
 	mbIsPressedX = true;
 }
 
-void AFQKnightPlayer::CheckSwordAttackVolume()
-{
-	TArray<AActor*> OverlappedActors;
-	mSwordAttackVolume->GetOverlappingActors(OverlappedActors);
-	for (AActor* Actor : OverlappedActors)
-	{
-		if (!Actor)
-		{
-			return;
-		}
-
-		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
-		if (!RootComp)
-		{
-			return;
-		}
-
-		if (RootComp == GetRootComponent())
-		{
-			continue;
-		}
-
-		if (mKnightDataAsset->mSwordAttackableTypes.IsEmpty())
-		{
-			return;
-		}
-
-		if (!mKnightDataAsset->mSwordAttackableTypes.Contains(RootComp->GetCollisionObjectType()))
-		{
-			continue;
-		}
-
-		ApplySwordAttackDamage(Actor);
-	}
-}
-
 void AFQKnightPlayer::ApplySwordAttackDamage(AActor* AttackableActor)
 {
 	UE_LOG(LogTemp, Log, TEXT("[ApplyDamage] Current Type : %s"), *UEnum::GetValueAsString(mSwordAttackState));
@@ -985,18 +974,32 @@ void AFQKnightPlayer::ApplySwordAttackDamage(AActor* AttackableActor)
 	case EKnightSwordAttackState::Attack1:
 	{
 		ApplyDamageToTarget(mKnightDataAsset->mSwordAttackDamage1, AttackableActor);
-		
+
+		if (mSwordAttackAudio1)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(this, mSwordAttackAudio1, GetActorLocation());
+		}
 	}
 	break;
 	case EKnightSwordAttackState::Attack2:
 	{
 		ApplyDamageToTarget(mKnightDataAsset->mSwordAttackDamage2, AttackableActor);
+
+		if (mSwordAttackAudio2)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(this, mSwordAttackAudio2, GetActorLocation());
+		}
 	}
 	break;
 	case EKnightSwordAttackState::Attack3:
 	{
 		ApplyDamageToTarget(mKnightDataAsset->mSwordAttackDamage3, AttackableActor);
 		ApplyPush(AttackableActor, mKnightDataAsset->mSwordAttackStrength);
+
+		if (mSwordAttackAudio3)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(this, mSwordAttackAudio3, GetActorLocation());
+		}
 	}
 	break;
 	}

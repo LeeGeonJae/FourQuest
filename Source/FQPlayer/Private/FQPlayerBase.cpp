@@ -219,7 +219,7 @@ void AFQPlayerBase::SetMovement()
 	// Movement
 	// 캐릭터 무브먼트 설정
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 3000.0f, 0.0f);
 	GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;

@@ -32,11 +32,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UDecalComponent> mDecal;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> mCircleAudio;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> mExplosionAudio;
+
 	void ActivateEffect();
 	void SetScale(float ScaleFactor);
 
 	UFUNCTION()
 	void OnEffectFinished(class UNiagaraComponent* PSystem);
+
+	void PlayCircleAudio();
+	void StopCircleAudio();
+
+	void PlayExplosionAudio();
 
 private:
 	FVector mInitBoxExtent;

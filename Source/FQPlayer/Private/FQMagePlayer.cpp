@@ -609,6 +609,7 @@ void AFQMagePlayer::StartExplosion()
 	if (mExplosionCircle)
 	{
 		mExplosionState = EMageExplosionState::Enabled;
+		mExplosionCircle->PlayCircleAudio();
 	}
 }
 
@@ -638,6 +639,9 @@ void AFQMagePlayer::EndExplosion()
 
 void AFQMagePlayer::ProcessExplosion()
 {
+	mExplosionCircle->PlayExplosionAudio();
+	mExplosionCircle->StopCircleAudio();
+
 	TArray<AActor*> OverlappedActors;
 	mExplosionCircle->mVolume->GetOverlappingActors(OverlappedActors);
 	for (AActor* Actor : OverlappedActors)
@@ -710,6 +714,9 @@ void AFQMagePlayer::StartLaser(const FInputActionValue& Value)
 	// 상태 설정
 	mLaserState = EMageLaserState::InputReceived;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+
+	// 사운드 재생
+	mStaff->PlayLaserAudio();
 }
 
 void AFQMagePlayer::PressedLaser(const FInputActionValue& Value)
@@ -746,7 +753,7 @@ void AFQMagePlayer::PressedLaser(const FInputActionValue& Value)
 
 void AFQMagePlayer::EndLaser()
 {
-	if (mLaserState != EMageLaserState::Enabled)
+	if (!(mLaserState == EMageLaserState::Preparing || mLaserState == EMageLaserState::Enabled))
 	{
 		return;
 	}
@@ -767,6 +774,7 @@ void AFQMagePlayer::EndLaser()
 
 	mStaff->DeactivateLaserEffect();
 	mStaff->DeactivateHitEffect();
+	mStaff->StopLaserAudio();
 
 	mCurrentLaserTarget = nullptr;
 
@@ -908,6 +916,7 @@ void AFQMagePlayer::ProcessHitInterrupt()
 
 	mStaff->DeactivateLaserEffect();
 	mStaff->DeactivateHitEffect();
+	mStaff->StopLaserAudio();
 }
 
 void AFQMagePlayer::ProcessProjectileAttack()
@@ -930,6 +939,7 @@ void AFQMagePlayer::ProcessProjectileAttack()
 		Projectile->SetLifeSpan(mMageDataAsset->mProjectileDuration);
 		Projectile->SetCount(mMageDataAsset->mProjectileCount);
 		Projectile->LaunchProjectile(mLookAtDirection, mMageDataAsset->mProjectileSpeed);
+		Projectile->PlayProjectileAudio();
 
 		UE_LOG(LogTemp, Log, TEXT("[ProcessProjectileAttack] 생성 성공"));
 	}
@@ -973,12 +983,7 @@ void AFQMagePlayer::CheckProjectileAttackVolume()
 			continue;
 		}
 
-		if (mMageDataAsset->mProjectileAttackableTypes.IsEmpty())
-		{
-			return;
-		}
-
-		if (!mMageDataAsset->mProjectileAttackableTypes.Contains(RootComp->GetCollisionObjectType()))
+		if (RootComp->GetCollisionObjectType() != ECollisionChannel::ECC_GameTraceChannel3)
 		{
 			continue;
 		}

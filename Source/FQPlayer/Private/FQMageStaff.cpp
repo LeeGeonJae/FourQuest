@@ -3,6 +3,7 @@
 
 #include "FQPlayer/Public/FQMageStaff.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/AudioComponent.h"
 #include "NiagaraComponent.h"
 
 // Sets default values
@@ -25,19 +26,30 @@ AFQMageStaff::AFQMageStaff()
 	mHitEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("HitEffect"));
 	mHitEffect->SetAutoActivate(false);
 	mHitEffect->SetupAttachment(RootComponent);
+
+	mLaserAudio = CreateDefaultSubobject<UAudioComponent>(TEXT("LaserAudio"));
+	mLaserAudio->SetupAttachment(RootComponent);
+	mLaserAudio->SetAutoActivate(false);
+
+	mHitAudio = CreateDefaultSubobject<UAudioComponent>(TEXT("HitAudio"));
+	mHitAudio->SetupAttachment(RootComponent);
+	mHitAudio->SetAutoActivate(false);
 }
+
 
 // Called when the game starts or when spawned
 void AFQMageStaff::BeginPlay()
 {
 	Super::BeginPlay();
+
+	mLaserAudio->RegisterComponent();
+	mHitAudio->RegisterComponent();
 }
 
 // Called every frame
 void AFQMageStaff::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AFQMageStaff::ActivateLaserEffect(const FVector& End)
@@ -69,6 +81,11 @@ void AFQMageStaff::DeactivateLaserEffect()
 	}
 
 	mLaserEffect->Deactivate();
+
+	if (!mLaserAudio)
+	{
+		return;
+	}
 }
 
 void AFQMageStaff::ActivateHitEffect(const FVector& End)
@@ -84,6 +101,11 @@ void AFQMageStaff::ActivateHitEffect(const FVector& End)
 	}
 	
 	mHitEffect->SetWorldLocation(End);
+
+	if (!mHitAudio->IsPlaying())
+	{
+		mHitAudio->Play();
+	}
 }
 
 void AFQMageStaff::DeactivateHitEffect()
@@ -99,6 +121,29 @@ void AFQMageStaff::DeactivateHitEffect()
 	}
 
 	mHitEffect->Deactivate();
+}
+
+void AFQMageStaff::PlayLaserAudio()
+{
+	if (!mLaserAudio)
+	{
+		return;
+	}
+
+	if (!mLaserAudio->IsPlaying())
+	{
+		mLaserAudio->Play();
+	}	
+}
+
+void AFQMageStaff::StopLaserAudio()
+{
+	if (!mLaserAudio)
+	{
+		return;
+	}
+
+	mLaserAudio->Stop();
 }
 
 const FVector AFQMageStaff::GetLaserEffectLocation()

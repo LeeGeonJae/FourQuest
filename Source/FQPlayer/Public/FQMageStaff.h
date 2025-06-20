@@ -18,14 +18,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<class UStaticMeshComponent> mStaticMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<class UNiagaraComponent> mLaserEffect;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<class UNiagaraComponent> mHitEffect;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<class USceneComponent> mLaserEffectLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> mLaserAudio;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAudioComponent> mHitAudio;
 
 protected:
 	// Called when the game starts or when spawned
@@ -41,4 +47,7 @@ public:
 
 	void ActivateHitEffect(const FVector& End);
 	void DeactivateHitEffect();
+
+	void PlayLaserAudio();
+	void StopLaserAudio();
 };

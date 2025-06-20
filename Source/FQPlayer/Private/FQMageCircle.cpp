@@ -5,6 +5,7 @@
 
 #include "Components/BoxComponent.h"
 #include "Components/DecalComponent.h"
+#include "Components/AudioComponent.h"
 #include "NiagaraComponent.h"
 
 #include "FQPlayer/Public/FQMagePlayer.h"
@@ -29,6 +30,14 @@ AFQMageCircle::AFQMageCircle()
 	mDecal = CreateDefaultSubobject<UDecalComponent>(TEXT("Decal"));
 	mDecal->DecalSize = mInitDecalSize;
 	mDecal->SetupAttachment(RootComponent);
+
+	mCircleAudio = CreateDefaultSubobject<UAudioComponent>(TEXT("CircleAudio"));
+	mCircleAudio->SetupAttachment(RootComponent);
+	mCircleAudio->SetAutoActivate(false);
+
+	mExplosionAudio = CreateDefaultSubobject<UAudioComponent>(TEXT("ExplosionAudio"));
+	mExplosionAudio->SetupAttachment(RootComponent);
+	mExplosionAudio->SetAutoActivate(false);
 }
 
 // Called when the game starts or when spawned
@@ -38,6 +47,9 @@ void AFQMageCircle::BeginPlay()
 
 	mVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	mEffect->OnSystemFinished.AddDynamic(this, &AFQMageCircle::OnEffectFinished);
+
+	mCircleAudio->RegisterComponent();
+	mExplosionAudio->RegisterComponent();
 }
 
 // Called every frame
@@ -77,5 +89,42 @@ void AFQMageCircle::OnEffectFinished(UNiagaraComponent* PSystem)
 
 	Destroy();
 }
+
+void AFQMageCircle::PlayCircleAudio()
+{
+	if (!mCircleAudio)
+	{
+		return;
+	}
+
+	if (!mCircleAudio->IsPlaying())
+	{
+		mCircleAudio->Play();
+	}
+}
+
+void AFQMageCircle::StopCircleAudio()
+{
+	if (!mCircleAudio)
+	{
+		return;
+	}
+
+	mCircleAudio->Stop();
+}
+
+void AFQMageCircle::PlayExplosionAudio()
+{
+	if (!mExplosionAudio)
+	{
+		return;
+	}
+
+	if (!mExplosionAudio->IsPlaying())
+	{
+		mExplosionAudio->Play();
+	}
+}
+
 
 
