@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "FQGameCore\GameMode\FQGameModeInterface.h"
+#include "FQGameCore\GameMode/FQGameModeUIInputInterface.h"
 #include "FQUI\UI\FQSoulSelectScreenWidget.h"
 #include "FQGameMode_SoulSelect.generated.h"
 
@@ -12,7 +12,7 @@
  * 
  */
 UCLASS()
-class FOURQUEST_API AFQGameMode_SoulSelect : public AGameModeBase, public IFQGameModeInterface
+class FOURQUEST_API AFQGameMode_SoulSelect : public AGameModeBase, public IFQGameModeUIInputInterface
 {
 	GENERATED_BODY()
 	

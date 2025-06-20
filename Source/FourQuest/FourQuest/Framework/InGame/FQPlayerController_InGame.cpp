@@ -22,7 +22,9 @@
 #include "FQUI/Player/FQPlayerHUDWidget.h"
 #include "FQGameCore\Player\FQPlayerInputDataAsset.h"
 #include "FourQuest\FourQuest\Actor\FQPlayerUIActor.h"
+#include "FQGameCore/Quest/FQQuestSystem.h"
 #include "FQGameCore\GameInstance\FQGameInstanceInterface.h"
+#include "FQGameCore\GameMode\FQGameModeUIInputInterface.h"
 
 AFQPlayerController_InGame::AFQPlayerController_InGame()
 {
@@ -362,8 +364,18 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 
 void AFQPlayerController_InGame::HandlePickButton()
 {
+	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+	if (QuestSystem)
+	{
+		QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport, 1);
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonMeleeMonster, TEXT(""));
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonRangedMonster, TEXT(""));
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonSpawnerMonster, TEXT(""));
+		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::BossMonster, TEXT(""));
+	}
+
 	// 입력 버튼
-	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
+	IFQGameModeUIInputInterface* MyGameMode = Cast<IFQGameModeUIInputInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
 	{
 		if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
@@ -397,7 +409,7 @@ void AFQPlayerController_InGame::HandlePickButton()
 void AFQPlayerController_InGame::HandleCancelButton()
 {
 	// 취소 버튼
-	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
+	IFQGameModeUIInputInterface* MyGameMode = Cast<IFQGameModeUIInputInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
 	{
 		if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))
@@ -468,7 +480,7 @@ void AFQPlayerController_InGame::DoMove()
 	}
 	
 	// 이동
-	IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
+	IFQGameModeUIInputInterface* MyGameMode = Cast<IFQGameModeUIInputInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
 	{
 		if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetLocalPlayer()))

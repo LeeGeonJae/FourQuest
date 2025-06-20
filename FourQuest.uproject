@@ -10,13 +10,18 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
-				"CoreUObject"
+				"CoreUObject",
+				"FQUI"
 			]
 		},
 		{
 			"Name": "FQGameCore",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"CoreUObject"
+			]
 		},
 		{
 			"Name": "FQSoul",
@@ -55,6 +60,15 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"UMG"
+			]
+		},
+		{
+			"Name": "FQQuest",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"CoreUObject"
 			]
 		}
 	],

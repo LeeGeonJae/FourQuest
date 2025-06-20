@@ -7,6 +7,7 @@
 #include "FQUI\UI\FQTitleScreenWidget.h"
 #include "Kismet\KismetSystemLibrary.h"
 #include "Kismet\GameplayStatics.h"
+#include "FQGameCore\Quest\FQQuestSystem.h"
 
 AFQGameMode_Title::AFQGameMode_Title()
 {
@@ -25,6 +26,14 @@ void AFQGameMode_Title::BeginPlay()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("[AFQGameMode_Title %d] mTitleWidgetClass is nullptr"), __LINE__);
+	}
+
+	// 퀘스트 클리어 데이터 저장
+	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+	if (QuestSystem)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[AFQGameMode_Title %d] QuestSystem 퀘스트 데이터 리셋"), __LINE__);
+		QuestSystem->ResetQuestData();
 	}
 }
 

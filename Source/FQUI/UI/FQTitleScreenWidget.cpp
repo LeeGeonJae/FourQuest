@@ -2,7 +2,7 @@
 
 
 #include "FQTitleScreenWidget.h"
-#include "FQGameCore\GameMode\FQGameModeInterface.h"
+#include "FQGameCore\GameMode/FQGameModeUIInputInterface.h"
 #include "FQTitleSettingUI.h"
 #include "FQTitleAudioSettingUI.h"
 #include "FQTitleVideoSettingUI.h"
@@ -264,7 +264,7 @@ void UFQTitleScreenWidget::TitleSelectButton()
     {
     case ETitleButtonType::GameStart:
     {
-        IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
+        IFQGameModeUIInputInterface* MyGameMode = Cast<IFQGameModeUIInputInterface>(GetWorld()->GetAuthGameMode());
         if (MyGameMode)
         {
             MyGameMode->StartGame();
@@ -282,7 +282,7 @@ void UFQTitleScreenWidget::TitleSelectButton()
 	break;
 	case ETitleButtonType::GameExit:
 	{
-        IFQGameModeInterface* MyGameMode = Cast<IFQGameModeInterface>(GetWorld()->GetAuthGameMode());
+        IFQGameModeUIInputInterface* MyGameMode = Cast<IFQGameModeUIInputInterface>(GetWorld()->GetAuthGameMode());
         if (MyGameMode)
         {
             MyGameMode->ExitGame();
