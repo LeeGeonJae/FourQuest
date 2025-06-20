@@ -19,6 +19,9 @@ enum class EMonsterState : uint8
 	Chase UMETA(DisplayName = "Chase"),
 	Attack UMETA(DisplayName = "Attack"),
 	Hit UMETA(DisplayName = "Hit"),
+	Down UMETA(DisplayName = "Down"),
+	Rush UMETA(DisplayName = "Rush"),
+	Growl UMETA(DisplayName = "Growl"),
 	Death UMETA(DisplayName = "Death")
 };
 
@@ -42,7 +45,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void Attack(AActor* Actor);
+	virtual void Attack();
 
 	void ManagerSetTargetActor(AActor* Actor);
 	
@@ -52,9 +55,9 @@ public:
 
 	void SetCollisionEnabled(bool CollisionEnabled);
 
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
+	void ChangeState(EMonsterState NewState);
 
-	void Hit();
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
 
 	UFUNCTION()
 	void OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted);

@@ -17,10 +17,13 @@ class FQMONSTER_API AFQRangeMonster : public AFQMonsterBase
 	GENERATED_BODY()
 	
 public:
-	virtual void Attack(AActor* Target)override;
-
 	void ProjectileAttack();
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 	TSubclassOf<AFQRangeMonsterProjectile> mProjectile;
+
+	
 };

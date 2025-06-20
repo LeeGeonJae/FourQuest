@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "FQMonsterBase.h"
+#include "FQBossMonsterDataAsset.h"
 #include "FQBossMonster.generated.h"
 
 /**
@@ -16,18 +17,51 @@ class FQMONSTER_API AFQBossMonster : public AFQMonsterBase
 
 public:
 	AFQBossMonster();
+
+	virtual void BeginPlay() override;
+
+	virtual void Attack() override;
+
+	void StrikeAttack();
+
+	void Growl();
+
+	void PrepareRush();
+
+	void Rush();
+
+	void EndRush();
+
+	void SelectAttack();
+
+	void SelectSkill();
+
+	void Choose();
+
+	void Hit(FVector AttackPos);
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
+
+	UFUNCTION()
+	void OnChargeHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION()
+	void OnAttackOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
-	float mGrawlCooltime = 10.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
-	float mRushCooltime = 10.0f;
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
+	UFQBossMonsterDataAsset* mBossMonsterDataAsset;
 private:
-	uint8 mbCanGrawl : 1;
-	uint8 mbCanRush : 1;
+	FTimerHandle mSPPIncreaseTimer;
+	FTimerHandle mDownDecreaseTimer;
 
-	FTimerHandle mGrawlCoolTimer;
-	FTimerHandle mRushCoolTimer;
+	FVector mRushDirection;
+
+	float mDownGauge;
+
+	float mOriginalBrakingFrictionFactor;
+	float mOriginalGravityScale;
+
+	float mSPP;
 };

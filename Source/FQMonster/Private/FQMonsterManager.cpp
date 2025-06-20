@@ -50,5 +50,19 @@ void AFQMonsterManager::SetTargetActor(FName ID, AActor* Actor)
 	}
 }
 
+void AFQMonsterManager::ChangeTargetActor(FName ID, AActor* Actor)
+{
+	if (ID == TEXT("None"))
+		ID = TEXT("Default");
+	for (auto& Monster : mMonsterGroup[ID])
+	{
+		AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(Monster->GetController());
+		if (AIC)
+		{
+			AIC->ChangeTargetActor(Actor);
+		}
+	}
+}
+
 
 

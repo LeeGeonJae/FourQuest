@@ -9,6 +9,7 @@
 #include "EngineUtils.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 // Sets default values
@@ -27,6 +28,8 @@ AFQMonsterBase::AFQMonsterBase()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("MonsterCollision"));
 
 	GetMesh()->bReceivesDecals = false;
+
+	GetCharacterMovementComponent()->MaxWalkSpeed;
 }
 
 // Called when the game starts or when spawned
@@ -34,7 +37,8 @@ void AFQMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	mSpawnedLocation = GetActorLocation();
-
+	
+	
 	if (mMonsterDataAsset)
 	{
 		mCurrentHP = mMonsterDataAsset->mMaxHP;
@@ -73,7 +77,7 @@ void AFQMonsterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 }
 
-void AFQMonsterBase::Attack(AActor* Actor)
+void AFQMonsterBase::Attack()
 {
 	if (mAttackMontage)
 	{
@@ -122,32 +126,27 @@ void AFQMonsterBase::SetCollisionEnabled(bool CollisionEnabled)
 		mAttackBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
+void AFQMonsterBase::ChangeState(EMonsterState NewState)
+{
+	if (AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(GetController()))
+	{
+		AIC->ChangeState(NewState);
+	}
+}
+
 float AFQMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	if (AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(GetController()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Monster] TakeDamage"));
-
 		AIC->ChangeState(EMonsterState::Hit);
-		Hit();
-		AIC->ChangeTargetActor(DamageCauser);
 	}
 
 	return DamageAmount;
 }
 
-void AFQMonsterBase::Hit()
-{
-	if (mHitMontage)
-	{
-		const TArray<FName> Sections = { TEXT("Hit1"), TEXT("Hit2") };
-		int32 Index = FMath::RandRange(0, Sections.Num() - 1);
-		UE_LOG(LogTemp, Warning, TEXT("Hit Animation"))
-		PlayAnimMontage(mHitMontage,1.0f, Sections[Index]);
-	}
-}
+
 
 void AFQMonsterBase::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
@@ -157,8 +156,11 @@ void AFQMonsterBase::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 		AFQMonsterAIController* AIC = GetController<AFQMonsterAIController>();
 		if (AIC)
 		{
-			AIC->ChangeState(EMonsterState::Chase);
-			UE_LOG(LogTemp, Warning, TEXT("Hit Animation 종료"))
+			if(mMonsterState!=EMonsterState::Down)
+			{
+				AIC->ChangeState(EMonsterState::Chase);
+				UE_LOG(LogTemp, Warning, TEXT("Hit Animation 종료"))
+			}
 		}
 	}
 }
@@ -184,7 +186,6 @@ void AFQMonsterBase::TakePushByPlayer(AActor* Target, const FVector& Direction, 
 			Hit();
 		}
 	}
-	
 	LaunchCharacter(Direction * Strength, true, true);
 }
 

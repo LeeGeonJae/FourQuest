@@ -28,6 +28,7 @@ public:
 
 	void SetTargetActor(FName ID, AActor* Actor);
 
+	void ChangeTargetActor(FName ID, AActor* Actor);
 private:
 	TMap < FName, TArray<TObjectPtr<AFQMonsterBase>>> mMonsterGroup;
 

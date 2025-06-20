@@ -32,18 +32,23 @@ AFQMonsterAIController::AFQMonsterAIController()
 
 void AFQMonsterAIController::SetTargetActor(AActor* Actor)
 {
-    GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
-    ChangeState(EMonsterState::Chase);
+    AFQMonsterBase* Monster = GetPawn<AFQMonsterBase>();
+    if (Monster)
+    {
+        GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
+        Monster->mTargetActor = Actor;
+        ChangeState(EMonsterState::Chase);
+    }
 }
 
 void AFQMonsterAIController::ChangeState(EMonsterState State)
 {
     //ai컨트롤러에서 블랙보드와 몬스터의 상태를 다 바꿔줌
-    GetBlackboardComponent()->SetValueAsEnum(TEXT("CurrentState"), (uint8)State);
     AFQMonsterBase* Monster = GetPawn<AFQMonsterBase>();
     if (Monster)
     {
         Monster->mMonsterState = State;
+        GetBlackboardComponent()->SetValueAsEnum(TEXT("CurrentState"), (uint8)State);
     }
 }
 
@@ -54,6 +59,28 @@ void AFQMonsterAIController::ChangeTargetActor(AActor* Actor)
     {
         Monster->mTargetActor = Actor;
         GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
+    }
+}
+
+void AFQMonsterAIController::PickRandomTarget()
+{
+    TArray<AActor*> PerceivedActors;
+    mAIPerception->GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
+
+    // 조건: 플레이어 태그가 있는 액터만
+    TArray<AActor*> PlayerCandidates;
+    for (AActor* Actor : PerceivedActors)
+    {
+        if (Actor->Tags.Contains(FName("Player")))
+        {
+            PlayerCandidates.Add(Actor);
+        }
+    }
+
+    if (PlayerCandidates.Num() > 0)
+    {
+        int32 Index = FMath::RandRange(0, PlayerCandidates.Num() - 1);
+        ChangeTargetActor(PlayerCandidates[Index]);
     }
 }
 
@@ -79,6 +106,7 @@ void AFQMonsterAIController::OnPossess(APawn* InPawn)
 
 void AFQMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
+    AFQMonsterBase* Monster = Cast<AFQMonsterBase>(GetPawn());
     if (Actor->Tags.Contains(FName("Player")))
     {
         if (Stimulus.WasSuccessfullySensed())
@@ -87,32 +115,22 @@ void AFQMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulu
             {
                 if (!Actor->IsA(AFQMonsterBase::StaticClass()))
                 {
-                    // 감지 성공 시
-                    AFQMonsterBase* Monster = Cast<AFQMonsterBase>(GetPawn());
                     Monster->ManagerSetTargetActor(Actor);
                 }
             }
         }
         else
         {
-            AFQMonsterAIController* AIC = GetInstigatorController<AFQMonsterAIController>();
-            if (AIC)
+            if(!Monster->mTargetActor)
             {
-                AIC->SetTargetActor(nullptr);
-                AIC->ChangeState(EMonsterState::Idle);
+                AFQMonsterAIController* AIC = GetInstigatorController<AFQMonsterAIController>();
+                if (AIC)
+                {
+                    AIC->SetTargetActor(nullptr);
+                    AIC->ChangeState(EMonsterState::Idle);
+                }
             }
         }
-        if (Stimulus.Type == UAISense_Damage::GetSenseID(UAISense_Damage::StaticClass()))
-        {
-            AFQMonsterBase* Monster = Cast<AFQMonsterBase>(GetPawn());
-            if(Monster)
-            {
-                UE_LOG(LogTemp,Warning,TEXT("Damage Config"))
-                ChangeState(EMonsterState::Hit);
-                Monster->Hit();
-                Monster->mTargetActor = Actor;
-                GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
-            }
-        }
+        
     }
 }

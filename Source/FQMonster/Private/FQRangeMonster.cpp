@@ -3,12 +3,8 @@
 
 #include "FQRangeMonster.h"
 #include "FQRangeMonsterProjectile.h"
+#include "FQMonsterAIController.h"
 
-void AFQRangeMonster::Attack(AActor* Target)
-{
-    
-       
-}
 
 void AFQRangeMonster::ProjectileAttack()
 {
@@ -27,4 +23,19 @@ void AFQRangeMonster::ProjectileAttack()
         if (mMonsterDataAsset)
             Projectile->SetDamage(mMonsterDataAsset->mAttackPower); // 예시 데미지
     }
+}
+
+float AFQRangeMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+    if (AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(GetController()))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[RnageMonster] TakeDamage"));
+
+        AIC->ChangeTargetActor(DamageCauser);
+        mCurrentHP = mCurrentHP - DamageAmount;
+    }
+
+    return DamageAmount;
 }
