@@ -19,8 +19,10 @@ public:
 	FQ_QuestDelegate::FQQuestActiveDelegate mQuestActiveDelegate;
 	FQ_QuestDelegate::FQQuestMonsterDelegate mMonsterQuestDelegate;
 	FQ_QuestDelegate::FQQuestInteractionDelegate mInteractionDelegate;
+	FQ_QuestDelegate::FQQuestClearDelegate mQuestClearDelegate;
 
 	FFQQuestTable* GetQuestData(int32 QuestNumber);
+	void ResetQuestData();
 
 private:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

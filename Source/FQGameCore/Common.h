@@ -160,5 +160,6 @@ namespace FQ_QuestDelegate
 	DECLARE_DELEGATE_TwoParams(FQQuestTriggerDelegate, int32 /*QuestID*/, EQuestTriggerType /*QuestTriggerType*/);
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FQQuestActiveDelegate,int32 /*QuestID*/, bool /*bIsQuestActive*/);
 	DECLARE_MULTICAST_DELEGATE_TwoParams(FQQuestMonsterDelegate, EQuestMonsterType /*QuestMonsterType*/, FName /*MonsterGroupName*/);
-	DECLARE_MULTICAST_DELEGATE_OneParam(FQQuestInteractionDelegate, EQuestInteractionType /*QuestInteractionType*/);
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FQQuestInteractionDelegate, EQuestInteractionType /*QuestInteractionType*/, int32 /*QuestConditionCount*/);
+	DECLARE_MULTICAST_DELEGATE_OneParam(FQQuestClearDelegate, int32 /*ClearQuestID*/);
 }

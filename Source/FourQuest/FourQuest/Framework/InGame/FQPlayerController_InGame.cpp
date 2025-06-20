@@ -367,7 +367,7 @@ void AFQPlayerController_InGame::HandlePickButton()
 	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
 	if (QuestSystem)
 	{
-		QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport);
+		QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport, 1);
 		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonMeleeMonster, TEXT(""));
 		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonRangedMonster, TEXT(""));
 		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonSpawnerMonster, TEXT(""));

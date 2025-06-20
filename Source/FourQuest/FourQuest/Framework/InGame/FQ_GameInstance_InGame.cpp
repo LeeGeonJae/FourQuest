@@ -96,6 +96,19 @@ void UFQ_GameInstance_InGame::SetAudioInfomation(const FQ_InGameSetting::FAudioI
 	UGameplayStatics::PushSoundMixModifier(this, mSoundMix);
 }
 
+int32 UFQ_GameInstance_InGame::GetPlayerCount() const
+{
+	int32 PlayerCount = 0;
+	for (auto Player : mLocalMultiPlayerArr.Array())
+	{
+		if (Player.Value.bSpawnLocalPlayer)
+		{
+			PlayerCount++;
+		}
+	}
+	return PlayerCount;
+}
+
 void UFQ_GameInstance_InGame::Init()
 {
 	Super::Init();

@@ -24,6 +24,7 @@ public:
 	virtual void SetAudioInfomation(const FQ_InGameSetting::FAudioInfomation InAudioInfomation) override;
 	virtual FQ_InGameSetting::FVideoInfomation GetVideoInfomation() const override { return mVideoInfomation; }
 	virtual FQ_InGameSetting::FAudioInfomation GetAudioInfomation() const override { return mAudioInfomation; }
+	virtual int32 GetPlayerCount() const override;
 	virtual bool GetOnWidget() const override { return mbOnWidget; }
 	virtual void SetOnWidget(const bool bOnWidget) override { mbOnWidget = bOnWidget; }
 

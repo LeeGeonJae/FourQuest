@@ -29,7 +29,7 @@ protected:
 
 private:
 	// 콜백 함수
-	void TryUpdateQuestState(EQuestInteractionType InteractionType);
+	void TryUpdateQuestState(EQuestInteractionType InteractionType, int32 QuestConditionCount);
 
 private:
 	EQuestInteractionType mInteractionType;

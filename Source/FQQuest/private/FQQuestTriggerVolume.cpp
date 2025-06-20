@@ -3,10 +3,12 @@
 #include "Components/BoxComponent.h"
 
 #include "FQGameCore\Player\FQPlayerCharacterInterface.h"
+#include "FQGameCore\Soul/FQSoulCharacterInterface.h"
 #include "FQGameCore\Quest\FQQuestSystem.h"
 
 AFQQuestTriggerVolume::AFQQuestTriggerVolume()
 	: mPlayerNumber()
+	, mQuestInteractionType(EQuestInteractionType::None)
 {
 	mTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
 	SetRootComponent(mTrigger);
@@ -30,7 +32,7 @@ void AFQQuestTriggerVolume::BeginPlay()
 
 void AFQQuestTriggerVolume::Tick(float DeltaTime)
 {
-	if (mPlayerNumber > 0)
+	if (mQuestInteractionType == EQuestInteractionType::Capture && mPlayerNumber > 0)
 	{
 		mDurationTime += DeltaTime;
 		if (mDurationTime < 1.f)
@@ -38,23 +40,38 @@ void AFQQuestTriggerVolume::Tick(float DeltaTime)
 			return;
 		}
 		mDurationTime = 0.f;
-		UE_LOG(LogTemp, Log, TEXT("[AFQQuestTriggerVolume %d] 캡쳐 퀘스트 호출!!"), __LINE__);
 
 		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
 		if (QuestSystem)
 		{
-			QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Capture);
+			QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Capture, 1);
 		}
 	}
 }
 
 void AFQQuestTriggerVolume::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	IFQPlayerCharacterInterface* CollisionPlayer = Cast<IFQPlayerCharacterInterface>(OtherActor);
-	if (CollisionPlayer)
+	IFQPlayerCharacterInterface* ArmourPlayer = Cast<IFQPlayerCharacterInterface>(OtherActor);
+	if (ArmourPlayer)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[AFQQuestTriggerVolume %d] 플레이어 비긴 오버랩!!"), __LINE__);
 		mPlayerNumber++;
+
+		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+		if (QuestSystem && mQuestInteractionType == EQuestInteractionType::Teleport)
+		{
+			QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport, 1);
+			return;
+		}
+	}
+
+	IFQSoulCharacterInterface* SoulPlayer = Cast<IFQSoulCharacterInterface>(OtherActor);
+	if (SoulPlayer)
+	{
+		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+		if (QuestSystem && mQuestInteractionType == EQuestInteractionType::Teleport)
+		{
+			QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport, 1);
+		}
 	}
 }
 
@@ -63,7 +80,23 @@ void AFQQuestTriggerVolume::OnTriggerEndOverlap(UPrimitiveComponent* OverlappedC
 	IFQPlayerCharacterInterface* CollisionPlayer = Cast<IFQPlayerCharacterInterface>(OtherActor);
 	if (CollisionPlayer)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[AFQQuestTriggerVolume %d] 플레이어 앤드 오버랩!!"), __LINE__);
 		mPlayerNumber--;
+
+		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+		if (QuestSystem && mQuestInteractionType == EQuestInteractionType::Teleport)
+		{
+			QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport, -1);
+			return;
+		}
+	}
+
+	IFQSoulCharacterInterface* SoulPlayer = Cast<IFQSoulCharacterInterface>(OtherActor);
+	if (SoulPlayer)
+	{
+		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+		if (QuestSystem && mQuestInteractionType == EQuestInteractionType::Teleport)
+		{
+			QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport, -1);
+		}
 	}
 }

@@ -1,6 +1,7 @@
 #include "FQInteractionQuest.h"
 
 #include "FQGameCore\Quest/FQQuestSystem.h"
+#include "FQGameCore/GameInstance/FQGameInstanceInterface.h"
 
 AFQInteractionQuest::AFQInteractionQuest()
     : mInteractionType(EQuestInteractionType::None)
@@ -9,16 +10,27 @@ AFQInteractionQuest::AFQInteractionQuest()
 
 void AFQInteractionQuest::BeginPlay()
 {
-	Super::BeginPlay();
-
+	// 퀘스트 시스템 델리게이트에 함수 등록
 	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
 	if (QuestSystem)
 	{
 		QuestSystem->mInteractionDelegate.AddUObject(this, &AFQInteractionQuest::TryUpdateQuestState);
 	}
+
+	// 텔레포트 타입이라면 현재 플레이 하고 있는 로컬 플레이어 수로 클리어 조건 맞추기
+	if (mInteractionType == EQuestInteractionType::Teleport)
+	{
+		IFQGameInstanceInterface* MyGameInstance = Cast<IFQGameInstanceInterface>(GetGameInstance());
+		if (MyGameInstance)
+		{
+			mQuestClearConditionNumber = MyGameInstance->GetPlayerCount();
+		}
+	}
+
+	Super::BeginPlay();
 }
 
-void AFQInteractionQuest::TryUpdateQuestState(EQuestInteractionType InteractionType)
+void AFQInteractionQuest::TryUpdateQuestState(EQuestInteractionType InteractionType, int32 QuestConditionCount)
 {
 	// 퀘스트 시스템
 	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
@@ -38,9 +50,10 @@ void AFQInteractionQuest::TryUpdateQuestState(EQuestInteractionType InteractionT
 		}
 	}
 
+	// 클리어 조건 갱신
     if (mInteractionType == InteractionType)
     {
-		UpdateQuestCondition(1);
+		UpdateQuestCondition(QuestConditionCount);
     }
 }
 

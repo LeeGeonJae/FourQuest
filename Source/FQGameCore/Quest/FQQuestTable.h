@@ -10,7 +10,16 @@ struct FQGAMECORE_API FFQQuestTable : public FTableRowBase
 {
 	GENERATED_BODY()
 	
-	FFQQuestTable() : QuestNumber(), QuestType(EQuestType::None), QuestDescription(), QuestMonsterType(EQuestMonsterType::None), QuestInteractionType(EQuestInteractionType::None), QuestClearConditionsNumber(), mbIsQuestClear(false) {}
+	FFQQuestTable() 
+		: QuestNumber()
+		, QuestType(EQuestType::None)
+		, QuestDescription()
+		, QuestMonsterType(EQuestMonsterType::None)
+		, QuestInteractionType(EQuestInteractionType::None)
+		, QuestClearConditionsNumber()
+		, mbIsQuestClear(false)
+		, mbIsActive(false)
+	{}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 QuestNumber;

@@ -47,7 +47,7 @@ void AFQQuestBase::BeginPlay()
 		QuestSystem->mQuestActiveDelegate.AddUObject(this, &AFQQuestBase::UpdateQuestActive);
 
 		// 서브 퀘스트 생성
-		FFQQuestTable* MyQuestData = QuestSystem->GetQuestData(GetQuestID());
+		FFQQuestTable* MyQuestData = QuestSystem->GetQuestData(mQuestID);
 		for (int32 SubQuestID : MyQuestData->SubQuestList)
 		{
 			CreateSubQuest(SubQuestID);
@@ -63,7 +63,7 @@ void AFQQuestBase::BeginPlay()
 	for (auto Actor : FoundActors)
 	{
 		AFQQuestPoint* QuestPoint = Cast<AFQQuestPoint>(Actor);
-		if (QuestPoint && QuestPoint->GetQuestID() == GetQuestID())
+		if (QuestPoint && QuestPoint->GetQuestID() == mQuestID)
 		{
 			QuestPoint->SetVisible(true);
 			break;
@@ -103,7 +103,7 @@ void AFQQuestBase::UpdateQuest(float DeltaTime)
 		for (auto Actor : FoundActors)
 		{
 			AFQQuestPoint* QuestPoint = Cast<AFQQuestPoint>(Actor);
-			if (QuestPoint && QuestPoint->GetQuestID() == GetQuestID())
+			if (QuestPoint && QuestPoint->GetQuestID() == mQuestID)
 			{
 				QuestPoint->SetVisible(true);
 				break;
@@ -166,7 +166,7 @@ void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
 		if (QuestSystem)
 		{
-			QuestSystem->GetQuestData(GetQuestID())->mbIsQuestClear = true;
+			QuestSystem->GetQuestData(mQuestID)->mbIsQuestClear = true;
 		}
 
 		// 퀘스트 포인트 Off
@@ -175,7 +175,7 @@ void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 		for (auto Actor : FoundActors)
 		{
 			AFQQuestPoint* QuestPoint = Cast<AFQQuestPoint>(Actor);
-			if (QuestPoint && QuestPoint->GetQuestID() == GetQuestID())
+			if (QuestPoint && QuestPoint->GetQuestID() == mQuestID)
 			{
 				QuestPoint->SetVisible(false);
 				break;
@@ -186,6 +186,12 @@ void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 	case EQuestStateType::End:
 	{
 		mCurrentState = nullptr;
+
+		UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+		if (QuestSystem)
+		{
+			QuestSystem->mQuestClearDelegate.Broadcast(mQuestID);
+		}
 	}
 	break;
 	}
@@ -209,6 +215,7 @@ void AFQQuestBase::UpdateQuestCondition(int32 AddConditionNumber)
 		SetNewState(EQuestStateType::Exit);
 	}
 
+	// UI 퀘스트 현 상태 업데이트
 	if (mQuestWidget)
 	{
 		mQuestWidget->UpdateQuestCondition(mQuestClearConditionNumber > mQuestCurrentConditionNumber ? mQuestCurrentConditionNumber : mQuestClearConditionNumber, mQuestClearConditionNumber);

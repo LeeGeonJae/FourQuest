@@ -22,6 +22,7 @@ public:
 	virtual void SetVideoInfomation(const FQ_InGameSetting::FVideoInfomation InVideoInfomation) abstract;
 	virtual FQ_InGameSetting::FAudioInfomation GetAudioInfomation() const abstract;
 	virtual void SetAudioInfomation(const FQ_InGameSetting::FAudioInfomation InAudioInfomation) abstract;
+	virtual int32 GetPlayerCount() const abstract;
 
 	virtual bool GetOnWidget() const abstract;
 	virtual void SetOnWidget(const bool bOnWidget) abstract;

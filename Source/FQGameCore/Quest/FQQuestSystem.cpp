@@ -57,3 +57,13 @@ FFQQuestTable* UFQQuestSystem::GetQuestData(int32 QuestNumber)
 		return nullptr;
 	}
 }
+
+void UFQQuestSystem::ResetQuestData()
+{
+	// 퀘스트 리셋
+	for (auto& QuestDataPair : mQuestTableData)
+	{
+		QuestDataPair.Value.mbIsQuestClear = false;
+		QuestDataPair.Value.mbIsActive = false;
+	}
+}

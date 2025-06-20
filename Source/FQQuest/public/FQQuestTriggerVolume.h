@@ -36,8 +36,10 @@ private:
 
 protected:
 	// 충돌 박스
-	UPROPERTY(EditAnywhere, Category = FQBox, Category = FQBox)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = FQBox)
 	TObjectPtr<class UBoxComponent> mTrigger;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQQuest)
+	EQuestInteractionType mQuestInteractionType;
 	
 private:
 	int8 mPlayerNumber;

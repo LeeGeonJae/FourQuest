@@ -37,6 +37,7 @@ void AFQQuestManager::BeginPlay()
     if (QuestSystem)
     {
         QuestSystem->mQuestTriggerDelegate.BindUObject(this, &AFQQuestManager::OnTriggerCallbackFunction);
+        QuestSystem->mQuestClearDelegate.AddUObject(this, &AFQQuestManager::ClearQuest);
     }
     
     // 첫 퀘스트 시작 번호 생성
@@ -76,7 +77,20 @@ void AFQQuestManager::Tick(float DeltaTime)
     // 퀘스트 삭제
     for (int32 Key : QuestsToRemove)
     {
-        ClearQuest(Key);
+        // RemoveAndCopyValue는 제거 + 값 추출 (중복 액세스 방지)
+        TObjectPtr<AFQQuestBase> Quest = nullptr;
+        if (mQuestList.RemoveAndCopyValue(Key, Quest) && IsValid(Quest))
+        {
+            if (UFQQuestWidget* MyQuestWidget = Quest->GetQuestWidget())
+            {
+                if (IsValid(mQuestListUI))
+                {
+                    mQuestListUI->RemoveQuestWidget(MyQuestWidget);
+                }
+            }
+
+            Quest->Destroy();
+        }
     }
 }
 
@@ -163,22 +177,6 @@ void AFQQuestManager::CreateQuest(int32 QuestID)
 
 void AFQQuestManager::ClearQuest(int32 QuestID)
 {
-    TObjectPtr<AFQQuestBase> Quest = nullptr;
-
-    // RemoveAndCopyValue는 제거 + 값 추출 (중복 액세스 방지)
-    if (mQuestList.RemoveAndCopyValue(QuestID, Quest) && IsValid(Quest))
-    {
-        if (UFQQuestWidget* MyQuestWidget = Quest->GetQuestWidget())
-        {
-            if (IsValid(mQuestListUI))
-            {
-                mQuestListUI->RemoveQuestWidget(MyQuestWidget);
-            }
-        }
-
-        Quest->Destroy();
-    }
-
     // 퀘스트 시스템
     UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
     if (QuestSystem)
@@ -216,6 +214,19 @@ void AFQQuestManager::ClearQuest(int32 QuestID)
         for (auto SpawnActor : (*QuestReward)->mRewordSpawnActor)
         {
             GetWorld()->SpawnActor<AActor>(SpawnActor, SpwanTransform);
+        }
+
+        // 다음 레벨 이동 여부
+        if ((*QuestReward)->mbOpenNextLevel)
+        {
+            if ((*QuestReward)->mNextLevelName.IsNone())
+            {
+                UE_LOG(LogTemp, Error, TEXT("[AFQGameMode_Title] TargetLevelName is not set!"));
+                return;
+            }
+
+            UGameplayStatics::OpenLevel(this, (*QuestReward)->mNextLevelName);
+            UE_LOG(LogTemp, Log, TEXT("[AFQQuestManager %d] 다음 레벨(씬) 이동"), __LINE__);
         }
     }
 }
