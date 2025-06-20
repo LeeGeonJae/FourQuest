@@ -29,7 +29,6 @@ AFQMonsterBase::AFQMonsterBase()
 
 	GetMesh()->bReceivesDecals = false;
 
-	GetCharacterMovementComponent()->MaxWalkSpeed;
 }
 
 // Called when the game starts or when spawned
@@ -183,7 +182,6 @@ void AFQMonsterBase::TakePushByPlayer(AActor* Target, const FVector& Direction, 
 		{
 			AIC->StopMovement();
 			AIC->ChangeState(EMonsterState::Hit);
-			Hit();
 		}
 	}
 	LaunchCharacter(Direction * Strength, true, true);
