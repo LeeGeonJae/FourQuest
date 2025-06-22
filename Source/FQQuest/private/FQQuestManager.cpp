@@ -41,7 +41,7 @@ void AFQQuestManager::BeginPlay()
     }
     
     // 첫 퀘스트 시작 번호 생성
-    CreateQuest(1);
+    CreateQuest(mQuestStartID);
 }
 
 void AFQQuestManager::Tick(float DeltaTime)

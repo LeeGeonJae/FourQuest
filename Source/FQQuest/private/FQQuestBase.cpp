@@ -8,6 +8,7 @@
 #include "FQMonsterKillQuest.h"
 #include "FQInteractionQuest.h"
 #include "FQQuestPoint.h"
+#include "FQQuestTriggerVolume.h"
 
 #include "Kismet\GameplayStatics.h"
 #include "GameFramework/GameModeBase.h"
@@ -181,6 +182,14 @@ void AFQQuestBase::SetNewState(const EQuestStateType NewState)
 				break;
 			}
 		}
+
+		// 퀘스트 트리거 볼륨 삭제
+		TArray<AActor*> FoundTriggerActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFQQuestTriggerVolume::StaticClass(), FoundTriggerActors);
+		for (auto Actor : FoundTriggerActors)
+		{
+			Actor->Destroy();
+		}
 	}
 	break;
 	case EQuestStateType::End:
@@ -213,6 +222,10 @@ void AFQQuestBase::UpdateQuestCondition(int32 AddConditionNumber)
 	if (mQuestCurrentConditionNumber >= mQuestClearConditionNumber)
 	{
 		SetNewState(EQuestStateType::Exit);
+	}
+	else if (mQuestCurrentConditionNumber < 0)
+	{
+		mQuestCurrentConditionNumber = 0;
 	}
 
 	// UI 퀘스트 현 상태 업데이트
