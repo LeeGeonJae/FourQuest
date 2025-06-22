@@ -84,3 +84,7 @@ void AFQGameMode_Title::SelectInteraction(int32 ControllerId)
 {
 	mTitleWidgetHandle->WidgetInput(EWidgetInputType::Select);
 }
+
+void AFQGameMode_Title::MenuInteraction()
+{
+}

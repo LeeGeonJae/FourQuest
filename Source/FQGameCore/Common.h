@@ -89,9 +89,9 @@ enum class EWidgetInputType : uint8
 };
 
 UENUM()
-enum class ETitleSettingType : uint8
+enum class ESettingUIType : uint8
 {
-	Title = 0		UMETA(DisplayName = "Title"),
+	None = 0		UMETA(DisplayName = "None"),
 	MainSetting		UMETA(DisplayName = "MainSetting"),
 	VideoSetting	UMETA(DisplayName = "VideoSetting"),
 	AudioSetting	UMETA(DisplayName = "AudioSetting"),
@@ -100,7 +100,7 @@ enum class ETitleSettingType : uint8
 
 namespace FQ_UIDelegate
 {
-	DECLARE_DELEGATE_OneParam(FQTitleSettingDelegate, ETitleSettingType /*TitleSettingType*/);
+	DECLARE_DELEGATE_OneParam(FQSettingUIDelegate, ESettingUIType /*TitleSettingType*/);
 }
 
 

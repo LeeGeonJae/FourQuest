@@ -22,7 +22,7 @@ void AFQQuestPoint::BeginPlay()
         mQuestPointWidget = CreateWidget<UFQQuestPointWidget>(GetWorld(), mQuestPointWidgetClass);
         if (mQuestPointWidget)
         {
-            mQuestPointWidget->AddToViewport(); // 화면에 위젯 추가
+            mQuestPointWidget->AddToViewport(10); // 화면에 위젯 추가
             mQuestPointWidget->SetQuestSignType(mQuestSignType);
             mQuestPointWidget->SetVisibility(ESlateVisibility::Hidden);
         }

@@ -45,6 +45,7 @@ private:
 	// UI 위젯 입력 함수
 	void HandlePickButton();
 	void HandleCancelButton();
+	void HandleMenuButton();
 	void HandleMoveTriggered(const FInputActionValue& Value);
 	void HandleMoveCompleted(const FInputActionValue& Value);
 	void DoMove();

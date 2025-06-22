@@ -25,7 +25,7 @@ public:
 	UFQTitleAudioSettingUI();
 
 public:
-	FQ_UIDelegate::FQTitleSettingDelegate TitleSettingDelegate;
+	FQ_UIDelegate::FQSettingUIDelegate SettingUIDelegate;
 
 	// Input Function
 	void InitSelect();

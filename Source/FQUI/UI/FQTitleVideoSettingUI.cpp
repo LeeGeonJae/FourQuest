@@ -154,7 +154,7 @@ void UFQTitleVideoSettingUI::SelectButton()
 		}
 
 		// 메인 설정 창으로 돌아가기
-		TitleSettingDelegate.ExecuteIfBound(ETitleSettingType::MainSetting);
+		SettingUIDelegate.ExecuteIfBound(ESettingUIType::MainSetting);
 	}
 	break;
 	}
@@ -162,13 +162,13 @@ void UFQTitleVideoSettingUI::SelectButton()
 
 void UFQTitleVideoSettingUI::CancelButton()
 {
-	TitleSettingDelegate.ExecuteIfBound(ETitleSettingType::MainSetting);
+	SettingUIDelegate.ExecuteIfBound(ESettingUIType::MainSetting);
 }
 
 void UFQTitleVideoSettingUI::PlayAnimation(float DeltaTime)
 {
 	mElapsedTime += DeltaTime;
-	if (mElapsedTime < 0.01f)
+	if (mElapsedTime < 0.1f)
 	{
 		return;
 	}

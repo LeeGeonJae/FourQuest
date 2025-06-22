@@ -26,7 +26,7 @@ void UFQTitleSettingUI::NativeConstruct()
 void UFQTitleSettingUI::PlayAnimation(float DeltaTime)
 {
 	mElapsedTime += DeltaTime;
-	if (mElapsedTime < 0.01f)
+	if (mElapsedTime < 0.1f)
 	{
 		return;
 	}
@@ -104,18 +104,18 @@ void UFQTitleSettingUI::SelectButton()
 	switch (mCurrentSelectIndex)
 	{
 	case ETitleSettingButtonType::Video:
-		TitleSettingDelegate.ExecuteIfBound(ETitleSettingType::VideoSetting);
+		SettingUIDelegate.ExecuteIfBound(ESettingUIType::VideoSetting);
 		break;
 	case ETitleSettingButtonType::Audio:
-		TitleSettingDelegate.ExecuteIfBound(ETitleSettingType::AudioSetting);
+		SettingUIDelegate.ExecuteIfBound(ESettingUIType::AudioSetting);
 		break;
 	case ETitleSettingButtonType::Back:
-		TitleSettingDelegate.ExecuteIfBound(ETitleSettingType::Title);
+		SettingUIDelegate.ExecuteIfBound(ESettingUIType::None);
 		break;
 	}
 }
 
 void UFQTitleSettingUI::CancelButton()
 {
-	TitleSettingDelegate.ExecuteIfBound(ETitleSettingType::Title);
+	SettingUIDelegate.ExecuteIfBound(ESettingUIType::None);
 }

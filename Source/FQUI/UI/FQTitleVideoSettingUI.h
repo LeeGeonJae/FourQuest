@@ -27,7 +27,7 @@ public:
 
 public:
 	// Delegate
-	FQ_UIDelegate::FQTitleSettingDelegate TitleSettingDelegate;
+	FQ_UIDelegate::FQSettingUIDelegate SettingUIDelegate;
 
 	// Input Function
 	void Move(EWidgetInputType InputType);

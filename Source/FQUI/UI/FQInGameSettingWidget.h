@@ -5,24 +5,24 @@
 #include "CoreMinimal.h"
 #include "FQUI/FQUserWidget.h"
 #include "FQGameCore\Common.h"
-#include "FQTitleSettingUI.generated.h"
+#include "FQInGameSettingWidget.generated.h"
 
 UENUM()
-enum class ETitleSettingButtonType : uint8
+enum class EGameSettingButtonType : uint8
 {
-	Video,
-	Audio,
-	Back,
-	End
+	Continue,
+	Setting,
+	Failed,
+	Logout,
 };
 
 UCLASS()
-class FQUI_API UFQTitleSettingUI : public UFQUserWidget
+class FQUI_API UFQInGameSettingWidget : public UFQUserWidget
 {
 	GENERATED_BODY()
-
+	
 public:
-	UFQTitleSettingUI();
+	UFQInGameSettingWidget();
 
 public:
 	FQ_UIDelegate::FQSettingUIDelegate SettingUIDelegate;
@@ -42,26 +42,20 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQAnimation)
 	TArray<TObjectPtr<UTexture2D>> mSoulAnimations;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQAnimation, Meta = (AllowPrivateAccess = "true"))
-	TMap<ETitleSettingButtonType, FText> mGuides;
+	TMap<EGameSettingButtonType, FText> mGuides;
 
 private:
-	// 현재 선택
-	ETitleSettingButtonType mCurrentSelectIndex;
-
-	// 처음 선택 버튼 위치
 	float mOriginYPos;
-
-	// 애니메이션
 	float mElapsedTime;
 	uint8 mCurrentFrameIndex;
 
-	// 가이드 텍스트
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UTextBlock> mTextGuide;
+	EGameSettingButtonType mCurrentButtonType;
 
 	// 버튼
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> mSelectButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> mSelectAnimation;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UTextBlock> mGuideText;
 };

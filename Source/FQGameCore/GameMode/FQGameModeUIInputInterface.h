@@ -29,4 +29,5 @@ public:
 	virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) PURE_VIRTUAL(IFQGameModeUIInputInterface::MoveButton, );
 	virtual void CancelInteraction(int32 ControllerId) PURE_VIRTUAL(IFQGameModeUIInputInterface::CancelInteraction, );
 	virtual void SelectInteraction(int32 ControllerId) PURE_VIRTUAL(IFQGameModeUIInputInterface::SelectInteraction, );
+	virtual void MenuInteraction() PURE_VIRTUAL(IFQGameModeUIInputInterface::MenuInteraction, );
 };

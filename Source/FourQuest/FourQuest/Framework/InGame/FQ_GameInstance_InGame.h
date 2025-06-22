@@ -56,7 +56,7 @@ private:
 	// UI
 	int8 mbOnWidget : 1;
 
-	// Game Setting Infomation
+	// 게임 환경설정 정보
 	TMap<PlayerControllerId, FQ_InGameSetting::FQLocalMultiPlayerInfomation> mLocalMultiPlayerArr;
 	FQ_InGameSetting::FVideoInfomation mVideoInfomation;
 	FQ_InGameSetting::FAudioInfomation mAudioInfomation;

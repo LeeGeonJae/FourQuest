@@ -23,6 +23,7 @@ public:
 	virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) override;
 	virtual void CancelInteraction(int32 ControllerId) override;
 	virtual void SelectInteraction(int32 ControllerId) override;
+	virtual void MenuInteraction() override;
 	virtual void StartGame() override;
 	virtual void ExitGame() override;
 

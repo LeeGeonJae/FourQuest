@@ -78,6 +78,7 @@ void AFQPlayerController_InGame::SetupInputComponent()
 		EnhancedInput->BindAction(mPlayerInputDataAsset->mBButtonAction, ETriggerEvent::Started, this, &AFQPlayerController_InGame::HandleCancelButton);
 		EnhancedInput->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Triggered, this, &AFQPlayerController_InGame::HandleMoveTriggered);
 		EnhancedInput->BindAction(mPlayerInputDataAsset->mLeftStickAction, ETriggerEvent::Completed, this, &AFQPlayerController_InGame::HandleMoveCompleted);
+		EnhancedInput->BindAction(mPlayerInputDataAsset->mMenuButtonAction, ETriggerEvent::Started, this, &AFQPlayerController_InGame::HandleMenuButton);
 	}
 	else
 	{
@@ -364,16 +365,6 @@ void AFQPlayerController_InGame::CreateSoulCharacterByClass(TSubclassOf<class AF
 
 void AFQPlayerController_InGame::HandlePickButton()
 {
-	UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
-	if (QuestSystem)
-	{
-		QuestSystem->mInteractionDelegate.Broadcast(EQuestInteractionType::Teleport, 1);
-		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonMeleeMonster, TEXT(""));
-		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonRangedMonster, TEXT(""));
-		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::CommonSpawnerMonster, TEXT(""));
-		QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::BossMonster, TEXT(""));
-	}
-
 	// 입력 버튼
 	IFQGameModeUIInputInterface* MyGameMode = Cast<IFQGameModeUIInputInterface>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode)
@@ -434,6 +425,30 @@ void AFQPlayerController_InGame::HandleCancelButton()
 			UGameplayStatics::PlaySoundAtLocation(
 				this,
 				mCancelButtonSound,					// USoundBase*
+				FVector()							// FVector 위치
+			);
+		}
+	}
+}
+
+void AFQPlayerController_InGame::HandleMenuButton()
+{
+	IFQGameModeUIInputInterface* MyGameMode = Cast<IFQGameModeUIInputInterface>(GetWorld()->GetAuthGameMode());
+	if (MyGameMode)
+	{
+		MyGameMode->MenuInteraction();
+	}
+
+	// 현재 UI가 켜져 있는가
+	IFQGameInstanceInterface* MyGameInstance = GetGameInstance<IFQGameInstanceInterface>();
+	if (MyGameInstance)
+	{
+		// 선택 소리 재생
+		if (mSelectButtonSound && MyGameInstance->GetOnWidget())
+		{ 
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				mSelectButtonSound,					// USoundBase*
 				FVector()							// FVector 위치
 			);
 		}

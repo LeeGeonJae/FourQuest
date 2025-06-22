@@ -16,7 +16,7 @@ UFQTitleScreenWidget::UFQTitleScreenWidget()
     : mElapsedTime(0.f)
     , mCurrentFrameIndex(0)
     , mCurrentSelectIndex(ETitleButtonType::GameStart)
-    , mCurrentSettingType(ETitleSettingType::Title)
+    , mCurrentSettingType(ESettingUIType::None)
     , mSoulAnimations{}
     , mSelectButton()
     , mCurrentSelect()
@@ -32,16 +32,29 @@ void UFQTitleScreenWidget::NativeConstruct()
         return;
     }
 
-    mTitleSettingUI->TitleSettingDelegate.BindUObject(this, &UFQTitleScreenWidget::TitleSetting);
-    mTitleVideoSettingUI->TitleSettingDelegate.BindUObject(this, &UFQTitleScreenWidget::TitleSetting);
-    mTitleAudioSettingUI->TitleSettingDelegate.BindUObject(this, &UFQTitleScreenWidget::TitleSetting);
+    mTitleSettingUI->SettingUIDelegate.BindUObject(this, &UFQTitleScreenWidget::TitleSetting);
+    mTitleVideoSettingUI->SettingUIDelegate.BindUObject(this, &UFQTitleScreenWidget::TitleSetting);
+    mTitleAudioSettingUI->SettingUIDelegate.BindUObject(this, &UFQTitleScreenWidget::TitleSetting);
 
-    TitleSetting(ETitleSettingType::Title);
+    TitleSetting(ESettingUIType::None);
 }
 
 void UFQTitleScreenWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
+
+    switch (mCurrentSettingType)
+    {
+    case ESettingUIType::MainSetting:
+        mTitleSettingUI->PlayAnimation(InDeltaTime);
+        break;
+    case ESettingUIType::VideoSetting:
+        mTitleVideoSettingUI->PlayAnimation(InDeltaTime);
+        break;
+    case ESettingUIType::AudioSetting:
+        mTitleAudioSettingUI->PlayAnimation(InDeltaTime);
+        break;
+    }
 
     mElapsedTime += InDeltaTime;
     if (mElapsedTime < 0.1f)
@@ -62,20 +75,6 @@ void UFQTitleScreenWidget::NativeTick(const FGeometry& MyGeometry, float InDelta
         {
             UE_LOG(LogTemp, Error, TEXT("[UFQPlayerHUDWidget %d] mCurrentSelect Is Nullptr!!"), __LINE__);
         }
-    }
-
-
-    switch (mCurrentSettingType)
-    {
-    case ETitleSettingType::MainSetting:
-        mTitleSettingUI->PlayAnimation(InDeltaTime);
-        break;
-    case ETitleSettingType::VideoSetting:
-        mTitleVideoSettingUI->PlayAnimation(InDeltaTime);
-        break;
-    case ETitleSettingType::AudioSetting:
-        mTitleAudioSettingUI->PlayAnimation(InDeltaTime);
-        break;
     }
 }
 
@@ -104,7 +103,7 @@ void UFQTitleScreenWidget::WidgetInput(EWidgetInputType InputType)
     }
 }
 
-void UFQTitleScreenWidget::TitleSetting(ETitleSettingType SettingType)
+void UFQTitleScreenWidget::TitleSetting(ESettingUIType SettingType)
 {
     if (!mTitleSettingUI || !mTitleVideoSettingUI || !mTitleAudioSettingUI)
     {
@@ -115,21 +114,21 @@ void UFQTitleScreenWidget::TitleSetting(ETitleSettingType SettingType)
     mCurrentSettingType = SettingType;
     switch (mCurrentSettingType)
     {
-	case ETitleSettingType::Title:
+	case ESettingUIType::None:
     {
         mTitleSettingUI->SetVisibility(ESlateVisibility::Hidden);
         mTitleVideoSettingUI->SetVisibility(ESlateVisibility::Hidden);
         mTitleAudioSettingUI->SetVisibility(ESlateVisibility::Hidden);
     }
 	break;
-	case ETitleSettingType::MainSetting:
+	case ESettingUIType::MainSetting:
 	{
         mTitleSettingUI->SetVisibility(ESlateVisibility::Visible);
         mTitleVideoSettingUI->SetVisibility(ESlateVisibility::Hidden);
         mTitleAudioSettingUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 	break;
-	case ETitleSettingType::VideoSetting:
+	case ESettingUIType::VideoSetting:
 	{
         mTitleVideoSettingUI->InitSelect();
 
@@ -138,7 +137,7 @@ void UFQTitleScreenWidget::TitleSetting(ETitleSettingType SettingType)
         mTitleAudioSettingUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 	break;
-	case ETitleSettingType::AudioSetting:
+	case ESettingUIType::AudioSetting:
 	{
         mTitleAudioSettingUI->InitSelect();
 
@@ -160,16 +159,16 @@ void UFQTitleScreenWidget::MoveIndex(EWidgetInputType InputType)
 
     switch (mCurrentSettingType)
     {
-    case ETitleSettingType::Title:
+    case ESettingUIType::None:
         Move(InputType);
         break;
-    case ETitleSettingType::MainSetting:
+    case ESettingUIType::MainSetting:
         mTitleSettingUI->Move(InputType);
         break;
-    case ETitleSettingType::VideoSetting:
+    case ESettingUIType::VideoSetting:
         mTitleVideoSettingUI->Move(InputType);
         break;
-    case ETitleSettingType::AudioSetting:
+    case ESettingUIType::AudioSetting:
         mTitleAudioSettingUI->Move(InputType);
         break;
     }
@@ -185,16 +184,16 @@ void UFQTitleScreenWidget::SelectButton()
 
     switch (mCurrentSettingType)
     {
-    case ETitleSettingType::Title:
+    case ESettingUIType::None:
         TitleSelectButton();
         break;
-    case ETitleSettingType::MainSetting:
+    case ESettingUIType::MainSetting:
         mTitleSettingUI->SelectButton();
         break;
-    case ETitleSettingType::VideoSetting:
+    case ESettingUIType::VideoSetting:
         mTitleVideoSettingUI->SelectButton();
         break;
-    case ETitleSettingType::AudioSetting:
+    case ESettingUIType::AudioSetting:
         mTitleAudioSettingUI->SelectButton();
         break;
     }
@@ -210,13 +209,13 @@ void UFQTitleScreenWidget::CancelButton()
 
     switch (mCurrentSettingType)
     {
-    case ETitleSettingType::MainSetting:
+    case ESettingUIType::MainSetting:
         mTitleSettingUI->CancelButton();
         break;
-    case ETitleSettingType::VideoSetting:
+    case ESettingUIType::VideoSetting:
         mTitleVideoSettingUI->CancelButton();
         break;
-    case ETitleSettingType::AudioSetting:
+    case ESettingUIType::AudioSetting:
         mTitleAudioSettingUI->CancelButton();
         break;
     }
@@ -277,7 +276,7 @@ void UFQTitleScreenWidget::TitleSelectButton()
 	break;
 	case ETitleButtonType::GameSetting:
 	{
-        TitleSetting(ETitleSettingType::MainSetting);
+        TitleSetting(ESettingUIType::MainSetting);
 	}
 	break;
 	case ETitleButtonType::GameExit:

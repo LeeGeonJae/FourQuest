@@ -15,6 +15,7 @@
 #include "FourQuest\FourQuest\Framework\Manager/FQPlayerHUDManager.h"
 #include "FourQuest\FourQuest\Actor\FQMainCenterCamera.h"
 #include "FQSoul/public/FQSoulBase.h"
+#include "FQUI/UI/FQInGamePauseUI.h"
 
 AFQGameMode_InGame::AFQGameMode_InGame()
 {
@@ -29,6 +30,22 @@ void AFQGameMode_InGame::BeginPlay()
     SettingCamera();
     // 플레이어 생성
     CreatePlayer();
+
+    // 게임 인스턴스 UI 세팅
+	IFQGameInstanceInterface* MyGameInstance = GetGameInstance<IFQGameInstanceInterface>();
+	if (MyGameInstance)
+	{
+        MyGameInstance->SetOnWidget(false);
+	}
+
+    // 게임 메뉴 UI 생성
+    if (mGamePauseUIClass)
+    {
+        mGamePauseUI = CreateWidget<UFQInGamePauseUI>(GetWorld(), mGamePauseUIClass);
+        mGamePauseUI->AddToViewport();
+        mGamePauseUI->SetVisibility(ESlateVisibility::Hidden);
+        mGamePauseUI->mPauseUIDelegate.BindUObject(this, &AFQGameMode_InGame::MenuInteraction);
+    }
 }
 
 void AFQGameMode_InGame::SettingCamera()
@@ -177,4 +194,79 @@ FTransform AFQGameMode_InGame::GetMainCameraTransform() const
         return mMainCamera->GetTransform();
     }
     return FTransform();
+}
+
+void AFQGameMode_InGame::StartGame()
+{
+    UGameplayStatics::OpenLevel(this, "TitleScreen");
+}
+
+void AFQGameMode_InGame::ExitGame()
+{
+    UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, true);
+}
+
+void AFQGameMode_InGame::MoveButton(const FInputActionValue& Value, int32 ControllerId)
+{
+	// UI On/Off
+	if (mGamePauseUI && mGamePauseUI->GetVisibility() == ESlateVisibility::Visible)
+	{
+		FVector2D Direction = Value.Get<FVector2D>();
+		if (Direction.X >= 0.8f)
+		{
+			mGamePauseUI->WidgetInput(EWidgetInputType::Up);
+		}
+		if (Direction.X <= -0.8f)
+		{
+			mGamePauseUI->WidgetInput(EWidgetInputType::Down);
+		}
+		if (Direction.Y >= 0.8f)
+		{
+			mGamePauseUI->WidgetInput(EWidgetInputType::Right);
+		}
+		if (Direction.Y <= -0.8f)
+		{
+			mGamePauseUI->WidgetInput(EWidgetInputType::Left);
+		}
+	}
+}
+
+void AFQGameMode_InGame::CancelInteraction(int32 ControllerId)
+{
+	// UI On/Off
+	if (mGamePauseUI && mGamePauseUI->GetVisibility() == ESlateVisibility::Visible)
+	{
+		mGamePauseUI->WidgetInput(EWidgetInputType::Cancel);
+	}
+}
+
+void AFQGameMode_InGame::SelectInteraction(int32 ControllerId)
+{
+    // UI On/Off
+	if (mGamePauseUI && mGamePauseUI->GetVisibility() == ESlateVisibility::Visible)
+	{
+		mGamePauseUI->WidgetInput(EWidgetInputType::Select);
+	}
+}
+
+void AFQGameMode_InGame::MenuInteraction()
+{
+    // UI On/Off
+    IFQGameInstanceInterface* MyGameInstance = GetGameInstance<IFQGameInstanceInterface>();
+    if (MyGameInstance)
+    {
+        MyGameInstance->SetOnWidget(!MyGameInstance->GetOnWidget());
+
+        if (mGamePauseUI && MyGameInstance->GetOnWidget())
+        {
+            mGamePauseUI->InitUI();
+            mGamePauseUI->SetVisibility(ESlateVisibility::Visible);
+            GetWorld()->GetWorldSettings()->SetTimeDilation(0.0f); // 시간 정지
+        }
+        else if (mGamePauseUI)
+        {
+            mGamePauseUI->SetVisibility(ESlateVisibility::Hidden);
+            GetWorld()->GetWorldSettings()->SetTimeDilation(1.0f); // 정상 속도 복귀
+        }
+    }
 }

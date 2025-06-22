@@ -34,7 +34,7 @@ public:
 
 	// Input Function
 	void WidgetInput(EWidgetInputType InputType);
-	void TitleSetting(ETitleSettingType SettingType);
+	void TitleSetting(ESettingUIType SettingType);
 
 	// GetSet Function
 	FORCEINLINE ETitleButtonType GetSelectIndex() const { return mCurrentSelectIndex; }
@@ -66,7 +66,7 @@ private:
 	uint8 mCurrentFrameIndex;
 
 	ETitleButtonType mCurrentSelectIndex;
-	ETitleSettingType mCurrentSettingType;
+	ESettingUIType mCurrentSettingType;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UFQTitleSettingUI> mTitleSettingUI;

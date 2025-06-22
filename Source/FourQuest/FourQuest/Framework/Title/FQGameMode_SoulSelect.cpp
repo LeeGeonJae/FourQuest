@@ -140,6 +140,10 @@ void AFQGameMode_SoulSelect::SelectInteraction(int32 ControllerId)
     mSoulSelectWidgetHandle->UpdatePlayerState(mPlayerStates[ControllerId], mPlayerSoulTypes[ControllerId], ControllerId);
 }
 
+void AFQGameMode_SoulSelect::MenuInteraction()
+{
+}
+
 void AFQGameMode_SoulSelect::StartGame()
 {
 }

@@ -6,13 +6,14 @@
 #include "GameFramework/GameModeBase.h"
 #include "FQGameCore\Common.h"
 #include "FQGameCore\GameMode\FQGameModeInterface.h"
+#include "FQGameCore\GameMode\FQGameModeUIInputInterface.h"
 #include "FQGameMode_InGame.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FOURQUEST_API AFQGameMode_InGame : public AGameModeBase, public IFQGameModeInterface
+class FOURQUEST_API AFQGameMode_InGame : public AGameModeBase, public IFQGameModeInterface, public IFQGameModeUIInputInterface
 {
 	GENERATED_BODY()
 	
@@ -21,6 +22,14 @@ public:
 
     // 인터페이스 함수
     virtual FTransform GetMainCameraTransform() const override;
+
+    // UI 인터페이스 함수
+    virtual void StartGame() override;
+    virtual void ExitGame() override;
+    virtual void MoveButton(const FInputActionValue& Value, int32 ControllerId) override;
+    virtual void CancelInteraction(int32 ControllerId) override;
+    virtual void SelectInteraction(int32 ControllerId) override;
+    virtual void MenuInteraction() override;
     
     // 겟셋 함수
     FORCEINLINE class AFQPlayerHUDManager* GetPlayerHUDManager() const { return mPlayerHUDManager; }
@@ -44,6 +53,12 @@ private:
 	TObjectPtr<class AFQPlayerHUDManager> mPlayerHUDManager;
 
     // 씬 카메라
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FQHUDWidget, Meta = (AllowPrivateAccess = "true"))
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = FQCamera, Meta = (AllowPrivateAccess = "true"))
     TObjectPtr<class AFQMainCenterCamera> mMainCamera;
+
+    // 게임 메뉴
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FQUI, Meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<class UFQInGamePauseUI> mGamePauseUIClass;
+    UPROPERTY()
+    TObjectPtr<class UFQInGamePauseUI> mGamePauseUI;
 };
