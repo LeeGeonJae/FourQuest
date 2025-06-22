@@ -42,6 +42,8 @@ void AFQMonsterManager::SetTargetActor(FName ID, AActor* Actor)
 		ID = TEXT("Default");
 	for (auto& Monster : mMonsterGroup[ID])
 	{
+		if (Monster->mMonsterState == EMonsterState::Death)
+			continue;
 		AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(Monster->GetController());
 		if (AIC)
 		{

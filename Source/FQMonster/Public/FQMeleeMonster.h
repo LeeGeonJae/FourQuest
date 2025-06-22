@@ -20,4 +20,6 @@ public:
 	void Hit();
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)override;
+
+	virtual void TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength) override;
 };

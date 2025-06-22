@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Sound/SoundCue.h"
 #include "FQRangeMonsterProjectile.generated.h"
 
 UCLASS()
@@ -27,12 +28,16 @@ protected:
 public:
 	void SetDamage(float InDamage) { mDamage = InDamage; }
 
+	void SetProjectileSpeed(float Speed);
 protected:
 	UPROPERTY(EditAnywhere)
 	class USphereComponent* mCollisionComp;
 
 	UPROPERTY(EditAnywhere)
 	class UProjectileMovementComponent* mProjectileMovement;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundCue* mAttackHitSoundCue;
 
 public:
 	float mDamage = 0.f;

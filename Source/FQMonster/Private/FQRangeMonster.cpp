@@ -5,7 +5,18 @@
 #include "FQRangeMonsterProjectile.h"
 #include "FQMonsterAIController.h"
 
+#include "Components/CapsuleComponent.h"
 
+void AFQRangeMonster::BeginPlay()
+{
+    Super::BeginPlay();
+    mbCanPush = false;
+    if (mRangeMonsterDataAsset)
+    {
+        mCurrentHP = mRangeMonsterDataAsset->mMaxHP;
+        mAttackRange = mRangeMonsterDataAsset->mAttackRange;
+    }
+}
 void AFQRangeMonster::ProjectileAttack()
 {
     if (!mTargetActor || !mProjectile) return;
@@ -20,8 +31,14 @@ void AFQRangeMonster::ProjectileAttack()
     AFQRangeMonsterProjectile* Projectile = GetWorld()->SpawnActor<AFQRangeMonsterProjectile>(mProjectile, SpawnLocation, SpawnRotation, Params);
     if (Projectile)
     {
-        if (mMonsterDataAsset)
-            Projectile->SetDamage(mMonsterDataAsset->mAttackPower); // 예시 데미지
+        if (mRangeMonsterDataAsset)
+        {
+            mCurrentHP = mRangeMonsterDataAsset->mMaxHP;
+            mCurrentHPPercent = mCurrentHP / mRangeMonsterDataAsset->mMaxHP;
+            mAttackRange = mRangeMonsterDataAsset->mAttackRange;
+            Projectile->SetDamage(mRangeMonsterDataAsset->mAttackPower); // 예시 데미지
+            Projectile->SetProjectileSpeed(mRangeMonsterDataAsset->mProjectileSpeed);
+        }
     }
 }
 
@@ -35,6 +52,12 @@ float AFQRangeMonster::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 
         AIC->ChangeTargetActor(DamageCauser);
         mCurrentHP = mCurrentHP - DamageAmount;
+        mCurrentHPPercent = mCurrentHP / mRangeMonsterDataAsset->mMaxHP;
+        if (mCurrentHP <= 0)
+        {
+            GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            AIC->ChangeState(EMonsterState::Death);
+        }
     }
 
     return DamageAmount;

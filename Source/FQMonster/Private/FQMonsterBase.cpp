@@ -29,6 +29,7 @@ AFQMonsterBase::AFQMonsterBase()
 
 	GetMesh()->bReceivesDecals = false;
 
+	mbCanPush = true;
 }
 
 // Called when the game starts or when spawned
@@ -36,11 +37,12 @@ void AFQMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	mSpawnedLocation = GetActorLocation();
-	
+	mbCanPush = true;
 	
 	if (mMonsterDataAsset)
 	{
 		mCurrentHP = mMonsterDataAsset->mMaxHP;
+		mCurrentHPPercent= mCurrentHP/ mMonsterDataAsset->mMaxHP;
 	}
 	
 	for (TActorIterator<AFQMonsterManager> It(GetWorld()); It; ++It)
@@ -112,9 +114,12 @@ void AFQMonsterBase::ApplyDamageToTarget()
 		if (Target && Target != this)
 		{
 			UGameplayStatics::ApplyDamage(Target, mMonsterDataAsset->mAttackPower, GetController(), this, UDamageType::StaticClass());
+			if (mAttackHitSoundCue)
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), mAttackHitSoundCue, mAttackBox->GetComponentLocation());
+			}
 		}
-	}
-	
+	}	
 }
 
 void AFQMonsterBase::SetCollisionEnabled(bool CollisionEnabled)
@@ -149,7 +154,6 @@ float AFQMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 
 void AFQMonsterBase::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Hit Animation 종료"))
 	if (Montage == mHitMontage)
 	{
 		AFQMonsterAIController* AIC = GetController<AFQMonsterAIController>();
@@ -166,6 +170,10 @@ void AFQMonsterBase::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 
 void AFQMonsterBase::TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength)
 {
+	if (!mbCanPush)
+	{
+		return;
+	}
 	if (!Target)
 	{
 		return;

@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "FQGameCore/Common.h"
 #include "FQMonsterDataAsset.h"
+#include "Sound/SoundCue.h"
 #include "FQGameCore/Player/FQPlayerAttackableInterface.h"
 #include "FQMonsterBase.generated.h"
 
@@ -65,7 +67,15 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Stat")
 	float mCurrentHP;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
+	float mCurrentHPPercent;
+
+	
+
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
+	float mAttackRange;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	UFQMonsterDataAsset* mMonsterDataAsset;
 
@@ -89,9 +99,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	UBoxComponent* mAttackBox;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	EQuestMonsterType mMonsterType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	USoundCue* mAttackHitSoundCue;
+
 protected:
 	AFQMonsterManager* Manager;
 
 public:
 	virtual void TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength) override;
+
+	int8 mbCanPush : 1;
 };

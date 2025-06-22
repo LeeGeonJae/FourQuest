@@ -22,7 +22,7 @@ EBTNodeResult::Type UBTTask_CheckDistance::ExecuteTask(UBehaviorTreeComponent& O
 			{
 			case ECondition::LessThen:
 			{
-				if (Distance < Monster->mMonsterDataAsset->mAttackRange)
+				if (Distance < Monster->mAttackRange)
 				{
 					AIC->ChangeState(TargetState);
 				}
@@ -30,7 +30,7 @@ EBTNodeResult::Type UBTTask_CheckDistance::ExecuteTask(UBehaviorTreeComponent& O
 				break;
 			case ECondition::GreaterThen:
 			{
-				if (Distance > Monster->mMonsterDataAsset->mAttackRange)
+				if (Distance > Monster->mAttackRange)
 				{
 					AIC->ChangeState(TargetState);
 				}
