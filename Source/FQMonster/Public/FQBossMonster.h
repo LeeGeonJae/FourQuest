@@ -28,6 +28,8 @@ public:
 
 	void PrepareRush();
 
+	void RushApplyDamage(ACharacter* Character);
+
 	void Rush();
 
 	void EndRush();
@@ -52,6 +54,10 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	UFQBossMonsterDataAsset* mBossMonsterDataAsset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
+	USoundCue* mRushHitSoundCue;
+
 private:
 	FTimerHandle mSPPIncreaseTimer;
 	FTimerHandle mDownDecreaseTimer;

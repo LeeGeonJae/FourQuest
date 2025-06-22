@@ -38,9 +38,17 @@ void AFQRangeMonsterProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActo
     if (OtherActor && OtherActor != this)
     {
         UGameplayStatics::ApplyDamage(OtherActor, mDamage, GetInstigatorController(), this, nullptr);
+        if(mAttackHitSoundCue)
+        UGameplayStatics::PlaySoundAtLocation(GetWorld(), mAttackHitSoundCue, GetActorLocation());
+        Destroy();
     }
 
-    Destroy();
+}
+
+void AFQRangeMonsterProjectile::SetProjectileSpeed(float Speed)
+{
+    mProjectileMovement->InitialSpeed = Speed;
+    mProjectileMovement->MaxSpeed = Speed;
 }
 
 

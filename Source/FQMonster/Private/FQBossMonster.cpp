@@ -17,7 +17,7 @@ AFQBossMonster::AFQBossMonster()
 void AFQBossMonster::BeginPlay()
 {
 	Super::BeginPlay();
-
+	mbCanPush = false;
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &AFQBossMonster::OnChargeHit);
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AFQBossMonster::OnAttackOverlap);
 
@@ -27,13 +27,14 @@ void AFQBossMonster::BeginPlay()
 	if (mBossMonsterDataAsset)
 	{
 		mCurrentHP = mBossMonsterDataAsset->mMaxHP;
+		mCurrentHPPercent = mCurrentHP / mBossMonsterDataAsset->mMaxHP;
 		mSPP = mBossMonsterDataAsset->mInitSPP;
 		GetCharacterMovement()->MaxWalkSpeed = mBossMonsterDataAsset->mChaseSpeed;
-
+		mAttackRange = mBossMonsterDataAsset->mAttackRange;
 	}
 
 	mDownGauge = 0.0f;
-	GetWorld()->GetTimerManager().SetTimer(mDownDecreaseTimer, [this]() { mDownGauge -= 0.5f; }, 1.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(mDownDecreaseTimer, [this]() { if (mDownGauge <= 0)return; mDownGauge -= 0.5f; }, 1.0f, true);
 }
 
 void AFQBossMonster::Attack()
@@ -57,6 +58,7 @@ void AFQBossMonster::StrikeAttack()
 
 void AFQBossMonster::Growl()
 {
+	ChangeState(EMonsterState::Growl);
 	if (Manager)
 	{
 		Manager->ChangeTargetActor(mGroupID, mTargetActor);
@@ -76,15 +78,54 @@ void AFQBossMonster::PrepareRush()
 	}
 }
 
+void AFQBossMonster::RushApplyDamage(ACharacter* Character)
+{
+	FVector ToTarget = (Character->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	FVector KnockbackDir;
+	float CrossZ = FVector::CrossProduct(GetVelocity().GetSafeNormal(), ToTarget).Z;
+	if (CrossZ > 0)
+	{
+		// 오른쪽 넉백
+		KnockbackDir = FVector::CrossProduct(FVector::UpVector, GetVelocity().GetSafeNormal()).GetSafeNormal();
+	}
+	else
+	{
+		// 왼쪽 넉백
+		KnockbackDir = FVector::CrossProduct(GetVelocity().GetSafeNormal(), FVector::UpVector).GetSafeNormal();
+	}
+	UE_LOG(LogTemp, Warning, TEXT("X: %f Y: %f Z: %f"), ToTarget.X, ToTarget.Y, ToTarget.Z);
+	UE_LOG(LogTemp, Warning, TEXT("X: %f Y: %f Z: %f"), KnockbackDir.X, KnockbackDir.Y, KnockbackDir.Z);
+	float KnockbackForce = 3000.f;
+	UGameplayStatics::ApplyDamage(Character, mBossMonsterDataAsset->mRushDamage, GetController(), this, UDamageType::StaticClass());
+	Character->GetCharacterMovement()->StopMovementImmediately();
+	Character->LaunchCharacter(KnockbackDir * KnockbackForce, true, true);
+	if(mRushHitSoundCue)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), mRushHitSoundCue, Character->GetActorLocation());
+	}
+}
+
 void AFQBossMonster::Rush()
 {
 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 	GetCharacterMovement()->BrakingFrictionFactor = 0.f;
 	GetCharacterMovement()->GravityScale = 0.f;
 	GetCharacterMovement()->MaxFlySpeed = 1500.f;
-	
-	
+	TArray<AActor*> Overlapped;
+	GetCapsuleComponent()->GetOverlappingActors(Overlapped, AActor::StaticClass());
+
+	for (AActor* Actor : Overlapped)
+	{
+		if (ACharacter* Character = Cast<ACharacter>(Actor))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Overlapped] TakeRush"));
+			RushApplyDamage(Character);
+		}
+	}
+
 	GetCharacterMovement()->Velocity = mRushDirection * mBossMonsterDataAsset->mRushSpeed;
+
+	
 
 	//bIsCharging = true;
 }
@@ -114,11 +155,11 @@ void AFQBossMonster::SelectAttack()
 void AFQBossMonster::SelectSkill()
 {
 	int32 RandInt = FMath::RandRange(1, 10);
-	if (RandInt <= 4)
+	/*if (RandInt <= 4)
 	{
 		PrepareRush();
 	}
-	else if (RandInt >= 8)
+	else*/ if (RandInt <= 8)
 	{
 		Growl();
 	}
@@ -189,10 +230,17 @@ float AFQBossMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 		{
 			mCurrentHP = mCurrentHP - (DamageAmount*mBossMonsterDataAsset->mDownHitDamage);
 		}
+		mCurrentHPPercent = mCurrentHP / mBossMonsterDataAsset->mMaxHP;
 		mDownGauge += 5.0f;
 		if (mDownGauge >= 100)
 		{
 			AIC->ChangeState(EMonsterState::Down);
+			mDownGauge = 0;
+		}
+		if (mCurrentHP <= 0)
+		{
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			AIC->ChangeState(EMonsterState::Death);
 		}
 	}
 	return DamageAmount;
@@ -213,25 +261,7 @@ void AFQBossMonster::OnAttackOverlap(UPrimitiveComponent* OverlappedComp, AActor
 		ACharacter* Character = Cast<ACharacter>(OtherActor);
 		if (Character)
 		{
-			FVector ToTarget = (mTargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-			FVector KnockbackDir;
-			float CrossZ = FVector::CrossProduct(GetVelocity().GetSafeNormal(), ToTarget).Z;
-			if (CrossZ > 0)
-			{
-				// 오른쪽 넉백
-				KnockbackDir = FVector::CrossProduct(FVector::UpVector, GetVelocity().GetSafeNormal()).GetSafeNormal();
-				UE_LOG(LogTemp, Log, TEXT("Right knockback"));
-			}
-			else
-			{
-				// 왼쪽 넉백
-				KnockbackDir = FVector::CrossProduct(GetVelocity().GetSafeNormal(), FVector::UpVector).GetSafeNormal();
-				UE_LOG(LogTemp, Log, TEXT("Left knockback"));
-			}
-
-			float KnockbackForce = 3000.f;
-			Character->LaunchCharacter(KnockbackDir * KnockbackForce, true, true);
-			UGameplayStatics::ApplyDamage(Character, mBossMonsterDataAsset->mRushDamage, GetController(), this, UDamageType::StaticClass());
+			RushApplyDamage(Character);
 		}
 	}
 }

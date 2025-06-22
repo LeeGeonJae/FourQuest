@@ -107,6 +107,10 @@ void AFQMonsterAIController::OnPossess(APawn* InPawn)
 void AFQMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
     AFQMonsterBase* Monster = Cast<AFQMonsterBase>(GetPawn());
+    if (Monster->mMonsterState == EMonsterState::Death)
+    {
+        return;
+    }
     if (Actor->Tags.Contains(FName("Player")))
     {
         if (Stimulus.WasSuccessfullySensed())
