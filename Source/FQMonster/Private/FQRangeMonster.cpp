@@ -14,6 +14,7 @@ void AFQRangeMonster::BeginPlay()
     if (mRangeMonsterDataAsset)
     {
         mCurrentHP = mRangeMonsterDataAsset->mMaxHP;
+        mCurrentHPPercent = mCurrentHP / mRangeMonsterDataAsset->mMaxHP;
         mAttackRange = mRangeMonsterDataAsset->mAttackRange;
     }
 }
@@ -33,9 +34,6 @@ void AFQRangeMonster::ProjectileAttack()
     {
         if (mRangeMonsterDataAsset)
         {
-            mCurrentHP = mRangeMonsterDataAsset->mMaxHP;
-            mCurrentHPPercent = mCurrentHP / mRangeMonsterDataAsset->mMaxHP;
-            mAttackRange = mRangeMonsterDataAsset->mAttackRange;
             Projectile->SetDamage(mRangeMonsterDataAsset->mAttackPower); // 예시 데미지
             Projectile->SetProjectileSpeed(mRangeMonsterDataAsset->mProjectileSpeed);
         }
