@@ -89,10 +89,13 @@ void AFQMonsterBase::Attack()
 
 void AFQMonsterBase::ManagerSetTargetActor(AActor* Actor)
 {
-	if (!mTargetActor)
+	if (Actor == nullptr)
 	{
-		mTargetActor = Actor;
+		mTargetActor = nullptr;
+		Manager->SetTargetActor(mGroupID, Actor);
+		return;
 	}
+	
 	Manager->SetTargetActor(mGroupID, Actor);
 }
 
@@ -150,11 +153,18 @@ float AFQMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	return DamageAmount;
 }
 
+void AFQMonsterBase::DeleteActor(FName ID, AFQMonsterBase* Monster)
+{
+	if (ID == TEXT("None"))
+		ID = FName("Default");
+	Manager->DeleteGroup(ID, Monster);
+}
+
 
 
 void AFQMonsterBase::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == mHitMontage)
+	if (Montage == mHitMontage && !bInterrupted)
 	{
 		AFQMonsterAIController* AIC = GetController<AFQMonsterAIController>();
 		if (AIC)
@@ -191,9 +201,12 @@ void AFQMonsterBase::TakePushByPlayer(AActor* Target, const FVector& Direction, 
 			AIC->StopMovement();
 			AIC->ChangeState(EMonsterState::Hit);
 		}
-		LaunchCharacter(Direction * Strength, true, true);
 	}
 	
+	if (mMonsterState != EMonsterState::Death)
+	{
+		LaunchCharacter(Direction * Strength, true, true);
+	}
 }
 
 

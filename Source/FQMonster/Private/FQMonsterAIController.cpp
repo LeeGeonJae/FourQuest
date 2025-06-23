@@ -51,7 +51,7 @@ void AFQMonsterAIController::ChangeState(EMonsterState State)
 {
     //ai컨트롤러에서 블랙보드와 몬스터의 상태를 다 바꿔줌
     AFQMonsterBase* Monster = GetPawn<AFQMonsterBase>();
-    if (Monster)
+    if (Monster&&Monster->mMonsterState!=EMonsterState::Death)
     {
         Monster->mMonsterState = State;
         GetBlackboardComponent()->SetValueAsEnum(TEXT("CurrentState"), (uint8)State);
@@ -117,9 +117,10 @@ void AFQMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulu
     {
         return;
     }
-    if (Actor->Tags.Contains(FName("Player")))
+    
+    if (Stimulus.WasSuccessfullySensed())
     {
-        if (Stimulus.WasSuccessfullySensed())
+        if (Actor->Tags.Contains(FName("Player")))
         {
             if (!GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")))
             {
@@ -129,22 +130,22 @@ void AFQMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulu
                 }
             }
         }
-        else
+    }
+    else
+    {
+        if(!IsValid(Monster->mTargetActor))
         {
-            if(!Monster->mTargetActor)
+            Monster->ManagerSetTargetActor(nullptr);
+            AFQMonsterAIController* AIC = GetInstigatorController<AFQMonsterAIController>();
+            if (AIC)
             {
-                AFQMonsterAIController* AIC = GetInstigatorController<AFQMonsterAIController>();
-                if (AIC)
+                AIC->SetTargetActor(nullptr);
+                AIC->ChangeState(EMonsterState::Idle);
+                if (AFQMeleeMonster* Melee = Cast<AFQMeleeMonster>(Monster))
                 {
-                    AIC->SetTargetActor(nullptr);
-                    AIC->ChangeState(EMonsterState::Idle);
-                    if (AFQMeleeMonster* Melee = Cast<AFQMeleeMonster>(Monster))
-                    {
-                        Melee->GetCharacterMovement()->MaxWalkSpeed = Melee->mMonsterDataAsset->mMoveSpeed;
-                    }
+                    Melee->GetCharacterMovement()->MaxWalkSpeed = Melee->mMonsterDataAsset->mMoveSpeed;
                 }
             }
         }
-        
     }
 }

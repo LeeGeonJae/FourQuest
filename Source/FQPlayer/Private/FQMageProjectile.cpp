@@ -82,7 +82,10 @@ void AFQMageProjectile::OnVolumeBeginOverlap(UPrimitiveComponent* OverlappedComp
 	{
 		return;
 	}
-
+	if (mHitActors.Contains(OtherActor))
+	{
+		return;
+	}
 	if (mCount <= 0)
 	{
 		mVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -101,6 +104,7 @@ void AFQMageProjectile::OnVolumeBeginOverlap(UPrimitiveComponent* OverlappedComp
 
 	if (Player->ApplyPush(OtherActor))
 	{
+		mHitActors.Add(OtherActor);
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), mHitEffectSystem, GetActorLocation(), GetActorRotation(), FVector(1.0f), true, true);
 
 		mCount--;

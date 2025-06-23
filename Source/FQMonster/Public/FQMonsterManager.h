@@ -26,6 +26,8 @@ public:
 
 	void RegisterGroup(FName ID,AFQMonsterBase* Monster);
 
+	void DeleteGroup(FName ID, AFQMonsterBase* Monster);
+
 	void SetTargetActor(FName ID, AActor* Actor);
 
 	void ChangeTargetActor(FName ID, AActor* Actor);

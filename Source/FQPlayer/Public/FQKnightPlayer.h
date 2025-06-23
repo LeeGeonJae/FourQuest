@@ -150,6 +150,8 @@ private:
 	FVector mBashDirection;
 	float mBashElapsedTime;
 
+	TSet<AActor*> mHitActors;
+
 	// Bash할 수 있는 상태인지 확인하는 플래그
 	uint8 mbCanBash : 1;
 	// Bash를 하는 중인지 확인하는 플래그

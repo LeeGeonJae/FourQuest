@@ -28,6 +28,10 @@ void AFQMeleeMonster::Hit()
 {
 	if (mHitMontage&&mCurrentHP>0)
 	{
+		if (AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(GetController()))
+		{
+			AIC->StopMovement();
+		}
 		if (GetVelocity().Size2D() > 0)
 		{
 			PlayAnimMontage(mHitMontage, 1.0f, TEXT("Push"));
@@ -68,14 +72,16 @@ float AFQMeleeMonster::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 			AIC->StopMovement();
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			AIC->ChangeState(EMonsterState::Death);
+			DeleteActor(mGroupID, this);
 		}
 		else
 		{
-			Hit();
 			if(DamageCauser->Tags.Contains(FName("Player")))
 			{
-				AIC->ChangeTargetActor(DamageCauser);
+				AIC->SetTargetActor(DamageCauser);
+				ManagerSetTargetActor(DamageCauser);
 			}
+			Hit();
 		}
 	}
 
@@ -85,5 +91,8 @@ float AFQMeleeMonster::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 void AFQMeleeMonster::TakePushByPlayer(AActor* Target, const FVector& Direction, float Strength)
 {
 	Super::TakePushByPlayer(Target, Direction, Strength);
-	Hit();
+	if (mMonsterState != EMonsterState::Hit)
+	{
+		Hit();
+	}
 }

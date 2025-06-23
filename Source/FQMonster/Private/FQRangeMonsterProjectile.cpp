@@ -63,6 +63,8 @@ void AFQRangeMonsterProjectile::SetProjectileSpeed(float Speed)
 {
     mProjectileMovement->InitialSpeed = Speed;
     mProjectileMovement->MaxSpeed = Speed;
+
+    mProjectileMovement->Velocity = mProjectileMovement->Velocity.GetSafeNormal() * Speed;
 }
 
 

@@ -13,7 +13,7 @@ void AFQRangeMonster::BeginPlay()
     mbCanPush = false;
     if (mGroupID == FName("None"))
     {
-        mMonsterType = EQuestMonsterType::CommonMeleeMonster;
+        mMonsterType = EQuestMonsterType::CommonRangedMonster;
     }
     else
     {
@@ -81,6 +81,7 @@ float AFQRangeMonster::TakeDamage(float DamageAmount, FDamageEvent const& Damage
             }
             GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
             AIC->ChangeState(EMonsterState::Death);
+            DeleteActor(mGroupID, this);
         }
     }
 

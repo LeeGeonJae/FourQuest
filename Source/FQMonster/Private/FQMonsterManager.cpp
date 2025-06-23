@@ -36,18 +36,30 @@ void AFQMonsterManager::RegisterGroup(FName ID, AFQMonsterBase* Monster)
 	mMonsterGroup[ID].Add(Monster);
 }
 
+void AFQMonsterManager::DeleteGroup(FName ID, AFQMonsterBase* Monster)
+{
+	mMonsterGroup[ID].Remove(Monster);
+}
+
 void AFQMonsterManager::SetTargetActor(FName ID, AActor* Actor)
 {
 	if (ID == TEXT("None"))
 		ID = TEXT("Default");
 	for (auto& Monster : mMonsterGroup[ID])
 	{
-		if (Monster->mMonsterState == EMonsterState::Death)
-			continue;
-		AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(Monster->GetController());
-		if (AIC)
+		if(Monster)
 		{
-			AIC->SetTargetActor(Actor);
+			if (Monster->mMonsterState == EMonsterState::Death)
+				continue;
+
+			AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(Monster->GetController());
+			if (!IsValid(Monster->mTargetActor))
+			{
+				if (AIC)
+				{
+					AIC->SetTargetActor(Actor);
+				}
+			}
 		}
 	}
 }

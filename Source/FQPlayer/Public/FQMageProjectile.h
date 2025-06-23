@@ -54,4 +54,6 @@ public:
 
 private:
 	int32 mCount;
+
+	TSet<AActor*> mHitActors;
 };

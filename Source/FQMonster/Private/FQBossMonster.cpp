@@ -25,7 +25,7 @@ void AFQBossMonster::BeginPlay()
 	mOriginalGravityScale = GetCharacterMovement()->GravityScale;
 	if (mGroupID == FName("None"))
 	{
-		mMonsterType = EQuestMonsterType::CommonMeleeMonster;
+		mMonsterType = EQuestMonsterType::BossMonster;
 	}
 	else
 	{
@@ -258,6 +258,7 @@ float AFQBossMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 			}
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			AIC->ChangeState(EMonsterState::Death);
+			DeleteActor(mGroupID, this);
 		}
 	}
 	return DamageAmount;

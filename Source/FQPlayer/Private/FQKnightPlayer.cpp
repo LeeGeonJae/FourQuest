@@ -821,6 +821,8 @@ void AFQKnightPlayer::EndBash()
 {
 	mbIsBashing = false;
 
+	mHitActors.Empty();
+
 	GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed;
 	GetCharacterMovement()->MaxAcceleration = 2048.0f;
 }
@@ -847,6 +849,11 @@ void AFQKnightPlayer::CheckBashVolume()
 			return;
 		}
 
+		if (mHitActors.Contains(Actor))
+		{
+			return;
+		}
+
 		if (RootComp == GetRootComponent())
 		{
 			continue;
@@ -864,6 +871,7 @@ void AFQKnightPlayer::CheckBashVolume()
 
 		ApplyDamageToTarget(mKnightDataAsset->mBashDamage, Actor);
 		ApplyPush(Actor, mKnightDataAsset->mBashStrength);
+		mHitActors.Add(Actor);
 
 		if (!mBashHitAudio->IsPlaying())
 		{
@@ -885,6 +893,11 @@ void AFQKnightPlayer::OnBashVolumeBeginOverlap(UPrimitiveComponent* OverlappedCo
 		return;
 	}
 
+	if (mHitActors.Contains(OtherActor))
+	{
+		return;
+	}
+
 	if (RootComp == GetRootComponent())
 	{
 		return;
@@ -902,6 +915,7 @@ void AFQKnightPlayer::OnBashVolumeBeginOverlap(UPrimitiveComponent* OverlappedCo
 
 	ApplyDamageToTarget(mKnightDataAsset->mBashDamage, OtherActor);
 	ApplyPush(OtherActor, mKnightDataAsset->mBashStrength);
+	mHitActors.Add(OtherActor);
 
 	if (!mBashHitAudio->IsPlaying())
 	{
