@@ -184,7 +184,7 @@ void AFQMonsterBase::TakePushByPlayer(AActor* Target, const FVector& Direction, 
 		return;
 	}
 
-	if (mMonsterState != EMonsterState::Hit&&mMonsterState != EMonsterState::Death)
+	if (mMonsterState != EMonsterState::Death)
 	{
 		if (AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(GetController()))
 		{
