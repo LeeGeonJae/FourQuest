@@ -8,6 +8,7 @@
 #include "FQMonsterDataAsset.h"
 #include "Sound/SoundCue.h"
 #include "FQGameCore/Player/FQPlayerAttackableInterface.h"
+#include "FQGameCore/Quest/FQQuestSystem.h"
 #include "FQMonsterBase.generated.h"
 
 class AFQMonsterManager;

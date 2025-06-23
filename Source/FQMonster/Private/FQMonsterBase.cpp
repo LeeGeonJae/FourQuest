@@ -159,7 +159,7 @@ void AFQMonsterBase::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 		AFQMonsterAIController* AIC = GetController<AFQMonsterAIController>();
 		if (AIC)
 		{
-			if(mMonsterState!=EMonsterState::Down)
+			if(mMonsterState!=EMonsterState::Down&&mMonsterState!=EMonsterState::Death)
 			{
 				AIC->ChangeState(EMonsterState::Chase);
 				UE_LOG(LogTemp, Warning, TEXT("Hit Animation 종료"))
@@ -184,15 +184,16 @@ void AFQMonsterBase::TakePushByPlayer(AActor* Target, const FVector& Direction, 
 		return;
 	}
 
-	if (mMonsterState != EMonsterState::Hit)
+	if (mMonsterState != EMonsterState::Hit&&mMonsterState != EMonsterState::Death)
 	{
 		if (AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(GetController()))
 		{
 			AIC->StopMovement();
 			AIC->ChangeState(EMonsterState::Hit);
 		}
+		LaunchCharacter(Direction * Strength, true, true);
 	}
-	LaunchCharacter(Direction * Strength, true, true);
+	
 }
 
 
