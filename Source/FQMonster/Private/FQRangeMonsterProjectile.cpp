@@ -5,6 +5,9 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 // Sets default values
 AFQRangeMonsterProjectile::AFQRangeMonsterProjectile()
@@ -35,11 +38,22 @@ void AFQRangeMonsterProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActo
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
     bool bFromSweep, const FHitResult& SweepResult)
 {
-    if (OtherActor && OtherActor != this)
+    if (OtherActor && OtherActor != this&&OtherActor!=GetOwner())
     {
         UGameplayStatics::ApplyDamage(OtherActor, mDamage, GetInstigatorController(), this, nullptr);
         if(mAttackHitSoundCue)
-        UGameplayStatics::PlaySoundAtLocation(GetWorld(), mAttackHitSoundCue, GetActorLocation());
+        {
+            UGameplayStatics::PlaySoundAtLocation(GetWorld(), mAttackHitSoundCue, GetActorLocation());
+        }
+        if (mProjectileHitEffect)
+        {
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                GetWorld(),
+                mProjectileHitEffect,
+                GetActorLocation(),
+                GetActorRotation()
+            );
+        }
         Destroy();
     }
 

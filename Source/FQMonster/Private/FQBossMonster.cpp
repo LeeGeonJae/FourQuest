@@ -160,11 +160,11 @@ void AFQBossMonster::SelectAttack()
 void AFQBossMonster::SelectSkill()
 {
 	int32 RandInt = FMath::RandRange(1, 10);
-	/*if (RandInt <= 4)
+	if (RandInt <= 4)
 	{
 		PrepareRush();
 	}
-	else*/ if (RandInt <= 8)
+	else if (RandInt >= 8)
 	{
 		Growl();
 	}

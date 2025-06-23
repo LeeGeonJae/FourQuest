@@ -7,6 +7,7 @@
 #include "Sound/SoundCue.h"
 #include "FQRangeMonsterProjectile.generated.h"
 
+class UNiagaraSystem;
 UCLASS()
 class FQMONSTER_API AFQRangeMonsterProjectile : public AActor
 {
@@ -39,6 +40,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	USoundCue* mAttackHitSoundCue;
 
+	UPROPERTY(EditAnywhere, Category = "FX")
+	UNiagaraSystem* mProjectileHitEffect;
 public:
 	float mDamage = 0.f;
 };

@@ -31,7 +31,10 @@ void AFQRangeMonster::ProjectileAttack()
     if (!mTargetActor || !mProjectile) return;
 
     FVector SpawnLocation = GetActorLocation() + FVector(0, 0, 50.f); // 약간 위로
-    FRotator SpawnRotation = (mTargetActor->GetActorLocation() - SpawnLocation).Rotation();
+    FRotator SpawnRotation = (FVector(mTargetActor->GetActorLocation() - SpawnLocation)).Rotation();
+    SpawnRotation.Pitch = 0.0f;
+    SpawnRotation.Roll = 0.0f;
+
 
     FActorSpawnParameters Params;
     Params.Instigator = this;
@@ -56,7 +59,10 @@ float AFQRangeMonster::TakeDamage(float DamageAmount, FDamageEvent const& Damage
     {
         UE_LOG(LogTemp, Warning, TEXT("[RnageMonster] TakeDamage"));
 
-        AIC->ChangeTargetActor(DamageCauser);
+        if (DamageCauser->Tags.Contains(FName("Player")))
+        {
+            AIC->ChangeTargetActor(DamageCauser);
+        }
         mCurrentHP = mCurrentHP - DamageAmount;
         mCurrentHPPercent = mCurrentHP / mRangeMonsterDataAsset->mMaxHP;
         if (mCurrentHP <= 0)

@@ -72,7 +72,10 @@ float AFQMeleeMonster::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 		else
 		{
 			Hit();
-			AIC->ChangeTargetActor(DamageCauser);
+			if(DamageCauser->Tags.Contains(FName("Player")))
+			{
+				AIC->ChangeTargetActor(DamageCauser);
+			}
 		}
 	}
 
