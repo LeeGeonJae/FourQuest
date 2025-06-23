@@ -509,6 +509,8 @@ void AFQKnightPlayer::StartSwordAttack()
 
 			AnimInstance->Montage_Play(mSwordAttackAnim3);
 
+			GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
+
 			mMoveState = EMoveState::CannotMove;
 
 			UE_LOG(LogTemp, Log, TEXT("[StartSwordAttack] Attack3 Anim 재생"));
@@ -740,6 +742,8 @@ void AFQKnightPlayer::OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInte
 			}
 
 			AnimInstance->Montage_Play(mSwordAttackAnim3);
+
+			GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
 
 			UE_LOG(LogTemp, Log, TEXT("[OnAnimMontageEnded] Attack3 Anim 재생"));
 		}
