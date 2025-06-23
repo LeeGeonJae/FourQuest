@@ -12,6 +12,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "FQGameCore/Player/FQPlayerAttackableInterface.h"
 #include "FQGameCore/Player/FQPlayerStateInterface.h"
@@ -217,66 +218,11 @@ void AFQKnightPlayer::SetInputMappingContext()
 
 bool AFQKnightPlayer::CanMove()
 {
-	switch (mSwordAttackState)
+	if (mMoveState == EMoveState::CannotMove)
 	{
-	case EKnightSwordAttackState::Attack1 :
-	{
-		if (mbIsPressedX)
-		{
-			return false;
-		}
-		else
-		{
-			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-			if (!AnimInstance)
-			{
-				return false;
-			}
+		return false;
+	}
 
-			if (AnimInstance->Montage_IsPlaying(mSwordAttackAnim1))
-			{
-				return false;
-			}
-		}
-	}
-	break;
-	case EKnightSwordAttackState::Attack2 :
-	{
-		if (mbIsPressedX)
-		{
-			return false;
-		}
-		else
-		{
-			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-			if (!AnimInstance)
-			{
-				return false;
-			}
-
-			if (AnimInstance->Montage_IsPlaying(mSwordAttackAnim2))
-			{
-				return false;
-			}
-		}
-	}
-	break;
-	case EKnightSwordAttackState::Attack3:
-	{
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-		if (!AnimInstance)
-		{
-			return false;
-		}
-
-		if (AnimInstance->Montage_IsPlaying(mSwordAttackAnim3))
-		{
-			return false;
-		}
-	}
-	break;
-	}
-	
 	return true;
 }
 
@@ -312,6 +258,8 @@ void AFQKnightPlayer::ProcessHitInterrupt()
 		TimerDel.BindLambda([this]() { mShieldState = EKnightShieldState::None; });
 		GetWorld()->GetTimerManager().SetTimer(mShieldCoolTimer, TimerDel, mKnightDataAsset->mShieldCoolTime, false);
 	}
+
+	mMoveState = EMoveState::CanMove;
 }
 
 void AFQKnightPlayer::ProcessSwordAttack()
@@ -500,6 +448,8 @@ void AFQKnightPlayer::StartSwordAttack()
 		}
 		AnimInstance->Montage_Play(mSwordAttackAnim1);
 
+		mMoveState = EMoveState::CannotMove;
+
 		// 콤보 가능 상태 설정
 		mSwordAttackComboState = EComboState::CanBeCombo;
 		GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
@@ -533,6 +483,8 @@ void AFQKnightPlayer::StartSwordAttack()
 
 			AnimInstance->Montage_Play(mSwordAttackAnim2);
 
+			mMoveState = EMoveState::CannotMove;
+
 			GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
 			GetWorld()->GetTimerManager().SetTimer(mSwordAttackComboTimer, this, &AFQKnightPlayer::ResetSwordAttackCombo,mKnightDataAsset->mSwordAttackWaitTime2, false);
 
@@ -556,6 +508,8 @@ void AFQKnightPlayer::StartSwordAttack()
 			mSwordAttackState = EKnightSwordAttackState::Attack3;
 
 			AnimInstance->Montage_Play(mSwordAttackAnim3);
+
+			mMoveState = EMoveState::CannotMove;
 
 			UE_LOG(LogTemp, Log, TEXT("[StartSwordAttack] Attack3 Anim 재생"));
 		}
@@ -610,6 +564,8 @@ void AFQKnightPlayer::StartShieldMove()
 
 	GetCharacterMovement()->MaxWalkSpeed = mDefaultSpeed * (mKnightDataAsset->mShieldWalkRatio / 100.0f);
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+
+	mShieldState = EKnightShieldState::Shield;
 }
 
 void AFQKnightPlayer::PressedShieldMove(const FInputActionValue& Value)
@@ -712,19 +668,17 @@ void AFQKnightPlayer::CheckShiedVolume()
 
 		ApplyDamageToTarget(mKnightDataAsset->mShieldDamage, Actor);
 		ApplyPush(Actor, mKnightDataAsset->mShieldStrength);
+
+		if (mShieldHitEffect)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), mShieldHitEffect, Actor->GetActorLocation(), Actor->GetActorRotation(), FVector(1.0f), true, true);
+		}	
 	}
 }
 
 void AFQKnightPlayer::OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == mShieldUpAnim)
-	{
-		if (!bInterrupted)
-		{
-			mShieldState = EKnightShieldState::Shield;
-		}
-	}
-	else if (Montage == mSwordAttackAnim1)
+	if (Montage == mSwordAttackAnim1)
 	{
 		if (mHitState == EHitState::HitReacting)
 		{
@@ -756,6 +710,11 @@ void AFQKnightPlayer::OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInte
 
 			UE_LOG(LogTemp, Log, TEXT("[OnAnimMontageEnded] Attack2 Anim 재생"));
 		}
+		else
+		{
+			mMoveState = EMoveState::CanMove;
+		}
+
 	}
 	else if (Montage == mSwordAttackAnim2)
 	{
@@ -784,6 +743,10 @@ void AFQKnightPlayer::OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInte
 
 			UE_LOG(LogTemp, Log, TEXT("[OnAnimMontageEnded] Attack3 Anim 재생"));
 		}
+		else
+		{
+			mMoveState = EMoveState::CanMove;
+		}
 	}
 	else if (Montage == mSwordAttackAnim3)
 	{
@@ -791,6 +754,8 @@ void AFQKnightPlayer::OnKnightAnimMontageEnded(UAnimMontage* Montage, bool bInte
 
 		GetWorld()->GetTimerManager().ClearTimer(mSwordAttackComboTimer);
 		ResetSwordAttackCombo();
+
+		mMoveState = EMoveState::CanMove;
 	}
 }
 
@@ -824,6 +789,11 @@ void AFQKnightPlayer::OnShieldVolumeBeginOverlap(UPrimitiveComponent* Overlapped
 
 	ApplyDamageToTarget(mKnightDataAsset->mShieldDamage, OtherActor);
 	ApplyPush(OtherActor, mKnightDataAsset->mShieldStrength);
+
+	if (mShieldHitEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), mShieldHitEffect, OtherActor->GetActorLocation(), OtherActor->GetActorRotation(), FVector(1.0f), true, true);
+	}
 }
 
 void AFQKnightPlayer::StartBash()
@@ -979,6 +949,11 @@ void AFQKnightPlayer::ApplySwordAttackDamage(AActor* AttackableActor)
 		{
 			UGameplayStatics::SpawnSoundAtLocation(this, mSwordAttackAudio1, GetActorLocation());
 		}
+
+		if (mSwordHitEffect)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), mSwordHitEffect, AttackableActor->GetActorLocation(), AttackableActor->GetActorRotation(), FVector(1.0f), true, true);
+		}
 	}
 	break;
 	case EKnightSwordAttackState::Attack2:
@@ -988,6 +963,11 @@ void AFQKnightPlayer::ApplySwordAttackDamage(AActor* AttackableActor)
 		if (mSwordAttackAudio2)
 		{
 			UGameplayStatics::SpawnSoundAtLocation(this, mSwordAttackAudio2, GetActorLocation());
+		}
+
+		if (mSwordHitEffect)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), mSwordHitEffect, AttackableActor->GetActorLocation(), AttackableActor->GetActorRotation(), FVector(1.0f), true, true);
 		}
 	}
 	break;
@@ -999,6 +979,11 @@ void AFQKnightPlayer::ApplySwordAttackDamage(AActor* AttackableActor)
 		if (mSwordAttackAudio3)
 		{
 			UGameplayStatics::SpawnSoundAtLocation(this, mSwordAttackAudio3, GetActorLocation());
+		}
+
+		if (mShieldHitEffect)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), mShieldHitEffect, AttackableActor->GetActorLocation(), AttackableActor->GetActorRotation(), FVector(1.0f), true, true);
 		}
 	}
 	break;

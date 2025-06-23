@@ -90,6 +90,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
 	EHitState mHitState;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = "true"))
+	EMoveState mMoveState;
+
 	// X 버튼을 길게 누르고 있는 상태인지 확인하는 플래그
 	uint8 mbIsPressedX : 1;
 

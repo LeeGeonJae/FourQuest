@@ -114,6 +114,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkillEffect, Meta = (AllowPrivateAccess = "true"), meta = (ToolTip = "[R] 방패 이펙트"))
 	TObjectPtr<class UNiagaraComponent> mShieldEffect;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UNiagaraSystem> mSwordHitEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Effect, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UNiagaraSystem> mShieldHitEffect;
+
 	// Weapon Mesh
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMesh, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UStaticMeshComponent> mSwordMesh;

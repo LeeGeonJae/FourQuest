@@ -45,6 +45,7 @@ AFQPlayerBase::AFQPlayerBase()
 	mSoulEffect->SetAutoActivate(false);
 
 	mHitState = EHitState::None;
+	mMoveState = EMoveState::CanMove;
 
 	mbIsPressedX = false;
 	mbIsPressedA = false;
