@@ -220,61 +220,7 @@ void AFQMagePlayer::SetInputMappingContext()
 
 bool AFQMagePlayer::CanMove()
 {
-	// Projectile Attack 
-	switch (mProjectileAttackState)
-	{
-	case EMageProjectileAttackState::Attack1:
-	{
-		if (mbIsPressedX)
-		{
-			return false;
-		}
-		else
-		{
-			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-			if (!AnimInstance)
-			{
-				return false;
-			}
-
-			if (AnimInstance->Montage_IsPlaying(mProjectileAttackAnim1))
-			{
-				return false;
-			}
-		}
-	}
-	break;
-	case EMageProjectileAttackState::Attack2:
-	{
-		if (mbIsPressedX)
-		{
-			return false;
-		}
-		else
-		{
-			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-			if (!AnimInstance)
-			{
-				return false;
-			}
-
-			if (AnimInstance->Montage_IsPlaying(mProjectileAttackAnim2))
-			{
-				return false;
-			}
-		}
-	}
-	break;
-	}
-
-	// Explosion
-	if (mExplosionState == EMageExplosionState::Enabled)
-	{
-		return false;
-	}
-
-	// Laser
-	if (mLaserState == EMageLaserState::Preparing || mLaserState == EMageLaserState::Enabled)
+	if (mMoveState == EMoveState::CannotMove)
 	{
 		return false;
 	}
@@ -322,7 +268,7 @@ void AFQMagePlayer::ProcessInputMovement()
 void AFQMagePlayer::OnMageAnimMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	// Projectile Attack
-	if (Montage == mProjectileAttackAnim1 && !bInterrupted)
+	if (Montage == mProjectileAttackAnim1)
 	{
 		if (mHitState == EHitState::HitReacting)
 		{
@@ -351,8 +297,12 @@ void AFQMagePlayer::OnMageAnimMontageEnded(UAnimMontage* Montage, bool bInterrup
 			GetWorld()->GetTimerManager().ClearTimer(mProjectileAttackComboTimer);
 			GetWorld()->GetTimerManager().SetTimer(mProjectileAttackComboTimer, this, &AFQMagePlayer::ResetProjectileAttackCombo, mMageDataAsset->mProjectileAttackWaitTime1, false);
 		}
+		else
+		{
+			mMoveState = EMoveState::CanMove;
+		}
 	}
-	else if (Montage == mProjectileAttackAnim2 && !bInterrupted)
+	else if (Montage == mProjectileAttackAnim2)
 	{
 		if (mHitState == EHitState::HitReacting)
 		{
@@ -385,6 +335,8 @@ void AFQMagePlayer::OnMageAnimMontageEnded(UAnimMontage* Montage, bool bInterrup
 		{
 			GetWorld()->GetTimerManager().ClearTimer(mProjectileAttackComboTimer);
 			ResetProjectileAttackCombo();
+
+			mMoveState = EMoveState::CanMove;
 		}
 	}
 
@@ -400,6 +352,8 @@ void AFQMagePlayer::OnMageAnimMontageEnded(UAnimMontage* Montage, bool bInterrup
 		// 이펙트 재생
 		mExplosionCircle->ActivateEffect();
 		mExplosionCircle = nullptr;
+
+		mMoveState = EMoveState::CanMove;
 	}
 
 	// Laser
@@ -419,6 +373,8 @@ void AFQMagePlayer::OnMageAnimMontageEnded(UAnimMontage* Montage, bool bInterrup
 	{
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		mStaff->DeactivateLaserEffect();
+
+		mMoveState = EMoveState::CanMove;
 	}
 }
 
@@ -462,6 +418,8 @@ void AFQMagePlayer::StartProjectileAttack()
 		}
 		AnimInstance->Montage_Play(mProjectileAttackAnim1);
 
+		mMoveState = EMoveState::CannotMove;
+
 		// 콤보 가능 상태 설정
 		mProjectileAttackComboState = EComboState::CanBeCombo;
 		GetWorld()->GetTimerManager().ClearTimer(mProjectileAttackComboTimer);
@@ -495,6 +453,8 @@ void AFQMagePlayer::StartProjectileAttack()
 
 			AnimInstance->Montage_Play(mProjectileAttackAnim2);
 
+			mMoveState = EMoveState::CannotMove;
+
 			GetWorld()->GetTimerManager().ClearTimer(mProjectileAttackComboTimer);
 			GetWorld()->GetTimerManager().SetTimer(mProjectileAttackComboTimer, this, &AFQMagePlayer::ResetProjectileAttackCombo, mMageDataAsset->mProjectileAttackWaitTime1, false);
 		}
@@ -516,6 +476,8 @@ void AFQMagePlayer::StartProjectileAttack()
 			mProjectileAttackState = EMageProjectileAttackState::Attack1;
 
 			AnimInstance->Montage_Play(mProjectileAttackAnim1);
+
+			mMoveState = EMoveState::CannotMove;
 		}
 		break;
 		}
@@ -611,6 +573,8 @@ void AFQMagePlayer::StartExplosion()
 		mExplosionState = EMageExplosionState::Enabled;
 		mExplosionCircle->PlayCircleAudio();
 	}
+
+	mMoveState = EMoveState::CannotMove;
 }
 
 void AFQMagePlayer::PressedExplosion()
@@ -748,6 +712,8 @@ void AFQMagePlayer::PressedLaser(const FInputActionValue& Value)
 		AnimInstance->Montage_Play(mLaserStartAnim);
 
 		mLaserState = EMageLaserState::Preparing;
+
+		mMoveState = EMoveState::CannotMove;
 	}
 }
 
@@ -789,7 +755,7 @@ void AFQMagePlayer::EndLaser()
 		GetWorld()->GetTimerManager().ClearTimer(mLaserCoolTimer);
 
 		FTimerDelegate TimerDel;
-		TimerDel.BindLambda([this]() { mLaserState = EMageLaserState::None;  });
+		TimerDel.BindLambda([this]() { mLaserState = EMageLaserState::None; });
 		GetWorld()->GetTimerManager().SetTimer(mLaserCoolTimer, TimerDel, mMageDataAsset->mLaserCoolTime, false);
 	}
 	else
@@ -917,6 +883,8 @@ void AFQMagePlayer::ProcessHitInterrupt()
 	mStaff->DeactivateLaserEffect();
 	mStaff->DeactivateHitEffect();
 	mStaff->StopLaserAudio();
+
+	mMoveState = EMoveState::CanMove;
 }
 
 float AFQMagePlayer::GetCircleMaxScale()

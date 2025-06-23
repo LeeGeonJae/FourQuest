@@ -1,6 +1,13 @@
 #pragma once
 
 UENUM(BlueprintType)
+enum class EMoveState : uint8
+{
+	CanMove		UMETA(DisplayName = "CanMove"),
+	CannotMove	UMETA(DisplayName = "CannotMove")
+};
+
+UENUM(BlueprintType)
 enum class EHitState : uint8
 {
 	None		UMETA(DisplayName = "None"),
