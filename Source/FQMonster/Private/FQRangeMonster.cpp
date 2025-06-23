@@ -11,6 +11,14 @@ void AFQRangeMonster::BeginPlay()
 {
     Super::BeginPlay();
     mbCanPush = false;
+    if (mGroupID == FName("None"))
+    {
+        mMonsterType = EQuestMonsterType::CommonMeleeMonster;
+    }
+    else
+    {
+        mMonsterType = EQuestMonsterType::MonsterGroup;
+    }
     if (mRangeMonsterDataAsset)
     {
         mCurrentHP = mRangeMonsterDataAsset->mMaxHP;
@@ -53,6 +61,18 @@ float AFQRangeMonster::TakeDamage(float DamageAmount, FDamageEvent const& Damage
         mCurrentHPPercent = mCurrentHP / mRangeMonsterDataAsset->mMaxHP;
         if (mCurrentHP <= 0)
         {
+            UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+            if (QuestSystem)
+            {
+                if (mMonsterType == EQuestMonsterType::MonsterGroup)
+                {
+                    QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::MonsterGroup, mGroupID);
+                }
+                else
+                {
+                    QuestSystem->mMonsterQuestDelegate.Broadcast(mMonsterType, "");
+                }
+            }
             GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
             AIC->ChangeState(EMonsterState::Death);
         }

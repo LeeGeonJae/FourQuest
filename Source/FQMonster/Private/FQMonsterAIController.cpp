@@ -2,6 +2,8 @@
 
 
 #include "FQMonsterAIController.h"
+#include "FQMeleeMonster.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "Perception/AISenseConfig_Damage.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -37,6 +39,10 @@ void AFQMonsterAIController::SetTargetActor(AActor* Actor)
     {
         GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
         Monster->mTargetActor = Actor;
+        if (AFQMeleeMonster* Melee = Cast<AFQMeleeMonster>(Monster))
+        {
+            Melee->GetCharacterMovement()->MaxWalkSpeed = Melee->mMonsterDataAsset->mChaseSpeed;
+        }
         ChangeState(EMonsterState::Chase);
     }
 }
@@ -132,6 +138,10 @@ void AFQMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulu
                 {
                     AIC->SetTargetActor(nullptr);
                     AIC->ChangeState(EMonsterState::Idle);
+                    if (AFQMeleeMonster* Melee = Cast<AFQMeleeMonster>(Monster))
+                    {
+                        Melee->GetCharacterMovement()->MaxWalkSpeed = Melee->mMonsterDataAsset->mMoveSpeed;
+                    }
                 }
             }
         }

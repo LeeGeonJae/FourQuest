@@ -4,18 +4,30 @@
 #include "FQMeleeMonster.h"
 #include "FQMonsterAIController.h"
 
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 
 void AFQMeleeMonster::BeginPlay()
 {
 	Super::BeginPlay();
+	if (mGroupID == FName("None"))
+	{
+		mMonsterType = EQuestMonsterType::CommonMeleeMonster;
+	}
+	else
+	{
+		mMonsterType = EQuestMonsterType::MonsterGroup;
+	}
+	if (mMonsterDataAsset)
+	{
+		mAttackRange = mMonsterDataAsset->mAttackRange;
+	}
 }
 
 void AFQMeleeMonster::Hit()
 {
-	if (mHitMontage)
+	if (mHitMontage&&mCurrentHP>0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Velocity Scalar : %f"), GetVelocity().Size2D())
 		if (GetVelocity().Size2D() > 0)
 		{
 			PlayAnimMontage(mHitMontage, 1.0f, TEXT("Push"));
@@ -36,14 +48,31 @@ float AFQMeleeMonster::TakeDamage(float DamageAmount, FDamageEvent const& Damage
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[MeleeMonster] TakeDamage"));
 
-		Hit();
-		AIC->ChangeTargetActor(DamageCauser);
+		
 		mCurrentHP = mCurrentHP - DamageAmount;
 		mCurrentHPPercent = mCurrentHP / mMonsterDataAsset->mMaxHP;
 		if (mCurrentHP <= 0)
 		{
+			UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+			if (QuestSystem)
+			{
+				if (mMonsterType == EQuestMonsterType::MonsterGroup)
+				{
+					QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::MonsterGroup, mGroupID);
+				}
+				else
+				{
+					QuestSystem->mMonsterQuestDelegate.Broadcast(mMonsterType, "");
+				}
+			}
+			AIC->StopMovement();
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			AIC->ChangeState(EMonsterState::Death);
+		}
+		else
+		{
+			Hit();
+			AIC->ChangeTargetActor(DamageCauser);
 		}
 	}
 

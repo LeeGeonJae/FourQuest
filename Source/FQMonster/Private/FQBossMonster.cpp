@@ -23,7 +23,14 @@ void AFQBossMonster::BeginPlay()
 
 	mOriginalBrakingFrictionFactor = GetCharacterMovement()->BrakingFrictionFactor;
 	mOriginalGravityScale = GetCharacterMovement()->GravityScale;
-
+	if (mGroupID == FName("None"))
+	{
+		mMonsterType = EQuestMonsterType::CommonMeleeMonster;
+	}
+	else
+	{
+		mMonsterType = EQuestMonsterType::MonsterGroup;
+	}
 	if (mBossMonsterDataAsset)
 	{
 		mCurrentHP = mBossMonsterDataAsset->mMaxHP;
@@ -93,9 +100,7 @@ void AFQBossMonster::RushApplyDamage(ACharacter* Character)
 		// 왼쪽 넉백
 		KnockbackDir = FVector::CrossProduct(GetVelocity().GetSafeNormal(), FVector::UpVector).GetSafeNormal();
 	}
-	UE_LOG(LogTemp, Warning, TEXT("X: %f Y: %f Z: %f"), ToTarget.X, ToTarget.Y, ToTarget.Z);
-	UE_LOG(LogTemp, Warning, TEXT("X: %f Y: %f Z: %f"), KnockbackDir.X, KnockbackDir.Y, KnockbackDir.Z);
-	float KnockbackForce = 3000.f;
+	float KnockbackForce = mBossMonsterDataAsset->mRushStrength;
 	UGameplayStatics::ApplyDamage(Character, mBossMonsterDataAsset->mRushDamage, GetController(), this, UDamageType::StaticClass());
 	Character->GetCharacterMovement()->StopMovementImmediately();
 	Character->LaunchCharacter(KnockbackDir * KnockbackForce, true, true);
@@ -239,6 +244,18 @@ float AFQBossMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 		}
 		if (mCurrentHP <= 0)
 		{
+			UFQQuestSystem* QuestSystem = GetGameInstance()->GetSubsystem<UFQQuestSystem>();
+			if (QuestSystem)
+			{
+				if (mMonsterType == EQuestMonsterType::MonsterGroup)
+				{
+					QuestSystem->mMonsterQuestDelegate.Broadcast(EQuestMonsterType::MonsterGroup, mGroupID);
+				}
+				else
+				{
+					QuestSystem->mMonsterQuestDelegate.Broadcast(mMonsterType, "");
+				}
+			}
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			AIC->ChangeState(EMonsterState::Death);
 		}
