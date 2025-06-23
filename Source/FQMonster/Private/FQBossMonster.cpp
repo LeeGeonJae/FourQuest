@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 
 AFQBossMonster::AFQBossMonster()
 {
@@ -212,6 +213,24 @@ void AFQBossMonster::Hit(FVector AttackPos)
 			else
 			{
 				PlayAnimMontage(mHitMontage, 1.0f, TEXT("HitRight"));
+			}
+		}
+	}
+}
+
+void AFQBossMonster::ApplyDamageToTarget()
+{
+	TArray<AActor*> Overlapped;
+	mAttackBox->GetOverlappingActors(Overlapped, AActor::StaticClass());
+
+	for (AActor* Target : Overlapped)
+	{
+		if (Target && Target != this)
+		{
+			UGameplayStatics::ApplyDamage(Target, mBossMonsterDataAsset->mAttackPower, GetController(), this, UDamageType::StaticClass());
+			if (mAttackHitSoundCue)
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), mAttackHitSoundCue, mAttackBox->GetComponentLocation());
 			}
 		}
 	}
