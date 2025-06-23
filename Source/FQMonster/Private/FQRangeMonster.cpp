@@ -13,7 +13,7 @@ void AFQRangeMonster::BeginPlay()
     mbCanPush = false;
     if (mGroupID == FName("None"))
     {
-        mMonsterType = EQuestMonsterType::CommonMeleeMonster;
+        mMonsterType = EQuestMonsterType::CommonRangedMonster;
     }
     else
     {

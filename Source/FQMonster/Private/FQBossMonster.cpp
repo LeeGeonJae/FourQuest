@@ -25,7 +25,7 @@ void AFQBossMonster::BeginPlay()
 	mOriginalGravityScale = GetCharacterMovement()->GravityScale;
 	if (mGroupID == FName("None"))
 	{
-		mMonsterType = EQuestMonsterType::CommonMeleeMonster;
+		mMonsterType = EQuestMonsterType::BossMonster;
 	}
 	else
 	{
