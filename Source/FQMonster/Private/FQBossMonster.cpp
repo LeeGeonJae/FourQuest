@@ -238,21 +238,23 @@ void AFQBossMonster::ApplyDamageToTarget()
 
 float AFQBossMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	//Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	if (AFQMonsterAIController* AIC = Cast<AFQMonsterAIController>(GetController()))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[BossMonster] TakeDamage"));
 
-		AIC->ChangeState(EMonsterState::Hit);
-		Hit((DamageCauser->GetActorLocation()-GetActorLocation()).GetSafeNormal());
+		//AIC->ChangeState(EMonsterState::Chase);
 		if(mMonsterState!=EMonsterState::Down)
 		{
 			mCurrentHP = mCurrentHP - DamageAmount;
+			//AIC->ChangeState(EMonsterState::Hit);
+			
 		}
 		else
 		{
 			mCurrentHP = mCurrentHP - (DamageAmount*mBossMonsterDataAsset->mDownHitDamage);
+			Hit((DamageCauser->GetActorLocation() - GetActorLocation()).GetSafeNormal());
 		}
 		mCurrentHPPercent = mCurrentHP / mBossMonsterDataAsset->mMaxHP;
 		mDownGauge += 5.0f;
